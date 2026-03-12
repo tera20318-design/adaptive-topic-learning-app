@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#f8fafc">
+    <title>Adaptive Topic Learning App</title>
+    <link rel="manifest" href="./manifest.webmanifest">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="./nanoin-app/styles.css">
+</head>
+<body class="bg-stone-50 text-slate-800">
+    <div id="app"></div>
+
+    <noscript>
+        <div class="mx-auto max-w-3xl p-6">
+            <div class="rounded-3xl border border-amber-300 bg-amber-50 p-6 text-amber-900">
+                JavaScript が無効です。このアプリは学習状態の保存、分岐質問、図解更新に JavaScript を使用します。
+            </div>
+        </div>
+    </noscript>
+
+    <script src="./nanoin-app/content.js"></script>
+    <script src="./nanoin-app/storage.js"></script>
+    <script src="./nanoin-app/ai.js"></script>
+    <script src="./nanoin-app/app.js"></script>
+</body>
+</html>

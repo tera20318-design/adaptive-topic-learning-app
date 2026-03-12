@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="ja" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>テーバー摩耗試験＆摩耗の基礎 説明ガイド</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chosen Palette: Warm Neutral & Teal Accent -->
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 50vh;
+            max-height: 400px;
+            min-height: 300px;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .spin-slow {
+            animation: spin 6s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .css-diagram-base {
+            width: 100%;
+            height: 120px;
+            background-color: #f5f5f4;
+            border-bottom: 8px solid #d6d3d1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .abrasive-tool {
+            width: 60px;
+            height: 40px;
+            background-color: #78716c;
+            clip-path: polygon(0% 0%, 100% 0%, 80% 100%, 20% 100%);
+            transform: translateX(-50px);
+            transition: transform 1s ease-in-out;
+        }
+        .css-diagram-base:hover .abrasive-tool {
+            transform: translateX(50px);
+        }
+        .adhesive-top {
+            width: 80px;
+            height: 30px;
+            background-color: #a8a29e;
+            margin-bottom: 2px;
+            position: relative;
+            transition: transform 0.5s, margin-bottom 0.5s;
+        }
+        .css-diagram-base:hover .adhesive-top {
+            transform: translateY(-10px);
+            margin-bottom: 12px;
+        }
+        .adhesive-bond {
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 10px;
+            background-color: #a8a29e;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .css-diagram-base:hover .adhesive-bond {
+            opacity: 1;
+        }
+
+        /* Loading spinner for AI */
+        .loader {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #0f766e;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        
+        /* Formatted HTML styles from AI response */
+        .ai-result-content h3 { font-size: 1.125rem; font-weight: bold; color: #111827; margin-top: 1rem; margin-bottom: 0.5rem; border-bottom: 2px solid #ccfbf1; padding-bottom: 4px; display: inline-block;}
+        .ai-result-content p { margin-bottom: 0.75rem; color: #4b5563; }
+        .ai-result-content ul { list-style-type: none; padding-left: 0; margin-bottom: 1rem; color: #4b5563; }
+        .ai-result-content li { margin-bottom: 0.5rem; position: relative; padding-left: 1.5rem; }
+        .ai-result-content li::before { content: "•"; color: #0f766e; font-weight: bold; position: absolute; left: 0.5rem; }
+        .ai-result-content strong { color: #0f766e; font-weight: 600; background-color: #f0fdfa; padding: 0 4px; rounded: 2px; }
+        
+        /* Modal background */
+        .modal-bg { background-color: rgba(0, 0, 0, 0.5); }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 font-sans leading-relaxed tracking-wide">
+
+    <!-- ナビゲーションバー -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-xl font-bold text-teal-700 tracking-wider">TaberGuide</span>
+                </div>
+                <div class="flex items-center space-x-3 sm:space-x-6 text-sm font-medium text-stone-600">
+                    <div class="hidden md:flex space-x-6">
+                        <a href="#basics" class="hover:text-teal-600 transition-colors">摩耗の基礎</a>
+                        <a href="#principle" class="hover:text-teal-600 transition-colors">試験の原理</a>
+                        <a href="#simulation" class="hover:text-teal-600 transition-colors">パラメータ解説</a>
+                    </div>
+                    <a href="#ai-assistant" class="text-teal-600 font-bold hover:text-teal-800 transition-colors flex items-center bg-teal-50 px-3 py-1 rounded-full">
+                        AIアシスタント✨
+                    </a>
+                    <!-- 管理者用設定ボタン -->
+                    <button id="openSettingsBtn" class="text-stone-400 hover:text-stone-700 transition-colors" title="APIキー設定 (管理者用)">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ヒーローセクション -->
+    <header class="max-w-4xl mx-auto px-4 py-16 sm:py-24 text-center">
+        <h1 class="text-3xl sm:text-5xl font-extrabold text-stone-900 mb-6">テーバー摩耗試験 <br class="sm:hidden"><span class="text-teal-700">利用説明ガイド</span></h1>
+        <p class="text-lg sm:text-xl text-stone-600 mb-8 max-w-2xl mx-auto">
+            設備を利用される方へ向けて、なぜこの試験を行うのか、どのようなメカニズムで評価するのかを分かりやすく説明するためのリサーチ・プレゼンテーションツールです。
+        </p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <a href="#basics" class="inline-block bg-teal-700 text-white px-8 py-3 rounded-full font-semibold hover:bg-teal-800 transition-colors shadow-md">
+                説明を開始する ↓
+            </a>
+            <a href="#ai-assistant" class="inline-block bg-white text-teal-700 border-2 border-teal-700 px-8 py-3 rounded-full font-semibold hover:bg-teal-50 transition-colors shadow-sm">
+                AIに条件を相談する ✨
+            </a>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 pb-24 space-y-24">
+
+        <!-- 摩耗の基礎セクション -->
+        <section id="basics" class="scroll-mt-24">
+            <div class="text-center mb-10">
+                <span class="text-sm font-bold text-teal-600 tracking-widest uppercase">Section 01</span>
+                <h2 class="text-2xl sm:text-3xl font-bold mt-2">摩耗の基礎知識</h2>
+                <p class="mt-4 text-stone-600 max-w-2xl mx-auto">
+                    試験機の説明に入る前に、そもそも「摩耗」にはどのような種類があるのかを整理します。実際の環境で発生する摩耗現象を理解することが、適切な試験条件を選ぶ第一歩となります。
+                </p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+                <div class="flex flex-wrap border-b border-stone-200 bg-stone-100/50" id="tabs-container">
+                    <button class="tab-btn flex-1 py-4 px-4 text-center font-semibold text-teal-700 border-b-2 border-teal-700 bg-white" data-target="tab-abrasive">アブレシブ摩耗</button>
+                    <button class="tab-btn flex-1 py-4 px-4 text-center font-medium text-stone-500 hover:text-stone-700 hover:bg-stone-50 transition-colors" data-target="tab-adhesive">凝着摩耗</button>
+                    <button class="tab-btn flex-1 py-4 px-4 text-center font-medium text-stone-500 hover:text-stone-700 hover:bg-stone-50 transition-colors" data-target="tab-fatigue">疲労摩耗</button>
+                </div>
+
+                <div class="p-6 sm:p-10">
+                    <div id="tab-abrasive" class="tab-content active">
+                        <div class="grid md:grid-cols-2 gap-8 items-center">
+                            <div>
+                                <h3 class="text-xl font-bold text-stone-800 mb-3">アブレシブ摩耗 (Abrasive Wear)</h3>
+                                <p class="text-stone-600 mb-4">
+                                    硬い粒子や突起物が、軟らかい材料に食い込み、表面を「引っ掻く」「切り取る」ことで生じる摩耗です。やすりがけ、鉱物粒子の擦過、テーバー摩耗輪による擦削が代表例です。
+                                </p>
+                                <div class="bg-teal-50 text-teal-800 p-4 rounded-lg text-sm border-l-4 border-teal-600">
+                                    <strong class="block mb-1">説明のポイント:</strong>
+                                    「サンドペーパーで表面をこする状態をイメージしてください」と伝えると分かりやすいです。
+                                </div>
+                                <div class="mt-4 grid gap-3 sm:grid-cols-3 text-sm">
+                                    <div class="rounded-xl border border-stone-200 bg-stone-50 p-3">
+                                        <p class="font-bold text-stone-700 mb-1">支配ロジック</p>
+                                        <p class="text-stone-600">硬い相手材が表面に食い込み、せん断で材料体積を連続的に除去します。</p>
+                                    </div>
+                                    <div class="rounded-xl border border-stone-200 bg-stone-50 p-3">
+                                        <p class="font-bold text-stone-700 mb-1">近似式</p>
+                                        <p class="text-stone-600"><code class="font-mono text-xs text-teal-700">V ≈ kWL / H</code></p>
+                                    </div>
+                                    <div class="rounded-xl border border-stone-200 bg-stone-50 p-3">
+                                        <p class="font-bold text-stone-700 mb-1">効きやすい因子</p>
+                                        <p class="text-stone-600">荷重、粒子の鋭さ、相手材との硬さ差、すべり距離です。</p>
+                                    </div>
+                                </div>
+                                <div class="pt-4 mt-4 border-t border-stone-200">
+                                    <details class="group">
+                                        <summary class="flex items-center justify-between cursor-pointer list-none font-bold text-teal-700 hover:text-teal-800 transition-colors" style="list-style: none;">
+                                            <span class="flex items-center">
+                                                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                                                さらに詳しく：2元と3元の違い
+                                            </span>
+                                            <span class="transition group-open:rotate-180">
+                                                <svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="20"><path d="M6 9l6 6 6-6"></path></svg>
+                                            </span>
+                                        </summary>
+                                        <div class="mt-3 text-sm text-stone-600 space-y-2 bg-stone-50 p-4 rounded-xl border border-stone-200">
+                                            <p>専門的には、粒子や突起が片側に固定された状態を<strong>「2元アブレシブ摩耗」</strong>、粒子が2つの面の間を自由に移動する状態を<strong>「3元アブレシブ摩耗」</strong>と呼びます。標準的なテーバー摩耗試験は前者に近く、粒子が転がったり逃げたりできる3元条件では摩耗が小さくなることが多いものの、低下量は粒径・拘束状態・荷重で大きく変わるため、一定比で言い切るのは危険です。</p>
+                                        </div>
+                                    </details>
+                                </div>
+                            </div>
+                            <div class="bg-stone-100 rounded-xl p-4 flex flex-col items-center justify-center h-48">
+                                <div class="css-diagram-base rounded-md" title="ホバーでアニメーション">
+                                    <div class="abrasive-tool"></div>
+                                </div>
+                                <p class="text-xs text-stone-500 mt-2">※図にカーソルを合わせると削る動きを模倣します</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-adhesive" class="tab-content">
+                        <div class="grid md:grid-cols-2 gap-8 items-center">
+                            <div>
+                                <h3 class="text-xl font-bold text-stone-800 mb-3">凝着摩耗 (Adhesive Wear)</h3>
+                                <p class="text-stone-600 mb-4">
+                                    2つの面が強い圧力ですべると、真実接触している微小突起同士が局所的に接合し、それがせん断される際に片方の材料が移着・脱落して生じる摩耗です。金属同士の摺動部で典型的に現れます。
+                                </p>
+                                <div class="bg-teal-50 text-teal-800 p-4 rounded-lg text-sm border-l-4 border-teal-600">
+                                    <strong class="block mb-1">説明のポイント:</strong>
+                                    「テープを貼って剥がす時に、表面ごと持っていかれる現象の微小版です」と説明します。
+                                </div>
+                                <div class="mt-4 grid gap-3 sm:grid-cols-3 text-sm">
+                                    <div class="rounded-xl border border-stone-200 bg-stone-50 p-3">
+                                        <p class="font-bold text-stone-700 mb-1">支配ロジック</p>
+                                        <p class="text-stone-600">微小接合点ができて切れ、相手面へ材料が移るか、摩耗粉として剥がれます。</p>
+                                    </div>
+                                    <div class="rounded-xl border border-stone-200 bg-stone-50 p-3">
+                                        <p class="font-bold text-stone-700 mb-1">特徴的な挙動</p>
+                                        <p class="text-stone-600">軽微な摩耗から、急激な摩擦上昇と焼き付きへ遷移することがあります。</p>
+                                    </div>
+                                    <div class="rounded-xl border border-stone-200 bg-stone-50 p-3">
+                                        <p class="font-bold text-stone-700 mb-1">効きやすい因子</p>
+                                        <p class="text-stone-600">高面圧、潤滑不足、同種金属の組合せ、酸化膜の破断です。</p>
+                                    </div>
+                                </div>
+                                <div class="pt-4 mt-4 border-t border-stone-200">
+                                    <details class="group">
+                                        <summary class="flex items-center justify-between cursor-pointer list-none font-bold text-teal-700 hover:text-teal-800 transition-colors" style="list-style: none;">
+                                            <span class="flex items-center">
+                                                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                                                さらに詳しく：材料の相性と「焼き付き」
+                                            </span>
+                                            <span class="transition group-open:rotate-180">
+                                                <svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="20"><path d="M6 9l6 6 6-6"></path></svg>
+                                            </span>
+                                        </summary>
+                                        <div class="mt-3 text-sm text-stone-600 space-y-2 bg-stone-50 p-4 rounded-xl border border-stone-200">
+                                            <p>似た組成や相溶性の高い金属同士は接合点が育ちやすく、凝着摩耗が重くなります。接合点のせん断よりも「面同士が貼り付いたまま動けなくなる」状態に進むと<strong>「焼き付き（Seizure）」</strong>です。これを防ぐために、潤滑膜の確保、異種材の組合せ、表面処理で接合点の成長を抑えます。</p>
+                                        </div>
+                                    </details>
+                                </div>
+                            </div>
+                            <div class="bg-stone-100 rounded-xl p-4 flex flex-col items-center justify-center h-48">
+                                <div class="css-diagram-base flex-col rounded-md bg-transparent border-none" title="ホバーでアニメーション">
+                                    <div class="adhesive-top">
+                                        <div class="adhesive-bond"></div>
+                                    </div>
+                                    <div class="w-20 h-4 bg-stone-400 mt-1"></div>
+                                </div>
+                                <p class="text-xs text-stone-500 mt-2">※図にカーソルを合わせると引きちぎる動きを模倣します</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-fatigue" class="tab-content">
+                        <div class="grid md:grid-cols-2 gap-8 items-center">
+                            <div>
+                                <h3 class="text-xl font-bold text-stone-800 mb-3">疲労摩耗 (Fatigue Wear)</h3>
+                                <p class="text-stone-600 mb-4">
+                                    繰り返し接触応力によって表面近傍や表面下に微小き裂が生じ、進展した末に表面が剥離する摩耗です。ベアリングやギアのような転がり接触で代表的に見られます。
+                                </p>
+                                <div class="bg-teal-50 text-teal-800 p-4 rounded-lg text-sm border-l-4 border-teal-600">
+                                    <strong class="block mb-1">説明のポイント:</strong>
+                                    「針金を何度も曲げ伸ばしすると折れるように、表面も何度も押されると欠けてしまいます」と例えます。
+                                </div>
+                                <div class="mt-4 grid gap-3 sm:grid-cols-3 text-sm">
+                                    <div class="rounded-xl border border-stone-200 bg-stone-50 p-3">
+                                        <p class="font-bold text-stone-700 mb-1">支配ロジック</p>
+                                        <p class="text-stone-600">繰り返し応力で内部き裂が育ち、限界に達すると表面片がはく離します。</p>
+                                    </div>
+                                    <div class="rounded-xl border border-stone-200 bg-stone-50 p-3">
+                                        <p class="font-bold text-stone-700 mb-1">特徴的な挙動</p>
+                                        <p class="text-stone-600">初期は変化が小さく、潜伏期間の後に損傷が急に立ち上がります。</p>
+                                    </div>
+                                    <div class="rounded-xl border border-stone-200 bg-stone-50 p-3">
+                                        <p class="font-bold text-stone-700 mb-1">効きやすい因子</p>
+                                        <p class="text-stone-600">最大接触応力、繰返し数、潤滑状態、表面欠陥、残留応力です。</p>
+                                    </div>
+                                </div>
+                                <div class="pt-4 mt-4 border-t border-stone-200">
+                                    <details class="group">
+                                        <summary class="flex items-center justify-between cursor-pointer list-none font-bold text-teal-700 hover:text-teal-800 transition-colors" style="list-style: none;">
+                                            <span class="flex items-center">
+                                                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                                                さらに詳しく：潜伏期間とピッチング
+                                            </span>
+                                            <span class="transition group-open:rotate-180">
+                                                <svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="20"><path d="M6 9l6 6 6-6"></path></svg>
+                                            </span>
+                                        </summary>
+                                        <div class="mt-3 text-sm text-stone-600 space-y-2 bg-stone-50 p-4 rounded-xl border border-stone-200">
+                                            <p>疲労摩耗では、最初から大量に削れるとは限らず、き裂生成と進展のための<strong>「潜伏期間」</strong>が現れます。その後、表面がえくぼ状に欠ける<strong>「ピッチング（Pitting）」</strong>や、うろこ状にはがれる<strong>「フレーキング」</strong>として可視化されます。したがって、単純な質量減少だけでなく、寿命や剥離面積の評価も重要です。</p>
+                                        </div>
+                                    </details>
+                                </div>
+                            </div>
+                            <div class="bg-stone-100 rounded-xl p-4 flex flex-col items-center justify-center h-48">
+                                <div class="flex space-x-2 items-end h-20">
+                                    <div class="w-8 h-8 bg-stone-400 rounded-full animate-bounce" style="animation-delay: 0s;"></div>
+                                    <div class="w-8 h-8 bg-stone-400 rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
+                                    <div class="w-8 h-8 bg-stone-400 rounded-full animate-bounce" style="animation-delay: 0.4s;"></div>
+                                </div>
+                                <div class="w-32 h-4 bg-stone-300 border-t-2 border-dashed border-stone-500 mt-2"></div>
+                                <p class="text-xs text-stone-500 mt-4">繰り返しの打撃・荷重のイメージ</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-8 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                    <strong class="block mb-1">実務上の注意:</strong>
+                    実際の摩耗は、アブレシブ・凝着・疲労のいずれか1つだけで進むとは限りません。特に標準的なテーバー摩耗試験は「2元アブレシブ摩耗 + すべり」の寄与が大きく、凝着摩耗や転がり疲労を単独で再現する試験ではない点を利用者に伝えると誤解を減らせます。
+                </div>
+            </div>
+        </section>
+
+        <!-- 試験の原理セクション -->
+        <section id="principle" class="scroll-mt-24">
+            <div class="text-center mb-10">
+                <span class="text-sm font-bold text-teal-600 tracking-widest uppercase">Section 02</span>
+                <h2 class="text-2xl sm:text-3xl font-bold mt-2">テーバー摩耗試験の原理</h2>
+                <p class="mt-4 text-stone-600 max-w-2xl mx-auto">
+                    この試験機がなぜ広く使われているのか。それは、特殊な機構によって「あらゆる方向からの擦れ」を再現できるからです。装置の構造を上からの視点で確認してみましょう。
+                </p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 sm:p-10 flex flex-col md:flex-row gap-10 items-center">
+                <div class="flex-1 w-full max-w-sm aspect-square relative flex items-center justify-center bg-stone-100 rounded-xl overflow-hidden">
+                    
+                    <!-- ターンテーブル本体 -->
+                    <div class="absolute w-64 h-64 bg-stone-300 rounded-full border-4 border-stone-400 flex items-center justify-center spin-slow shadow-inner">
+                        <div class="w-8 h-8 bg-stone-500 rounded-full z-10"></div>
+                        <div class="absolute w-48 h-48 border-4 border-dashed border-stone-500 rounded-full opacity-30"></div>
+                        <div class="absolute w-44 h-44 border-[10px] border-teal-500/10 rounded-full"></div>
+                        <div class="absolute w-44 h-44 rounded-full border-t-[5px] border-b-[5px] border-l-0 border-r-0 border-teal-600/35 rotate-[28deg]"></div>
+                        <div class="absolute w-44 h-44 rounded-full border-t-[5px] border-b-[5px] border-l-0 border-r-0 border-stone-700/25 -rotate-[28deg]"></div>
+                    </div>
+                    
+                    <!-- 摩耗輪は試料中心からオフセットした位置で接触する模式図 -->
+                    <div class="absolute top-[43%] left-0 w-full h-0 z-20 pointer-events-none">
+                        
+                        <!-- 左の摩耗輪 -->
+                        <div class="absolute top-1/2 left-[25%] -translate-y-1/2 -translate-x-1/2 w-10 h-24 bg-teal-800 rounded border-2 border-teal-900 shadow-lg z-10 flex items-center justify-center"></div>
+                        
+                        <!-- 右の摩耗輪 -->
+                        <div class="absolute top-1/2 right-[25%] -translate-y-1/2 translate-x-1/2 w-10 h-24 bg-teal-800 rounded border-2 border-teal-900 shadow-lg z-10 flex items-center justify-center"></div>
+                        
+                        <!-- 貫通する横軸 -->
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[75%] h-2.5 bg-stone-400/90 z-20"></div>
+                        
+                    </div>
+
+                    <div class="absolute top-4 right-4 bg-white/80 px-3 py-1 text-xs font-bold rounded shadow-sm text-stone-600">トップビュー</div>
+                </div>
+
+                <div class="flex-1 space-y-6">
+                    <div>
+                        <h3 class="text-xl font-bold flex items-center text-stone-800">
+                            <span class="w-8 h-8 rounded-full bg-stone-200 text-stone-600 flex items-center justify-center text-sm mr-3">1</span>
+                            回転する試料台
+                        </h3>
+                        <p class="text-stone-600 mt-2 text-sm pl-11">
+                            中央の円盤がターンテーブルです。ここに評価したいサンプルを固定し、一定の速度で回転させます。
+                        </p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold flex items-center text-stone-800">
+                            <span class="w-8 h-8 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center text-sm mr-3">2</span>
+                            平行に配置された2つの摩耗輪
+                        </h3>
+                        <p class="text-stone-600 mt-2 text-sm pl-11">
+                            サンプルの上に、独立して回転する2つの摩耗輪（図の緑色）を一定の荷重で押し付けます。安田精器のテーバー式試験機が参照する JIS K 7204 系の寸法では、<strong>回転中心 - 摩耗輪中心距離は 19.1 mm</strong>で、摩耗輪は試料中心と同心ではなく、規定距離だけオフセットした位置に平行配置されます。
+                        </p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold flex items-center text-stone-800">
+                            <span class="w-8 h-8 rounded-full bg-stone-800 text-white flex items-center justify-center text-sm mr-3">3</span>
+                            滑りによる交差円弧状の摩耗痕
+                        </h3>
+                        <p class="text-stone-600 mt-2 text-sm pl-11">
+                            ターンテーブルが回転すると、摩耗輪は純転がりではなく「転がり + すべり」を伴って接触します。片方の摩耗輪は外周方向へ、もう片方は中心方向へ擦るため、摩耗痕は<strong class="text-teal-700">円環状の帯の中で交差する円弧</strong>として現れます。見た目は X 字っぽく見えることがありますが、技術的には「交差円弧状」と説明するのがより正確です。
+                        </p>
+                    </div>
+
+                    <!-- 原理のさらに詳しい解説 -->
+                    <div class="p-4 bg-teal-50 border border-teal-100 rounded-xl mt-6 text-sm text-teal-800">
+                        <strong>💡 テーバー摩耗の真髄：「転がり」と「滑り」</strong><br>
+                        ここで重要なのは、「摩耗輪の中心を試料中心に一致させる」のではなく、<strong>規格で定められたオフセット位置に置くこと</strong>です。この配置によって接触部にすべり成分が生まれ、Taber 特有の rub-wear action が成立します。したがって、説明図では「中心にぴったり合う純転がりモデル」よりも、「オフセットした実機寄りの配置」で描くほうが正確です。
+                    </div>
+
+                    <div class="pt-2 border-t border-stone-200 mt-4">
+                        <details class="group">
+                            <summary class="flex items-center justify-between cursor-pointer list-none font-bold text-teal-700 hover:text-teal-800 transition-colors" style="list-style: none;">
+                                <span class="flex items-center">
+                                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                                    さらに詳しく：なぜ「交差円弧状」の摩耗痕が必要なのか？
+                                </span>
+                                <span class="transition group-open:rotate-180">
+                                    <svg fill="none" height="20" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" width="20"><path d="M6 9l6 6 6-6"></path></svg>
+                                </span>
+                            </summary>
+                            <div class="mt-3 text-sm text-stone-600 space-y-2 bg-stone-50 p-4 rounded-xl border border-stone-200">
+                                <p>木材の「木目」や、布の「織り目」、金属の「圧延方向」など、多くの材料には<strong>方向性（異方性）</strong>があります。一方向からしか擦らない試験機だと、「縦から擦ると強いが、横から擦ると弱い」といった性質を見落としてしまいます。</p>
+                                <p>テーバー摩耗試験機は、2つの摩耗輪が円環帯の中で交差円弧状の軌跡をつくりながら全方向からサンプルを擦るため、<strong>材料の持つ方向性に依存しにくい、実環境に近い総合的な耐摩耗性</strong>を評価できます。</p>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- パラメータシミュレーションセクション -->
+        <section id="simulation" class="scroll-mt-24">
+            <div class="text-center mb-10">
+                <span class="text-sm font-bold text-teal-600 tracking-widest uppercase">Section 03</span>
+                <h2 class="text-2xl sm:text-3xl font-bold mt-2">試験パラメータの影響シミュレーション</h2>
+                <p class="mt-4 text-stone-600 max-w-2xl mx-auto">
+                    利用者から「荷重はどれくらいにすべきか？」「摩耗輪はどう選ぶか？」と聞かれた際の説明用ツールです。摩耗機構ごとに、条件変更で損傷の立ち上がり方がどう変わるかを概念的に確認できます。
+                </p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 sm:p-8">
+                <div class="grid md:grid-cols-3 gap-8 mb-8">
+                    <div class="md:col-span-1 space-y-6">
+                        <div class="p-4 bg-stone-50 rounded-xl border border-stone-200">
+                            <label for="wearMode" class="block text-sm font-bold text-stone-700 mb-2">支配的な摩耗メカニズム</label>
+                            <select id="wearMode" class="w-full bg-white border border-stone-300 text-stone-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-shadow">
+                                <option value="abrasive" selected>アブレシブ摩耗</option>
+                                <option value="adhesive">凝着摩耗</option>
+                                <option value="fatigue">疲労摩耗</option>
+                            </select>
+                            <p class="text-xs text-stone-500 mt-2">※標準的なテーバー摩耗試験はアブレシブ摩耗の説明に最も向いています。</p>
+                        </div>
+
+                        <div class="p-4 bg-stone-50 rounded-xl border border-stone-200">
+                            <label for="wheelType" class="block text-sm font-bold text-stone-700 mb-2">摩耗輪の種類 (Abrasion Level)</label>
+                            <select id="wheelType" class="w-full bg-white border border-stone-300 text-stone-700 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-shadow">
+                                <option value="0.5">CS-10 (マイルド - 塗膜・樹脂など)</option>
+                                <option value="1.2" selected>H-18 (標準 - 一般的な摩耗)</option>
+                                <option value="2.5">H-22 (アグレッシブ - 硬質材料など)</option>
+                            </select>
+                            <p class="text-xs text-stone-500 mt-2">※対象の材質に合わせて、攻撃性の異なる車輪を選択します。</p>
+                        </div>
+
+                        <div class="p-4 bg-stone-50 rounded-xl border border-stone-200">
+                            <label class="block text-sm font-bold text-stone-700 mb-2">適用荷重 (Load per wheel)</label>
+                            <div class="flex space-x-2">
+                                <button class="load-btn flex-1 py-2 text-sm border border-stone-300 rounded-md bg-white hover:bg-stone-100 transition-colors" data-load="250">250g</button>
+                                <button class="load-btn flex-1 py-2 text-sm border-2 border-teal-600 text-teal-700 font-bold rounded-md bg-teal-50 transition-colors" data-load="500">500g</button>
+                                <button class="load-btn flex-1 py-2 text-sm border border-stone-300 rounded-md bg-white hover:bg-stone-100 transition-colors" data-load="1000">1000g</button>
+                            </div>
+                            <p class="text-xs text-stone-500 mt-2">※重りが重いほど、サンプルにかかる圧力が増し摩耗が促進されます。</p>
+                        </div>
+
+                        <div id="mechanismCard" class="p-4 bg-teal-50 rounded-xl border border-teal-100">
+                            <p id="mechanismTitle" class="text-sm font-bold text-teal-900 mb-2">アブレシブ摩耗モデル</p>
+                            <p id="mechanismFormula" class="text-xs font-mono text-teal-700 bg-white border border-teal-100 rounded px-2 py-1 inline-block">V ≈ kWL / H</p>
+                            <p id="mechanismDescription" class="text-sm text-teal-800 mt-3">
+                                荷重と摩耗輪の攻撃性が増えるほど、ほぼ比例的に摩耗量が増えるモデルです。
+                            </p>
+                        </div>
+
+                        <div class="bg-teal-700 text-white p-5 rounded-xl">
+                            <h4 class="font-bold mb-2 text-teal-100">説明のコツ</h4>
+                            <p id="talkingPoint" class="text-sm opacity-90">
+                                「柔らかい素材に重い荷重（1000g）と粗い車輪（H-22）を使うと、すぐに下地が露出してしまい評価できません。材質に合わせた条件設定が重要です。」と画面を見せながら伝えます。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <div class="chart-container">
+                            <canvas id="simulationChart"></canvas>
+                        </div>
+                        <p class="text-center text-xs text-stone-400 mt-4">※グラフは理論に沿った概念モデルです。ASTM/JIS の実測値や材料ごとの実験データを代替するものではありません。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Assistant セクション -->
+        <section id="ai-assistant" class="scroll-mt-24">
+            <div class="text-center mb-10">
+                <span class="text-sm font-bold text-teal-600 tracking-widest uppercase">Section 04</span>
+                <h2 class="text-2xl sm:text-3xl font-bold mt-2 flex items-center justify-center">
+                    AI試験条件アシスタント ✨
+                </h2>
+                <p class="mt-4 text-stone-600 max-w-2xl mx-auto">
+                    利用者が持ち込んだサンプルの材質や評価目的に対して、どの摩耗輪と荷重を選べばよいか迷った場合は、AIに相談してみましょう。
+                </p>
+            </div>
+
+            <div class="bg-gradient-to-br from-teal-50 to-stone-50 rounded-2xl shadow-md border border-teal-100 overflow-hidden max-w-4xl mx-auto relative">
+                <!-- 装飾 -->
+                <div class="absolute -top-10 -right-10 w-32 h-32 bg-teal-200 rounded-full opacity-20 blur-2xl"></div>
+                <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-teal-600 rounded-full opacity-10 blur-2xl"></div>
+
+                <div class="p-6 sm:p-8 relative z-10">
+                    <div class="mb-6">
+                        <label for="aiPrompt" class="block text-sm font-bold text-stone-800 mb-2">評価したい材料や状況を入力してください：</label>
+                        <div class="relative">
+                            <textarea id="aiPrompt" rows="3" class="w-full bg-white border border-stone-300 text-stone-700 rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-shadow resize-none shadow-inner" placeholder="例：フローリングの床材の傷つきにくさを評価したいです。表面にはウレタン塗装がされています。"></textarea>
+                        </div>
+                        
+                        <div id="validationMsg" class="hidden text-red-500 text-sm mt-2 font-bold">質問内容を入力してください。</div>
+                        
+                        <!-- ローカル実行時のAPIキー警告メッセージ -->
+                        <div id="apiKeyWarningMsg" class="hidden bg-yellow-50 text-yellow-800 border border-yellow-200 p-3 rounded-lg text-sm mt-3 flex items-start">
+                            <span class="mr-2">⚠️</span>
+                            <div>
+                                ローカル環境で実行されていますが、APIキーが設定されていません。<br>
+                                右上の「⚙️（設定アイコン）」からGemini APIキーを設定してください。
+                            </div>
+                        </div>
+
+                        <div class="mt-4 flex justify-end">
+                            <button id="askAiBtn" class="bg-teal-700 text-white px-6 py-2.5 rounded-full font-bold hover:bg-teal-800 transition-transform active:scale-95 flex items-center shadow-md">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                AIに相談する
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div id="aiLoading" class="hidden flex-col items-center justify-center py-10">
+                        <div class="loader mb-4"></div>
+                        <p class="text-teal-700 font-bold animate-pulse">専門家AIが最適な試験パラメータを分析中...</p>
+                        <p class="text-stone-400 text-xs mt-2">数秒かかる場合があります</p>
+                    </div>
+
+                    <!-- Error State -->
+                    <div id="aiError" class="hidden bg-red-50 text-red-700 p-4 rounded-xl border border-red-200 mt-4 text-sm font-medium">
+                        <span id="aiErrorText">通信エラーが発生しました。ネットワーク環境やAPIキーを確認し、再度お試しください。</span>
+                    </div>
+
+                    <!-- Result Box -->
+                    <div id="aiResultBox" class="hidden bg-white border-2 border-teal-100 rounded-xl p-6 mt-4 shadow-sm relative transition-all duration-500 opacity-0 translate-y-4">
+                        <div class="absolute -top-3 left-6 bg-gradient-to-r from-teal-500 to-teal-700 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-sm flex items-center">
+                            ✨ AIの推奨プラン
+                        </div>
+                        <div id="aiResponseContent" class="ai-result-content mt-3 text-sm leading-relaxed text-stone-700">
+                            <!-- AI response will be injected here -->
+                        </div>
+                        <div class="mt-6 pt-4 border-t border-stone-100 text-xs text-stone-500 flex items-start">
+                            <span class="mr-1">⚠️</span>
+                            <span>AIの提案はあくまで一般的なガイドラインです。最終的なパラメータは、実際のサンプルの状態を確認しながらプレテストを行って決定してください。</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 評価方法セクション -->
+        <section class="grid sm:grid-cols-2 gap-6 pt-12 border-t border-stone-200">
+            <div class="bg-stone-800 text-stone-100 p-8 rounded-2xl">
+                <h3 class="text-xl font-bold mb-4 flex items-center">
+                    <span class="text-teal-400 text-2xl mr-2">✓</span>
+                    試験後の評価方法
+                </h3>
+                <p class="text-stone-300 mb-4 text-sm">
+                    テーバー摩耗試験を終えた後、結果をどのように数値化・評価するかを利用者に伝えます。
+                </p>
+                <ul class="space-y-3 text-sm">
+                    <li class="flex items-start">
+                        <span class="text-stone-500 mr-2">1.</span>
+                        <div>
+                            <strong class="text-white block">質量減少量法 (mg)</strong>
+                            試験前後のサンプルの重さを量り、どれだけ削り取られたかを評価します。最も一般的な方法です。
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-stone-500 mr-2">2.</span>
+                        <div>
+                            <strong class="text-white block">摩耗係数 (Wear Index)</strong>
+                            1000回転あたりの質量減少量を計算し、サイクル数の異なる試験結果を比較しやすくします。
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-stone-500 mr-2">3.</span>
+                        <div>
+                            <strong class="text-white block">視覚的評価 (外観)</strong>
+                            下地が露出するまでの回転数を記録したり、傷の入り具合をルーペで観察したりします（特に塗膜評価など）。
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="bg-teal-50 p-8 rounded-2xl border border-teal-100">
+                <h3 class="text-xl font-bold mb-4 text-teal-900">利用前のチェックリスト</h3>
+                <p class="text-teal-700 mb-6 text-sm">
+                    設備利用者に試験を開始してもらう前に、以下の点を確認するよう促してください。
+                </p>
+                <div class="space-y-4">
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-teal-600 rounded border-teal-300 focus:ring-teal-500">
+                        <span class="text-stone-700 font-medium text-sm">サンプルの表面は平滑で、清浄か？</span>
+                    </label>
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-teal-600 rounded border-teal-300 focus:ring-teal-500">
+                        <span class="text-stone-700 font-medium text-sm">試験環境（温度・湿度）は記録したか？</span>
+                    </label>
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-teal-600 rounded border-teal-300 focus:ring-teal-500">
+                        <span class="text-stone-700 font-medium text-sm">摩耗輪の表面はリフェイシング（目立て）されているか？</span>
+                    </label>
+                    <div class="mt-4 pt-4 border-t border-teal-200 text-xs text-teal-700 font-bold">
+                        ※摩耗輪の目詰まりは結果に大きく影響するため、定期的な目立てが必須であることを必ず指導してください。
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-stone-900 text-stone-400 py-8 text-center text-sm">
+        <div class="max-w-6xl mx-auto px-4">
+            <p>テーバー摩耗試験 説明ガイド | Facility User Education Tool</p>
+        </div>
+    </footer>
+
+    <!-- 管理者用：APIキー設定モーダル -->
+    <div id="settingsModal" class="fixed inset-0 z-[100] modal-bg flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden transform scale-95 transition-transform duration-300" id="settingsModalContent">
+            <div class="bg-stone-100 px-6 py-4 border-b border-stone-200 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-stone-800 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    管理者設定 (ローカル実行用)
+                </h3>
+                <button id="closeSettingsBtn" class="text-stone-400 hover:text-stone-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <p class="text-sm text-stone-600 mb-4">
+                    このHTMLファイルをローカルのブラウザで直接開いてAI機能を使用する場合、Gemini APIキーが必要です。<br>
+                    入力したキーは、お使いのブラウザにのみ保存されます。
+                </p>
+                <div class="mb-4">
+                    <label for="apiKeyInput" class="block text-sm font-bold text-stone-700 mb-1">Gemini API キー</label>
+                    <input type="password" id="apiKeyInput" class="w-full border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="AIzaSy...">
+                    <div class="text-right mt-1">
+                        <button id="toggleApiKeyVis" class="text-xs text-teal-600 hover:text-teal-800">表示する</button>
+                    </div>
+                </div>
+                <div class="bg-stone-50 p-3 rounded text-xs text-stone-500 mb-4 border border-stone-200">
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-teal-600 hover:underline">Google AI Studio</a> から無料でAPIキーを取得できます。
+                </div>
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button id="cancelSettingsBtn" class="px-4 py-2 text-stone-600 hover:bg-stone-100 rounded-lg transition-colors font-medium">キャンセル</button>
+                    <button id="saveSettingsBtn" class="px-4 py-2 bg-teal-700 text-white rounded-lg hover:bg-teal-800 transition-colors font-medium shadow-sm">保存する</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- 1. Tabs Logic ---
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tabBtns.forEach(b => {
+                        b.classList.remove('text-teal-700', 'border-b-2', 'border-teal-700', 'bg-white');
+                        b.classList.add('text-stone-500', 'hover:text-stone-700', 'hover:bg-stone-50');
+                    });
+                    
+                    btn.classList.add('text-teal-700', 'border-b-2', 'border-teal-700', 'bg-white');
+                    btn.classList.remove('text-stone-500', 'hover:text-stone-700', 'hover:bg-stone-50');
+
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                    });
+
+                    const targetId = btn.getAttribute('data-target');
+                    document.getElementById(targetId).classList.add('active');
+                });
+            });
+
+            // --- 2. Chart Simulation Logic ---
+            let currentLoad = 500;
+            let currentWearMode = 'abrasive';
+            const wearModeSelect = document.getElementById('wearMode');
+            const wheelSelect = document.getElementById('wheelType');
+            const loadBtns = document.querySelectorAll('.load-btn');
+            const mechanismTitle = document.getElementById('mechanismTitle');
+            const mechanismFormula = document.getElementById('mechanismFormula');
+            const mechanismDescription = document.getElementById('mechanismDescription');
+            const talkingPoint = document.getElementById('talkingPoint');
+            const ctx = document.getElementById('simulationChart').getContext('2d');
+            const cycles = [0, 100, 200, 400, 600, 800, 1000];
+
+            const wearModels = {
+                abrasive: {
+                    title: 'アブレシブ摩耗モデル',
+                    formula: 'V ≈ kWL / H',
+                    description: '荷重と摩耗輪の攻撃性が増えるほど、すべり距離にほぼ比例して摩耗量が増えるモデルです。標準的なテーバー摩耗試験に最も近い想定です。',
+                    talkingPoint: '「この曲線は最初からほぼ一定勾配で増えます。硬い粒子や粗い摩耗輪が削り続けるからです」と説明すると伝わりやすくなります。',
+                    calculate(cycle, wheelIntensity, loadFactor) {
+                        const normalized = cycle / 1000;
+                        const rate = 45 * wheelIntensity * (0.7 + 0.5 * loadFactor);
+                        return rate * normalized * (0.92 + 0.08 * normalized);
+                    }
+                },
+                adhesive: {
+                    title: '凝着摩耗モデル',
+                    formula: 'junction growth → transfer / seizure',
+                    description: '微小接合点の生成とせん断を表したモデルです。高荷重では途中から摩耗が急に増え、焼き付きに近い挙動を示しやすくなります。',
+                    talkingPoint: '「凝着摩耗はずっと同じ速度で削れるとは限らず、接合点が育つと途中から急に悪化します」と画面と一緒に示せます。',
+                    calculate(cycle, wheelIntensity, loadFactor) {
+                        const normalized = cycle / 1000;
+                        const baseWear = 16 * normalized * (0.55 + 0.25 * wheelIntensity);
+                        const transitionPoint = Math.max(0.22, 0.58 - 0.12 * loadFactor);
+                        const severeWear = Math.max(0, normalized - transitionPoint);
+                        return baseWear + 120 * Math.pow(severeWear, 2.2) * (0.65 + 0.55 * loadFactor) * (0.9 + 0.1 * wheelIntensity);
+                    }
+                },
+                fatigue: {
+                    title: '疲労摩耗モデル',
+                    formula: 'incubation → crack growth → pitting',
+                    description: '繰返し応力でき裂が育つ過程を模したモデルです。初期は変化が小さく、潜伏期間を過ぎると剥離が立ち上がります。',
+                    talkingPoint: '「疲労摩耗は最初から大きく減るのではなく、き裂が育つ時間を経てから表面が欠け始めます」と説明できます。',
+                    calculate(cycle, wheelIntensity, loadFactor) {
+                        const normalized = cycle / 1000;
+                        const incubationLimit = Math.max(0.2, 0.72 - 0.2 * loadFactor);
+                        const crackGrowth = Math.max(0, normalized - incubationLimit);
+                        const polishingWear = 4 + 6 * normalized;
+                        return polishingWear + 180 * Math.pow(crackGrowth, 2.6) * (0.7 + 0.75 * loadFactor) * (0.7 + 0.08 * wheelIntensity);
+                    }
+                }
+            };
+
+            const generateData = (wearMode, wheelFactor, loadAmount) => {
+                const model = wearModels[wearMode];
+                const loadFactor = loadAmount / 500;
+                const wheelIntensity = wheelFactor / 1.2;
+                return cycles.map(cycle => Number(model.calculate(cycle, wheelIntensity, loadFactor).toFixed(1)));
+            };
+
+            const updateMechanismCard = () => {
+                const model = wearModels[currentWearMode];
+                mechanismTitle.textContent = model.title;
+                mechanismFormula.textContent = model.formula;
+                mechanismDescription.textContent = model.description;
+                talkingPoint.textContent = model.talkingPoint;
+            };
+
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: cycles,
+                    datasets: [{
+                        label: '予想質量減少量 (mg)',
+                        data: generateData(currentWearMode, parseFloat(wheelSelect.value), currentLoad),
+                        borderColor: '#0f766e', 
+                        backgroundColor: 'rgba(15, 118, 110, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#0f766e',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            backgroundColor: 'rgba(28, 25, 23, 0.9)', 
+                            titleFont: { size: 13 },
+                            bodyFont: { size: 14, weight: 'bold' },
+                            padding: 10,
+                            displayColors: false,
+                            callbacks: {
+                                title: context => context[0].label + ' サイクル',
+                                label: context => context.parsed.y.toFixed(1) + ' mg 減少'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            suggestedMax: 150,
+                            title: { display: true, text: '質量減少量 (mg)', color: '#57534e', font: { weight: 'bold' } }
+                        },
+                        x: {
+                            title: { display: true, text: '試験サイクル数 (回転)', color: '#57534e', font: { weight: 'bold' } },
+                            grid: { display: false }
+                        }
+                    },
+                    interaction: { intersect: false, mode: 'index' }
+                }
+            });
+
+            const updateSimulation = () => {
+                const wheelFactor = parseFloat(wheelSelect.value);
+                const newData = generateData(currentWearMode, wheelFactor, currentLoad);
+                chart.data.datasets[0].data = newData;
+                chart.options.scales.y.suggestedMax = Math.max(60, Math.ceil(Math.max(...newData) / 20) * 20);
+                chart.update();
+                updateMechanismCard();
+            };
+
+            wearModeSelect.addEventListener('change', () => {
+                currentWearMode = wearModeSelect.value;
+                updateSimulation();
+            });
+
+            wheelSelect.addEventListener('change', updateSimulation);
+
+            loadBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    loadBtns.forEach(b => {
+                        b.classList.remove('border-2', 'border-teal-600', 'text-teal-700', 'font-bold', 'bg-teal-50');
+                        b.classList.add('border-stone-300', 'bg-white', 'hover:bg-stone-100');
+                        b.style.borderWidth = '1px';
+                    });
+                    
+                    const clickedBtn = e.target;
+                    clickedBtn.classList.remove('border-stone-300', 'bg-white', 'hover:bg-stone-100');
+                    clickedBtn.classList.add('border-2', 'border-teal-600', 'text-teal-700', 'font-bold', 'bg-teal-50');
+                    
+                    currentLoad = parseInt(clickedBtn.getAttribute('data-load'));
+                    updateSimulation();
+                });
+            });
+
+            updateSimulation();
+
+            // --- 3. Settings Modal Logic (Local Storage for API Key) ---
+            const openSettingsBtn = document.getElementById('openSettingsBtn');
+            const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+            const cancelSettingsBtn = document.getElementById('cancelSettingsBtn');
+            const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+            const settingsModal = document.getElementById('settingsModal');
+            const settingsModalContent = document.getElementById('settingsModalContent');
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            const toggleApiKeyVis = document.getElementById('toggleApiKeyVis');
+            const apiKeyWarningMsg = document.getElementById('apiKeyWarningMsg');
+
+            // Load saved key
+            const LOCAL_STORAGE_KEY = 'taber_guide_gemini_api_key';
+            let storedApiKey = localStorage.getItem(LOCAL_STORAGE_KEY) || '';
+            apiKeyInput.value = storedApiKey;
+
+            // Check if running in canvas environment
+            const isCanvasEnv = typeof __app_id !== 'undefined';
+
+            const openModal = () => {
+                settingsModal.classList.remove('hidden');
+                // trigger reflow
+                void settingsModal.offsetWidth;
+                settingsModal.classList.add('opacity-100');
+                settingsModalContent.classList.remove('scale-95');
+                settingsModalContent.classList.add('scale-100');
+            };
+
+            const closeModal = () => {
+                settingsModal.classList.remove('opacity-100');
+                settingsModalContent.classList.remove('scale-100');
+                settingsModalContent.classList.add('scale-95');
+                setTimeout(() => {
+                    settingsModal.classList.add('hidden');
+                }, 300);
+            };
+
+            openSettingsBtn.addEventListener('click', openModal);
+            closeSettingsBtn.addEventListener('click', closeModal);
+            cancelSettingsBtn.addEventListener('click', closeModal);
+            
+            settingsModal.addEventListener('click', (e) => {
+                if(e.target === settingsModal) closeModal();
+            });
+
+            saveSettingsBtn.addEventListener('click', () => {
+                const newKey = apiKeyInput.value.trim();
+                localStorage.setItem(LOCAL_STORAGE_KEY, newKey);
+                storedApiKey = newKey;
+                
+                // 警告メッセージが出ている場合は消す
+                if(storedApiKey && !isCanvasEnv) {
+                    apiKeyWarningMsg.classList.add('hidden');
+                }
+                
+                // ボタンのテキストを変更してフィードバック
+                const originalText = saveSettingsBtn.innerText;
+                saveSettingsBtn.innerText = "保存しました✓";
+                saveSettingsBtn.classList.remove('bg-teal-700');
+                saveSettingsBtn.classList.add('bg-green-600');
+                
+                setTimeout(() => {
+                    saveSettingsBtn.innerText = originalText;
+                    saveSettingsBtn.classList.remove('bg-green-600');
+                    saveSettingsBtn.classList.add('bg-teal-700');
+                    closeModal();
+                }, 1000);
+            });
+
+            toggleApiKeyVis.addEventListener('click', () => {
+                if (apiKeyInput.type === 'password') {
+                    apiKeyInput.type = 'text';
+                    toggleApiKeyVis.innerText = '隠す';
+                } else {
+                    apiKeyInput.type = 'password';
+                    toggleApiKeyVis.innerText = '表示する';
+                }
+            });
+
+
+            // --- 4. Gemini API AI Assistant Logic ---
+            const askAiBtn = document.getElementById('askAiBtn');
+            const aiPromptInput = document.getElementById('aiPrompt');
+            const validationMsg = document.getElementById('validationMsg');
+            const aiLoading = document.getElementById('aiLoading');
+            const aiError = document.getElementById('aiError');
+            const aiErrorText = document.getElementById('aiErrorText');
+            const aiResultBox = document.getElementById('aiResultBox');
+            const aiResponseContent = document.getElementById('aiResponseContent');
+
+            // エラー時の再試行処理
+            const fetchWithRetry = async (url, options, maxRetries = 3) => {
+                const delays = [1000, 2000, 4000];
+                for (let i = 0; i < maxRetries; i++) {
+                    try {
+                        const response = await fetch(url, options);
+                        if (!response.ok) {
+                            const errorData = await response.json().catch(() => ({}));
+                            throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`);
+                        }
+                        return await response.json();
+                    } catch (e) {
+                        if (i === maxRetries - 1) throw e;
+                        await new Promise(resolve => setTimeout(resolve, delays[i]));
+                    }
+                }
+            };
+
+            askAiBtn.addEventListener('click', async () => {
+                const userText = aiPromptInput.value.trim();
+                
+                // 入力チェック
+                if (!userText) {
+                    validationMsg.classList.remove('hidden');
+                    aiPromptInput.classList.add('border-red-500', 'ring-red-500');
+                    return;
+                } else {
+                    validationMsg.classList.add('hidden');
+                    aiPromptInput.classList.remove('border-red-500', 'ring-red-500');
+                }
+
+                // APIキーの確認 (Canvas環境以外で、かつキーが未設定の場合)
+                const activeApiKey = isCanvasEnv ? "" : storedApiKey;
+                
+                if (!isCanvasEnv && !activeApiKey) {
+                    apiKeyWarningMsg.classList.remove('hidden');
+                    apiKeyWarningMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    apiKeyWarningMsg.classList.add('animate-pulse');
+                    setTimeout(() => apiKeyWarningMsg.classList.remove('animate-pulse'), 1500);
+                    return;
+                } else {
+                    apiKeyWarningMsg.classList.add('hidden');
+                }
+
+                // UIのリセットとローディング表示
+                aiLoading.classList.remove('hidden');
+                aiLoading.classList.add('flex');
+                aiResultBox.classList.add('hidden');
+                aiResultBox.classList.remove('opacity-100', 'translate-y-0');
+                aiError.classList.add('hidden');
+                askAiBtn.disabled = true;
+                askAiBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+                try {
+                    const systemPrompt = "あなたはテーバー摩耗試験の専門家です。ユーザーが評価したい材料や目的を提示します。それに適した「推奨される摩耗輪の種類(CS-10, H-18, H-22など)」「推奨される荷重(250g, 500g, 1000gなど)」「その理由とアドバイス」を、初心者にもわかりやすく日本語で答えてください。\n\n【厳格な出力フォーマット】\nMarkdownの記号（##, **, * など）は一切使用しないでください。必ず以下のHTMLタグのみを使用して、直接ブラウザで表示できるようにフォーマットしてください。\n使用可能タグ: <h3>, <p>, <ul>, <li>, <strong>, <br>\n\n出力例：\n<h3>推奨パラメータ</h3>\n<ul>\n<li><strong>摩耗輪:</strong> CS-10</li>\n<li><strong>荷重:</strong> 500g</li>\n</ul>\n<h3>選定の理由</h3>\n<p>フローリングのウレタン塗装は...</p>";
+                    
+                    const payload = {
+                        contents: [{ parts: [{ text: `以下の材料・目的でテーバー摩耗試験を行いたいです。条件をアドバイスしてください。\n\n${userText}` }] }],
+                        systemInstruction: { parts: [{ text: systemPrompt }] }
+                    };
+
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${activeApiKey}`;
+
+                    const result = await fetchWithRetry(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    // テキストの抽出
+                    const aiText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    
+                    if (aiText) {
+                        aiResponseContent.innerHTML = aiText;
+                        aiResultBox.classList.remove('hidden');
+                        setTimeout(() => {
+                            aiResultBox.classList.add('opacity-100', 'translate-y-0');
+                        }, 50);
+                    } else {
+                        throw new Error("AIからの応答が空でした。");
+                    }
+
+                } catch (err) {
+                    let errorMsg = "通信エラーが発生しました。ネットワーク環境を確認し、再度お試しください。";
+                    if(err.message.includes('API key not valid') || err.message.includes('API_KEY_INVALID')) {
+                        errorMsg = "APIキーが無効です。右上の設定アイコンから正しいGemini APIキーを入力してください。";
+                    }
+                    aiErrorText.innerText = errorMsg;
+                    aiError.classList.remove('hidden');
+                    console.error("Gemini API Error:", err);
+                } finally {
+                    aiLoading.classList.add('hidden');
+                    aiLoading.classList.remove('flex');
+                    askAiBtn.disabled = false;
+                    askAiBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            });
+
+            aiPromptInput.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    askAiBtn.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
