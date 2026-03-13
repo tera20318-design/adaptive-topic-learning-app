@@ -7,7 +7,7 @@
     const aiSuggestedPaths = (topic.ai && topic.ai.suggestedPaths) || content.AI_SUGGESTED_PATHS || [];
     const storagePrefix = meta.storageNamespace || "nano_learn_app";
     const storageSuffix = topic.storageKeySuffix || topicId;
-    const STORAGE_KEY = `${storagePrefix}_${storageSuffix}_state_v3`;
+    const STORAGE_KEY = `${storagePrefix}_${storageSuffix}_state_v5`;
     const visualModels = topic.visualModels || content.VISUAL_MODELS || {};
     const visualModelKeys = Object.keys(visualModels);
     const defaultMaterial = defaults.visual && defaults.visual.material
@@ -25,11 +25,15 @@
     const defaultState = {
         currentSection: defaults.currentSection || "intro",
         visitedSections: ["intro"],
+        roleId: defaults.roleId || "beginner",
         introCheck: {},
         conceptLevel: defaults.conceptLevel || "basic",
         activeConceptId: defaultConceptId,
         visual: Object.assign({
-            material: defaultMaterial
+            material: defaultMaterial,
+            guideField: "material",
+            currentMissionId: "",
+            completedMissions: []
         }, clone(defaults.visual || {})),
         diagnosis: {
             currentQuestionId: diagnosisStartQuestionId,
@@ -41,6 +45,7 @@
         },
         ai: {
             input: "",
+            actionPanel: "questions",
             messages: [
                 {
                     role: "assistant",
@@ -59,6 +64,10 @@
         settings: {
             geminiApiKey: "",
             apiModel
+        },
+        ui: {
+            showIntroFigures: false,
+            showResources: false
         }
     };
 
