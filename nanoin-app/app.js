@@ -1,11 +1,11 @@
-(function () {
+﻿(function () {
     const content = window.NanoLearnContent || {};
     const meta = content.meta || {};
     const TOPICS = content.topics || {};
     const TOPIC_LIST = Object.values(TOPICS);
     const topicId = content.defaultTopicId || "nanoin";
     const topic = (content.topics && content.topics[topicId]) || content.topic || {};
-    const topicName = topic.name || "学習テーマ";
+    const topicName = topic.name || "適応型学習アプリ";
     const APP_SECTIONS = content.sections || content.APP_SECTIONS || [];
     const HERO = topic.hero || {};
     const PRINCIPLE = topic.principle || {};
@@ -28,14 +28,27 @@
     const ROLE_TRACKS = topic.roles || [];
     const COMPETENCIES = topic.competencies || [];
     const SIMULATION_MISSIONS = topic.simulationMissions || [];
-    const { loadState, saveState, resetState } = window.NanoLearnStorage;
+    const { loadState, saveState, resetState, defaultState: storageDefaultState } = window.NanoLearnStorage;
     const { AIService } = window.NanoLearnAI;
+    const epmaUi = window.NanoLearnEpmaUi || {};
+    const irUi = window.NanoLearnIrUi || {};
 
     const root = document.getElementById("app");
     const aiService = new AIService();
-    let state = loadState();
+    let state;
     let chart = null;
     let currentChartConfig = null;
+    const visualModelKeys = Object.keys(VISUAL_MODELS);
+    const defaultMaterial = (storageDefaultState.visual && storageDefaultState.visual.material && VISUAL_MODELS[storageDefaultState.visual.material])
+        ? storageDefaultState.visual.material
+        : (visualModelKeys[0] || "default");
+    const defaultConceptId = (storageDefaultState && storageDefaultState.activeConceptId && conceptMapHas(storageDefaultState.activeConceptId))
+        ? storageDefaultState.activeConceptId
+        : ((CONCEPTS[0] && CONCEPTS[0].id) || "");
+    const diagnosisQuestionIds = Object.keys(DIAGNOSIS_QUESTIONS);
+    const diagnosisStartQuestionId = (storageDefaultState.diagnosis && storageDefaultState.diagnosis.currentQuestionId && DIAGNOSIS_QUESTIONS[storageDefaultState.diagnosis.currentQuestionId])
+        ? storageDefaultState.diagnosis.currentQuestionId
+        : (diagnosisQuestionIds[0] || "");
 
     const conceptMap = Object.fromEntries(CONCEPTS.map((concept) => [concept.id, concept]));
     const introQuestionMap = Object.fromEntries(INTRO_SELF_CHECK.map((question) => [question.id, question]));
@@ -44,8 +57,9 @@
     const competencyMap = Object.fromEntries(COMPETENCIES.map((competency) => [competency.id, competency]));
     const missionMap = Object.fromEntries(SIMULATION_MISSIONS.map((mission) => [mission.id, mission]));
     const sectionIndex = Object.fromEntries(APP_SECTIONS.map((section, index) => [section.id, index]));
+    state = sanitizeState(loadState());
 
-    document.title = topic.pageTitle || meta.pageTitle || `${topicName}学習アプリ`;
+    document.title = topic.pageTitle || meta.pageTitle || `${topicName} 適応型学習アプリ`;
 
     function escapeHtml(value) {
         return String(value)
@@ -58,6 +72,66 @@
 
     function asArray(value) {
         return Array.isArray(value) ? value : [];
+    }
+
+    function conceptMapHas(conceptId) {
+        return CONCEPTS.some((concept) => concept.id === conceptId);
+    }
+
+    function sanitizeState(rawState) {
+        const next = rawState && typeof rawState === "object" ? rawState : {};
+        const safeState = Object.assign({}, next);
+        if (!sectionIndex[safeState.currentSection]) {
+            safeState.currentSection = storageDefaultState.currentSection || "intro";
+        }
+
+        if (!roleMap[safeState.roleId]) {
+            safeState.roleId = storageDefaultState.roleId || (ROLE_TRACKS[0] && ROLE_TRACKS[0].id) || "beginner";
+        }
+
+        if (!conceptMap[safeState.activeConceptId]) {
+            safeState.activeConceptId = defaultConceptId;
+        }
+
+        safeState.visual = Object.assign({}, storageDefaultState.visual, safeState.visual || {});
+        if (!VISUAL_MODELS[safeState.visual.material]) {
+            safeState.visual.material = defaultMaterial;
+        }
+        if (safeState.visual.currentMissionId && !missionMap[safeState.visual.currentMissionId]) {
+            safeState.visual.currentMissionId = "";
+        }
+        safeState.visual.completedMissions = asArray(safeState.visual.completedMissions)
+            .filter((missionId) => Boolean(missionMap[missionId]));
+        if (safeState.visual.compareSnapshot && typeof safeState.visual.compareSnapshot === "object") {
+            safeState.visual.compareSnapshot = extractComparableVisualState(safeState.visual.compareSnapshot);
+        } else {
+            safeState.visual.compareSnapshot = null;
+        }
+
+        safeState.diagnosis = Object.assign({}, storageDefaultState.diagnosis, safeState.diagnosis || {});
+        if (!DIAGNOSIS_QUESTIONS[safeState.diagnosis.currentQuestionId]) {
+            safeState.diagnosis.currentQuestionId = diagnosisStartQuestionId;
+        }
+        safeState.diagnosis.history = asArray(safeState.diagnosis.history)
+            .filter((entry) => entry && DIAGNOSIS_QUESTIONS[entry.questionId]);
+
+        safeState.mastery = Object.assign({}, storageDefaultState.mastery, safeState.mastery || {});
+        const validAnswers = {};
+        Object.entries(safeState.mastery.answers || {}).forEach(([questionId, choiceId]) => {
+            const question = masteryQuestionMap[questionId];
+            if (question && question.choices.some((choice) => choice.id === choiceId)) {
+                validAnswers[questionId] = choiceId;
+            }
+        });
+        safeState.mastery.answers = validAnswers;
+
+        safeState.visitedSections = asArray(safeState.visitedSections)
+            .filter((sectionId) => Boolean(sectionIndex[sectionId]));
+        if (!safeState.visitedSections.length) {
+            safeState.visitedSections = [safeState.currentSection];
+        }
+
+        return safeState;
     }
 
     function formatTextBlock(text) {
@@ -226,7 +300,7 @@
 
     function competencyStatusLabel(status) {
         if (status === "mastered") {
-            return "仕上がり";
+            return "理解済み";
         }
         if (status === "in-progress") {
             return "進行中";
@@ -276,7 +350,7 @@
                         title: question.prompt,
                         detail: competencyState.definition.title,
                         section: "diagnosis",
-                        buttonLabel: "誤解診断へ"
+                        buttonLabel: "理解診断へ"
                     });
                 }
                 if (source.type === "mastery") {
@@ -291,7 +365,7 @@
                         title: question.prompt,
                         detail: competencyState.definition.title,
                         section: "mastery",
-                        buttonLabel: "理解確認へ"
+                        buttonLabel: "逅・ｧ｣遒ｺ隱阪∈"
                     });
                 }
             });
@@ -308,11 +382,11 @@
             }
             pushItem({
                 id: `concept-${competencyState.id}`,
-                title: `${competencyState.definition.title}を 1 文で説明する`,
+                title: `${competencyState.definition.title} を 1 つ見直す`,
                 detail: concept.title,
                 section: "concepts",
                 conceptId,
-                buttonLabel: "概念地図へ"
+                buttonLabel: "概念を見る"
             });
         });
 
@@ -324,7 +398,7 @@
         if (featured && (featured.url || featured.link || featured.src)) {
             return {
                 url: featured.url || featured.link || featured.src,
-                title: featured.title || MEDIA.title || "参考動画"
+                title: featured.title || MEDIA.title || "参考メディア"
             };
         }
         const resource = (MEDIA.resources || [])[0];
@@ -371,27 +445,27 @@
         const answers = Object.values(state.introCheck);
         if (!answers.length) {
             return INTRO_SUMMARY_STATES.empty || {
-                label: "診断待ち",
-                text: "最初の 3 問に答えると、どこから入るべきかを案内します。"
+                label: "説明待ち",
+                text: "最初の 3 問に答えると、どこから始めるかの目安を出します。",
             };
         }
 
         const total = answers.reduce((sum, value) => sum + Number(value), 0);
         if (total <= 1) {
             return INTRO_SUMMARY_STATES.low || {
-                label: "導入から着手",
-                text: "まずは概念地図と図解で『何を測っているか』の骨格を作る段階です。"
+                label: "あと一歩",
+                text: "まずは用語と観察の関係を確認し、次に条件差を見る流れが合います。",
             };
         }
         if (total <= 4) {
             return INTRO_SUMMARY_STATES.medium || {
-                label: "誤解の切り分けが効果的",
-                text: "概要はつかめています。次は誤解診断で、硬さ・弾性率・深さ依存の混線をほどくと伸びやすいです。"
+                label: "理解の切り分けが順調",
+                text: "次は図解で条件差を見ながら、どの変化が読みやすいかを確かめます。",
             };
         }
         return INTRO_SUMMARY_STATES.high || {
-            label: "応用理解へ進める",
-            text: "基礎用語は入っています。AI 対話や理解確認で、自分の言葉に変換できるかを詰める段階です。"
+                label: "説明をつなげられる",
+                text: "基礎は入っています。AI 対話や理解診断で、言葉にして説明できるかを詰める段階です。",
         };
     }
 
@@ -406,7 +480,14 @@
 
     function getVisualScenario() {
         if (typeof VISUAL_LEARNING.buildScenario === "function") {
-            return VISUAL_LEARNING.buildScenario(state.visual, VISUAL_MODELS);
+            const scenario = VISUAL_LEARNING.buildScenario(state.visual, VISUAL_MODELS);
+            if (topicId === "taver") {
+                return enhanceTaverVisualScenario(scenario);
+            }
+            if (topicId === "epma") {
+                return enhanceEpmaVisualScenario(scenario);
+            }
+            return scenario;
         }
         return {
             metrics: [],
@@ -416,6 +497,139 @@
                 datasets: []
             }
         };
+    }
+
+    function getVisualComparableFields() {
+        return [
+            "material",
+            ...asArray(VISUAL_LEARNING.controls).map((control) => control.field)
+        ];
+    }
+
+    function extractComparableVisualState(sourceVisual) {
+        const source = sourceVisual || {};
+        const next = {};
+        getVisualComparableFields().forEach((field) => {
+            if (source[field] !== undefined) {
+                next[field] = source[field];
+            }
+        });
+        return next;
+    }
+
+    function buildScenarioFromVisualState(visualState) {
+        if (typeof VISUAL_LEARNING.buildScenario !== "function") {
+            return null;
+        }
+        return VISUAL_LEARNING.buildScenario(visualState, VISUAL_MODELS);
+    }
+
+    function formatCompareSnapshotLabel(snapshot) {
+        if (!snapshot) {
+            return "";
+        }
+        const values = [];
+        const material = VISUAL_MODELS[snapshot.material];
+        if (material && material.label) {
+            values.push(material.label);
+        }
+        asArray(VISUAL_LEARNING.controls).forEach((control) => {
+            const raw = snapshot[control.field];
+            if (raw === undefined) {
+                return;
+            }
+            const value = typeof control.formatValue === "function"
+                ? control.formatValue(raw, null)
+                : String(raw);
+            values.push(value);
+        });
+        return values.join(" / ");
+    }
+
+    function enhanceTaverVisualScenario(baseScenario) {
+        const snapshot = state.visual.compareSnapshot;
+        if (!snapshot) {
+            return baseScenario;
+        }
+
+        const compareState = extractComparableVisualState(snapshot);
+        const compareScenario = buildScenarioFromVisualState(compareState);
+        if (!compareScenario || !compareScenario.chart || !asArray(compareScenario.chart.datasets).length) {
+            return baseScenario;
+        }
+
+        const compareDataset = Object.assign({}, compareScenario.chart.datasets[0], {
+            label: "固定した比較条件",
+            borderColor: "#f59e0b",
+            backgroundColor: "#f59e0b",
+            borderWidth: 2.4,
+            borderDash: [10, 6],
+            pointRadius: 0,
+            tension: 0.18
+        });
+
+        const finalCurrent = Number(baseScenario.finalWear || 0);
+        const finalCompare = Number(compareScenario.finalWear || 0);
+        const delta = Number((finalCurrent - finalCompare).toFixed(1));
+        const deltaLabel = delta > 0 ? `+${delta.toFixed(1)} mg` : `${delta.toFixed(1)} mg`;
+
+        return Object.assign({}, baseScenario, {
+            compareSnapshotLabel: formatCompareSnapshotLabel(compareState),
+            compareSummary: {
+                finalWear: `${finalCompare.toFixed(1)} mg`,
+                delta: deltaLabel
+            },
+            chart: Object.assign({}, baseScenario.chart, {
+                datasets: [
+                    ...asArray(baseScenario.chart && baseScenario.chart.datasets),
+                    compareDataset
+                ]
+            })
+        });
+    }
+
+    function enhanceEpmaVisualScenario(baseScenario) {
+        const snapshot = state.visual.compareSnapshot;
+        if (!snapshot) {
+            return baseScenario;
+        }
+
+        const compareState = extractComparableVisualState(snapshot);
+        const compareScenario = buildScenarioFromVisualState(compareState);
+        if (!compareScenario || !compareScenario.chart || !asArray(compareScenario.chart.datasets).length) {
+            return baseScenario;
+        }
+
+        const compareDataset = Object.assign({}, compareScenario.chart.datasets[0], {
+            label: "固定した比較条件",
+            borderColor: "#f59e0b",
+            backgroundColor: "#f59e0b",
+            borderWidth: 2.4,
+            borderDash: [10, 6],
+            pointRadius: 0,
+            tension: 0.18
+        });
+
+        const currentDepth = Number(baseScenario.interactionDepth || 0);
+        const compareDepth = Number(compareScenario.interactionDepth || 0);
+        const depthDelta = Number((currentDepth - compareDepth).toFixed(2));
+        const depthDeltaLabel = depthDelta > 0 ? `+${depthDelta.toFixed(2)} um` : `${depthDelta.toFixed(2)} um`;
+
+        return Object.assign({}, baseScenario, {
+            compareSnapshotLabel: formatCompareSnapshotLabel(compareState),
+            compareSummary: {
+                interactionDepth: `${compareDepth.toFixed(2)} um`,
+                depthDelta: depthDeltaLabel,
+                chargingRisk: compareScenario.chargingRisk || "-",
+                peakSeparation: compareScenario.peakSeparation || "-"
+            },
+            chart: Object.assign({}, baseScenario.chart, {
+                datasets: [
+                    ...asArray(baseScenario.chart && baseScenario.chart.datasets),
+                    compareDataset
+                ]
+            })
+        });
     }
 
     function diagnosisWeakPoints() {
@@ -433,9 +647,9 @@
     function diagnosisSummaryText() {
         const mistakes = state.diagnosis.history.filter((entry) => entry.misconception);
         if (!mistakes.length) {
-            return DIAGNOSIS_UI.noMistakesText || "大きな誤解はまだ表面化していません。次は理解確認で、自分の言葉に変換できるかを見ます。";
+            return DIAGNOSIS_UI.noMistakesText || "今のところ大きな誤解は見えていません。";
         }
-        return `誤解が出やすかったのは「${mistakes.map((item) => item.label).slice(0, 2).join(" / ")}」周辺です。値の読み方よりも、何と何を混同しやすいかに注意してください。`;
+        return `誤解しやすい点は ${mistakes.map((item) => item.label).slice(0, 2).join(" / ")} です。理由まで確認しておくと次が読みやすくなります。`;
     }
 
     function diagnosisAccuracy() {
@@ -476,13 +690,13 @@
             })
             .map((question) => question.prompt);
 
-        let level = "未着手";
+        let level = "???";
         if (answered === MASTERY_QUIZ.length && correct === MASTERY_QUIZ.length) {
-            level = "全問正解";
+            level = "???";
         } else if (correct >= 3) {
-            level = "中核は押さえられている";
+            level = "???";
         } else if (answered > 0) {
-            level = "再確認が必要";
+            level = "???";
         }
 
         return {
@@ -528,9 +742,9 @@
         if (!featured) {
             return `
                 <div class="rounded-[28px] border border-dashed border-slate-300 bg-slate-50 p-5">
-                    <div class="text-sm font-bold text-slate-900">${escapeHtml(AI_UI.mediaEmptyTitle || "動画は任意アセットです")}</div>
+                    <div class="text-sm font-bold text-slate-900">${escapeHtml(AI_UI.mediaEmptyTitle || "参考メディアはまだありません")}</div>
                     <p class="mt-2 text-sm leading-7 text-slate-600">
-                        ${escapeHtml(AI_UI.mediaEmptyBody || "今は外部埋め込みに依存せず、図解と診断を主軸にしています。あとから YouTube かローカル動画を追加しても、この枠をそのまま使えます。")}
+                        ${escapeHtml(AI_UI.mediaEmptyBody || "この topic では外部メディアをまだ紐づけていません。必要なら後で追加できます。")}
                     </p>
                 </div>
             `;
@@ -572,12 +786,12 @@
                 <div class="flex items-center justify-between gap-4">
                     <div>
                         <div class="text-xs font-bold tracking-[0.18em] text-slate-500">OPTIONAL MEDIA</div>
-                        <h3 class="mt-2 text-2xl font-black">${escapeHtml(MEDIA.title || "参考リソース")}</h3>
+                        <h3 class="mt-2 text-2xl font-black">${escapeHtml(MEDIA.title || "参考メディア")}</h3>
                     </div>
-                    <div class="tag tag-neutral">差し替え可能な補助教材</div>
+                    <div class="tag tag-neutral">理解を補助する外部資料</div>
                 </div>
                 <p class="mt-3 text-sm leading-7 text-slate-600">
-                    ${escapeHtml(MEDIA.description || "図解と診断を主軸にしつつ、必要なら外部教材や任意動画を足せる構成です。")}
+                    ${escapeHtml(MEDIA.description || "動画や参考資料は補助用です。まずはこのアプリ内の原理・概念・図解を優先してください。")}
                 </p>
                 <div class="mt-5">
                     ${renderFeaturedMedia()}
@@ -590,7 +804,7 @@
                                 <div class="mt-2 text-lg font-black text-slate-900">${escapeHtml(resource.title)}</div>
                                 <p class="mt-3 text-sm leading-7 text-slate-600">${escapeHtml(resource.note)}</p>
                             </div>
-                            <a class="mt-4 inline-flex text-sm font-bold text-blue-700" href="${resource.url}" target="_blank" rel="noreferrer">元ページを開く</a>
+                            <a class="mt-4 inline-flex text-sm font-bold text-blue-700" href="${resource.url}" target="_blank" rel="noreferrer">ページを開く</a>
                         </div>
                     `).join("")}
                 </div>
@@ -681,20 +895,28 @@
         if (variant === "abrasive") {
             stage = `
                 <div class="scene-taver-wear scene-taver-wear-abrasive">
-                    <div class="scene-taver-surface"></div>
-                    <div class="scene-taver-surface scene-taver-subsurface"></div>
-                    <div class="scene-taver-abrasive-tool"></div>
+                    <div class="scene-taver-bed"></div>
+                    <div class="scene-taver-bed-edge"></div>
+                    <div class="scene-taver-abrasive-tool">
+                        <span class="scene-taver-abrasive-grit scene-taver-abrasive-grit-a"></span>
+                        <span class="scene-taver-abrasive-grit scene-taver-abrasive-grit-b"></span>
+                        <span class="scene-taver-abrasive-grit scene-taver-abrasive-grit-c"></span>
+                    </div>
                     <div class="scene-taver-scratch-band"></div>
                     <div class="scene-taver-scratch-band scene-taver-scratch-band-2"></div>
+                    <div class="scene-taver-chip scene-taver-chip-a"></div>
+                    <div class="scene-taver-chip scene-taver-chip-b"></div>
                 </div>
             `;
         } else if (variant === "adhesive") {
             stage = `
                 <div class="scene-taver-wear scene-taver-wear-adhesive">
+                    <div class="scene-taver-bed"></div>
+                    <div class="scene-taver-bed-edge"></div>
                     <div class="scene-taver-adhesive-top">
                         <div class="scene-taver-adhesive-bond"></div>
                     </div>
-                    <div class="scene-taver-adhesive-base"></div>
+                    <div class="scene-taver-adhesive-shadow"></div>
                     <div class="scene-taver-adhesive-transfer"></div>
                 </div>
             `;
@@ -704,7 +926,10 @@
                     <div class="scene-taver-fatigue-hit scene-taver-fatigue-hit-a"></div>
                     <div class="scene-taver-fatigue-hit scene-taver-fatigue-hit-b"></div>
                     <div class="scene-taver-fatigue-hit scene-taver-fatigue-hit-c"></div>
-                    <div class="scene-taver-fatigue-base"></div>
+                    <div class="scene-taver-fatigue-echo scene-taver-fatigue-echo-a"></div>
+                    <div class="scene-taver-fatigue-echo scene-taver-fatigue-echo-b"></div>
+                    <div class="scene-taver-bed"></div>
+                    <div class="scene-taver-bed-edge scene-taver-fatigue-edge"></div>
                     <div class="scene-taver-fatigue-crack"></div>
                 </div>
             `;
@@ -722,14 +947,19 @@
         } else {
             stage = `
                 <div class="scene-taver-topview">
-                    <div class="scene-taver-table"></div>
-                    <div class="scene-taver-track scene-taver-track-a"></div>
-                    <div class="scene-taver-track scene-taver-track-b"></div>
-                    <div class="scene-taver-axis"></div>
-                    <div class="scene-taver-wheel scene-taver-wheel-left"></div>
-                    <div class="scene-taver-wheel scene-taver-wheel-right"></div>
-                    <div class="scene-taver-offset scene-taver-offset-left"></div>
-                    <div class="scene-taver-offset scene-taver-offset-right"></div>
+                    <div class="scene-taver-platter">
+                        <div class="scene-taver-table"></div>
+                        <div class="scene-taver-dash"></div>
+                        <div class="scene-taver-ring"></div>
+                        <div class="scene-taver-track scene-taver-track-a"></div>
+                        <div class="scene-taver-track scene-taver-track-b"></div>
+                        <div class="scene-taver-hub"></div>
+                    </div>
+                    <div class="scene-taver-carriage">
+                        <div class="scene-taver-wheel scene-taver-wheel-left"></div>
+                        <div class="scene-taver-wheel scene-taver-wheel-right"></div>
+                        <div class="scene-taver-axis"></div>
+                    </div>
                 </div>
             `;
         }
@@ -751,6 +981,109 @@
         `;
     }
 
+    function renderEpmaScene(options) {
+        if (typeof epmaUi.renderScene === "function") {
+            return epmaUi.renderScene(options, { escapeHtml, asArray });
+        }
+        const labels = asArray(options.labels).slice(0, 3);
+        const variant = options.variant || "column";
+        let stage = "";
+
+        if (variant === "detectors") {
+            stage = `
+                <div class="scene-epma-stage scene-epma-stage-detectors">
+                    <div class="scene-epma-sample-block"></div>
+                    <div class="scene-epma-beam-column"></div>
+                    <div class="scene-epma-beam-line"></div>
+                    <div class="scene-epma-ray scene-epma-ray-a"></div>
+                    <div class="scene-epma-ray scene-epma-ray-b"></div>
+                    <div class="scene-epma-eds-box">EDS</div>
+                    <div class="scene-epma-wds-crystal"></div>
+                    <div class="scene-epma-wds-counter">WDS</div>
+                    <div class="scene-epma-detector-rail"></div>
+                </div>
+            `;
+        } else if (variant === "prep") {
+            stage = `
+                <div class="scene-epma-stage scene-epma-stage-prep">
+                    <div class="scene-epma-sample-tile"></div>
+                    <div class="scene-epma-polish-head"></div>
+                    <div class="scene-epma-polish-trail"></div>
+                    <div class="scene-epma-rinse-drop scene-epma-rinse-drop-a"></div>
+                    <div class="scene-epma-rinse-drop scene-epma-rinse-drop-b"></div>
+                    <div class="scene-epma-carbon-film"></div>
+                    <div class="scene-epma-prep-chip scene-epma-prep-chip-a"></div>
+                    <div class="scene-epma-prep-chip scene-epma-prep-chip-b"></div>
+                </div>
+            `;
+        } else if (variant === "matrix") {
+            stage = `
+                <div class="scene-epma-stage scene-epma-stage-matrix">
+                    <div class="scene-epma-matrix-sample"></div>
+                    <div class="scene-epma-beam-column"></div>
+                    <div class="scene-epma-beam-line"></div>
+                    <div class="scene-epma-volume-shell scene-epma-volume-shell-a"></div>
+                    <div class="scene-epma-volume-shell scene-epma-volume-shell-b"></div>
+                    <div class="scene-epma-matrix-arrow scene-epma-matrix-arrow-z">Z</div>
+                    <div class="scene-epma-matrix-arrow scene-epma-matrix-arrow-a">A</div>
+                    <div class="scene-epma-matrix-arrow scene-epma-matrix-arrow-f">F</div>
+                </div>
+            `;
+        } else if (variant === "charging") {
+            stage = `
+                <div class="scene-epma-stage scene-epma-stage-charging">
+                    <div class="scene-epma-sample-block scene-epma-sample-block-insulator"></div>
+                    <div class="scene-epma-carbon-film scene-epma-carbon-film-thin"></div>
+                    <div class="scene-epma-beam-column"></div>
+                    <div class="scene-epma-beam-line scene-epma-beam-line-jitter"></div>
+                    <div class="scene-epma-charge-ring scene-epma-charge-ring-a"></div>
+                    <div class="scene-epma-charge-ring scene-epma-charge-ring-b"></div>
+                    <div class="scene-epma-charge-dot scene-epma-charge-dot-a"></div>
+                    <div class="scene-epma-charge-dot scene-epma-charge-dot-b"></div>
+                    <div class="scene-epma-charge-dot scene-epma-charge-dot-c"></div>
+                </div>
+            `;
+        } else {
+            stage = `
+                <div class="scene-epma-stage scene-epma-stage-column">
+                    <div class="scene-epma-column"></div>
+                    <div class="scene-epma-gun"></div>
+                    <div class="scene-epma-lens scene-epma-lens-a"></div>
+                    <div class="scene-epma-lens scene-epma-lens-b"></div>
+                    <div class="scene-epma-beam-line"></div>
+                    <div class="scene-epma-sample-block"></div>
+                    <div class="scene-epma-volume"></div>
+                    <div class="scene-epma-ray scene-epma-ray-a"></div>
+                    <div class="scene-epma-ray scene-epma-ray-b"></div>
+                    <div class="scene-epma-detector-box">${escapeHtml(options.detectorLabel || "EDS / WDS")}</div>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="concept-scene ${options.sceneClass || ""}">
+                <div class="scene-frame scene-frame-epma">
+                    <div class="scene-frame-grid"></div>
+                    <div class="scene-frame-glow"></div>
+                    <div class="scene-frame-label scene-frame-label-left">${escapeHtml(options.frameLabelLeft || "COLUMN")}</div>
+                    <div class="scene-frame-label scene-frame-label-right">${escapeHtml(options.frameLabelRight || "XRAY")}</div>
+                    ${stage}
+                </div>
+                <div class="scene-legend">
+                    ${labels.map((label) => `<span class="scene-legend-chip">${escapeHtml(label)}</span>`).join("")}
+                </div>
+                <p class="scene-caption">${escapeHtml(options.caption || "")}</p>
+            </div>
+        `;
+    }
+
+    function renderIrScene(options) {
+        if (typeof irUi.renderScene === "function") {
+            return irUi.renderScene(options, { escapeHtml, asArray });
+        }
+        return renderXrfScene(options);
+    }
+
     function renderPrincipleScene(scene) {
         if (!scene) {
             return "";
@@ -764,6 +1097,12 @@
         }
         if (scene.type === "taver") {
             return renderTaverScene(visual);
+        }
+        if (scene.type === "epma") {
+            return renderEpmaScene(visual);
+        }
+        if (scene.type === "ir") {
+            return renderIrScene(visual);
         }
         return "";
     }
@@ -789,6 +1128,12 @@
         }
         if (scene.type === "taver") {
             return renderTaverScene(visual);
+        }
+        if (scene.type === "epma") {
+            return renderEpmaScene(visual);
+        }
+        if (scene.type === "ir") {
+            return renderIrScene(visual);
         }
         return `
             <div class="concept-scene concept-scene-generic">
@@ -855,7 +1200,7 @@
                 <div class="flex items-center justify-between gap-4">
                     <div>
                         <div class="text-xs font-black tracking-[0.18em] text-slate-500">RELATION MAP</div>
-                        <div class="mt-2 text-xl font-black text-slate-950">${escapeHtml(active.title)} を起点に見る</div>
+                        <div class="mt-2 text-xl font-black text-slate-950">${escapeHtml(active.title)} を軸に見る</div>
                     </div>
                     <div class="tag tag-neutral">${relations.length} links</div>
                 </div>
@@ -889,7 +1234,7 @@
                                 <div class="flex items-start justify-between gap-3">
                                     <div>
                                         <div class="text-xs font-black tracking-[0.18em] text-slate-500">FLOW 0${index + 1}</div>
-                                        <div class="mt-2 text-sm font-black text-slate-900">${escapeHtml(active.title)} → ${escapeHtml(targetTitle)}</div>
+                                        <div class="mt-2 text-sm font-black text-slate-900">${escapeHtml(active.title)} 竊・${escapeHtml(targetTitle)}</div>
                                     </div>
                                     <button class="relation-pill" data-action="open-concept" data-concept="${escapeHtml(relation.target)}">${escapeHtml(targetTitle)}</button>
                                 </div>
@@ -963,7 +1308,7 @@
                 <div class="flex items-center justify-between gap-3">
                     <div>
                         <div class="text-[11px] font-black tracking-[0.18em] text-slate-500">QUICK COMPARE</div>
-                        <div class="mt-2 text-base font-black text-slate-900">近い概念だけを横で見比べる</div>
+                        <div class="mt-2 text-base font-black text-slate-900">近い概念だけを並べて比べる</div>
                     </div>
                     <div class="tag tag-neutral">${relatedItems.length} tabs</div>
                 </div>
@@ -997,7 +1342,7 @@
                         <button class="role-card text-left ${role.id === activeRole.id ? "role-card-active" : ""}" data-action="switch-role" data-role="${role.id}">
                             <div class="flex items-center justify-between gap-3">
                                 <div class="text-base font-black text-slate-900">${escapeHtml(role.label)}</div>
-                                <div class="tag ${role.id === activeRole.id ? "tag-good" : "tag-neutral"}">${role.id === activeRole.id ? "選択中" : "切替"}</div>
+                                <div class="tag ${role.id === activeRole.id ? "tag-good" : "tag-neutral"}">${role.id === activeRole.id ? "選択中" : "切替可"}</div>
                             </div>
                             <p class="mt-3 text-sm leading-6 text-slate-600">${escapeHtml(role.summary)}</p>
                             <div class="mt-4 flex flex-wrap gap-2">
@@ -1049,7 +1394,7 @@
                     <div class="flex items-center justify-between gap-4">
                         <div>
                             <div class="text-xs font-bold tracking-[0.18em] text-slate-500">SIMULATION MISSIONS</div>
-                            <div class="mt-2 text-xl font-black text-slate-900">操作課題で条件差をつかむ</div>
+                            <div class="mt-2 text-xl font-black text-slate-900">課題ミッションで図解を見る</div>
                         </div>
                         <div class="tag tag-neutral">${(state.visual.completedMissions || []).length}/${SIMULATION_MISSIONS.length}</div>
                     </div>
@@ -1065,7 +1410,7 @@
                                             <div class="text-sm font-black text-slate-900">${escapeHtml(mission.title)}</div>
                                             <p class="mt-2 text-sm leading-6 text-slate-600">${escapeHtml(mission.summary)}</p>
                                         </div>
-                                        <div class="tag ${completed ? "tag-good" : "tag-neutral"}">${completed ? "完了" : "開始"}</div>
+                                        <div class="tag ${completed ? "tag-good" : "tag-neutral"}">${completed ? "完了" : "未着手"}</div>
                                     </div>
                                     <div class="mt-4 flex flex-wrap gap-2">
                                         ${competency ? `<span class="tag tag-neutral">${escapeHtml(competency.title)}</span>` : ""}
@@ -1087,12 +1432,12 @@
                         <div class="mt-5 rounded-2xl bg-blue-50 p-4 text-sm leading-7 text-blue-900">${escapeHtml(activeMission.completionText || "")}</div>
                         <div class="mt-5">
                             <button class="rounded-full bg-slate-900 px-5 py-3 text-sm font-bold text-white" data-action="complete-sim-mission" data-mission="${activeMission.id}">
-                                ${(state.visual.completedMissions || []).includes(activeMission.id) ? "完了として保持済み" : "この挙動を理解した"}
+                                ${(state.visual.completedMissions || []).includes(activeMission.id) ? "完了として保持" : "理解できた / 完了として保持"}
                             </button>
                         </div>
                     ` : `
                         <div class="mt-3 rounded-2xl bg-slate-50 p-4 text-sm leading-7 text-slate-600">
-                            上の課題を 1 つ選ぶと、推奨条件を反映したうえで見るべきポイントを表示します。
+                            上のミッションを 1 つ選ぶと、重点的に見るべき図解ポイントが展開されます。
                         </div>
                     `}
                 </div>
@@ -1110,10 +1455,10 @@
                 <div class="flex items-start justify-between gap-4">
                     <div>
                         <div class="text-xs font-bold tracking-[0.18em] text-slate-500">SIMULATION MISSIONS</div>
-                        <div class="mt-2 text-xl font-black text-slate-900">謫堺ｽ懆ｪｲ鬘後〒譚｡莉ｶ蟾ｮ繧偵▽縺九・</div>
+                        <div class="mt-2 text-xl font-black text-slate-900">選んだ条件で何が変わるかを順に追う</div>
                         <p class="mt-3 text-sm leading-6 text-slate-600">
                             ${activeMission
-                                ? "選んだ mission の見どころと完了条件を、そのカード内で続けて確認できます。"
+                                ? "選択中のミッションの要点をカード内で確認できます。"
                                 : "まず 1 つ選ぶと、そのカードの中に current mission の要点が展開されます。"}
                         </p>
                     </div>
@@ -1134,7 +1479,7 @@
                                         </div>
                                         <div class="flex flex-wrap items-center justify-end gap-2">
                                             ${isActive ? '<span class="tag tag-good">CURRENT</span>' : ""}
-                                            <span class="tag ${completed ? "tag-good" : "tag-neutral"}">${completed ? "螳御ｺ・" : "髢句ｧ・"}</span>
+                                            <span class="tag ${completed ? "tag-good" : "tag-neutral"}">${completed ? "完了" : "未着手"}</span>
                                         </div>
                                     </div>
                                     <div class="mt-4 flex flex-wrap gap-2">
@@ -1151,7 +1496,7 @@
                                         <div class="mt-4 rounded-2xl bg-blue-50 p-4 text-sm leading-7 text-blue-900">${escapeHtml(mission.completionText || "")}</div>
                                         <div class="mt-4 flex flex-wrap items-center gap-3">
                                             <button class="rounded-full bg-slate-900 px-5 py-3 text-sm font-bold text-white" data-action="complete-sim-mission" data-mission="${mission.id}">
-                                                ${completed ? "螳御ｺ・→縺励※菫晄戟貂医∩" : "縺薙・謖吝虚繧堤炊隗｣縺励◆"}
+                                                ${completed ? "完了として保持" : "理解できた / 完了として保持"}
                                             </button>
                                         </div>
                                     </div>
@@ -1177,7 +1522,7 @@
                         <div class="mt-2 text-xl font-black text-slate-900">${"\u30df\u30c3\u30b7\u30e7\u30f3\u3092\u9078\u3093\u3067\u632f\u308b\u821e\u3044\u3092\u6bd4\u8f03\u3059\u308b"}</div>
                         <p class="mt-3 text-sm leading-6 text-slate-600">
                             ${activeMission
-                                ? "\u9078\u3093\u3060\u30df\u30c3\u30b7\u30e7\u30f3\u306e\u898b\u308b\u30dd\u30a4\u30f3\u30c8\u3068\u5b8c\u4e86\u6761\u4ef6\u3092\u3001\u305d\u306e\u30ab\u30fc\u30c9\u5185\u3067\u7d9a\u3051\u3066\u78ba\u8a8d\u3067\u304d\u307e\u3059\u3002"
+                                ? "選択中のミッションの要点をカード内で確認できます。"
                                 : "\u307e\u305a1\u3064\u9078\u3076\u3068\u3001\u305d\u306e\u30ab\u30fc\u30c9\u306e\u4e2d\u306b\u73fe\u5728\u306e\u30df\u30c3\u30b7\u30e7\u30f3\u8981\u70b9\u304c\u5c55\u958b\u3055\u308c\u307e\u3059\u3002"}
                         </p>
                     </div>
@@ -1251,23 +1596,54 @@
     }
 
     function getVisualControlGuide(field) {
+        if (topicId === "ir" && typeof irUi.getControlGuide === "function") {
+            return irUi.getControlGuide(field);
+        }
+        if (topicId === "epma" && typeof epmaUi.getControlGuide === "function") {
+            return epmaUi.getControlGuide(field);
+        }
         if (topicId === "taver") {
             const guides = {
                 material: {
-                    focus: ["勾配", "立ち上がり"],
-                    note: "試料モデルを変えたら、同じ摩耗メカニズムでも標準比較線との差がどう変わるかを見ます。"
+                    focus: ["摩耗量", "曲線の傾き"],
+                    note: "試料側の違いで、同じ条件でも摩耗の増え方が変わります。",
                 },
                 wearMode: {
-                    focus: ["立ち上がり", "増え方の形"],
-                    note: "アブレシブは序盤から、凝着は途中から、疲労は潜伏後に変わりやすい形を見ます。"
+                    focus: ["立ち上がり", "終点"],
+                    note: "摩耗メカニズムを変えると、初期と後半の増え方が変わります。",
                 },
                 wheelType: {
-                    focus: ["序盤の勾配", "標準比較線との差"],
-                    note: "摩耗輪を変えたら、まず序盤の増え方と標準条件との差を見ます。"
+                    focus: ["勾配", "最終摩耗量"],
+                    note: "摩耗輪の種類で削れ方の強さと安定性を見分けます。",
                 },
                 load: {
-                    focus: ["急増の位置", "損傷リスク"],
-                    note: "荷重を上げたら単純比例と決めず、どこから悪化が目立つかを見ます。"
+                    focus: ["摩耗量", "測定時間"],
+                    note: "荷重を上げると摩耗は増えやすい一方で、比較条件も揃える必要があります。",
+                }
+            };
+            return guides[field] || { focus: [], note: "" };
+        }
+        if (topicId === "epma") {
+            const guides = {
+                material: {
+                    focus: ["ピーク形状", "低エネルギー側"],
+                    note: "試料母材で自己吸収やチャージの出やすさが変わります。",
+                },
+                acceleratingVoltage: {
+                    focus: ["相互作用深さ", "ピーク分離"],
+                    note: "加速電圧で励起できる線種と分析深さが変わります。",
+                },
+                beamCurrent: {
+                    focus: ["S/N", "チャージ"],
+                    note: "ビーム電流はカウントを増やしますが、損傷や帯電も強めます。",
+                },
+                detectorMode: {
+                    focus: ["ピーク分離", "検出感度"],
+                    note: "EDS と WDS で、見える情報の粒度が変わります。",
+                },
+                carbonCoating: {
+                    focus: ["チャージ", "低エネルギー側"],
+                    note: "炭素蒸着は帯電を抑えますが、低エネルギー側の見え方にも影響します。",
                 }
             };
             return guides[field] || { focus: [], note: "" };
@@ -1276,37 +1652,37 @@
             nanoin: {
                 material: {
                     focus: ["曲線の形", "残留深さ"],
-                    note: "材料モデルを変えたら、まず曲線形状と残留深さの違いを見る。"
+                    note: "材料モデルで負荷曲線と除荷後の戻り方が変わります。",
                 },
                 filmThickness: {
-                    focus: ["接触深さ", "基板影響リスク"],
-                    note: "膜厚を変えたら、膜厚に対する深さ比と基板影響リスクを見る。"
+                    focus: ["接触深さ", "基板影響"],
+                    note: "膜厚に対して押し込みが深すぎると、下地の影響を受けやすくなります。",
                 },
                 roughness: {
-                    focus: ["浅部ノイズリスク", "接触深さ"],
-                    note: "粗さを上げたら、浅部の散りと接触深さの安定性を見る。"
+                    focus: ["浅部ノイズ", "読み取りの揺れ"],
+                    note: "表面粗さが大きいほど、浅い領域の読みが不安定になります。",
                 },
                 tipRadius: {
-                    focus: ["接触深さ", "浅部ノイズリスク"],
-                    note: "先端丸みは最浅部に効くので、浅部の読みがどう崩れるかを見る。"
+                    focus: ["初期勾配", "接触面積"],
+                    note: "先端が丸いほど、初期接触の見え方と接触面積が変わります。",
                 }
             },
             xrf: {
                 material: {
-                    focus: ["主ピーク候補", "スペクトル形状"],
-                    note: "サンプルモデルを変えたら、どこにピークが立つかを見る。"
+                    focus: ["ピーク位置", "バックグラウンド"],
+                    note: "母材によって、注目ピークと背景の見えやすさが変わります。",
                 },
                 atmosphere: {
-                    focus: ["軽元素の見え方", "低エネルギー側"],
-                    note: "雰囲気を変えたら、低エネルギー側と軽元素の見え方を見る。"
+                    focus: ["軽元素", "低エネルギー側"],
+                    note: "雰囲気を変えると、低エネルギー側の減衰が変わります。",
                 },
                 coatingThickness: {
-                    focus: ["表面被覆の影響", "主ピーク候補"],
-                    note: "被覆厚みを変えたら、ピーク強度の落ち方を見る。"
+                    focus: ["膜ピーク", "下地ピーク"],
+                    note: "被覆厚みを変えると、膜由来と下地由来の比率が変わります。",
                 },
                 acquisitionTime: {
-                    focus: ["主ピーク候補", "スペクトル形状"],
-                    note: "測定時間を変えたら、山の見えやすさを比較する。"
+                    focus: ["S/N", "微小ピーク"],
+                    note: "測定時間を伸ばすと、微弱なピークの見分けがしやすくなります。",
                 }
             }
         };
@@ -1334,144 +1710,158 @@
     }
 
     function getVisualGuideNarration(field, scenario, activeVisualModel) {
+        if (topicId === "ir" && typeof irUi.getGuideNarration === "function") {
+            return irUi.getGuideNarration(field, {
+                stateVisual: state.visual,
+                scenario,
+                activeVisualModel
+            });
+        }
+        if (topicId === "epma" && typeof epmaUi.getGuideNarration === "function") {
+            return epmaUi.getGuideNarration(field, {
+                stateVisual: state.visual,
+                scenario,
+                activeVisualModel
+            });
+        }
         if (topicId === "taver") {
             if (field === "material") {
                 return {
-                    title: "試料モデルで標準条件との差が変わる",
-                    body: activeVisualModel.note || "まずは現在条件と標準比較線の差が、どこで広がるかを見ます。"
+                    title: "試料差の読み方",
+                    body: activeVisualModel.note || "試料によって同じ条件でも摩耗の増え方が変わります。",
                 };
             }
             if (field === "wearMode") {
                 if (state.visual.wearMode === "adhesive") {
                     return {
-                        title: "途中から急増する見え方を確認する",
-                        body: "凝着寄りでは、序盤より中盤以降の立ち上がり変化が重要です。常に一定勾配とは限らない点を見ます。"
+                        title: "凝着摩耗の見え方",
+                        body: "移着や引きずりが効くと、途中から摩耗量の増え方が変わりやすくなります。",
                     };
                 }
                 if (state.visual.wearMode === "fatigue") {
                     return {
-                        title: "潜伏後に増え方が変わるかを見る",
-                        body: "疲労寄りでは、初期の静かな区間と後半の変曲を切り分けます。質量減少だけで寿命まで言い切らない前提で見ます。"
+                        title: "疲労摩耗の見え方",
+                        body: "繰り返し荷重で表面が崩れると、後半の摩耗増加が強く出やすくなります。",
                     };
                 }
                 return {
-                    title: "序盤から増える標準的な見え方を比べる",
-                    body: "アブレシブ寄りでは、最初から勾配差が出やすいので、摩耗輪と荷重で立ち上がりがどう変わるかを見ます。"
+                    title: "アブレシブ摩耗の見え方",
+                    body: "削る成分が支配的なときは、摩耗曲線が比較的素直に立ち上がります。",
                 };
             }
             if (field === "wheelType") {
                 if (state.visual.wheelType === "h22") {
                     return {
-                        title: "攻撃性が強く、序盤から差が開きやすい",
-                        body: "H-22 はより強い条件として見せやすく、標準比較線との差が早い段階で広がるかを確認します。"
+                        title: "H-22 の強さ",
+                        body: "H-22 は強めの条件になりやすく、短い時間でも差が開きやすい設定です。",
                     };
                 }
                 if (state.visual.wheelType === "cs10") {
                     return {
-                        title: "比較的マイルドで、差は緩やかに出る",
-                        body: "CS-10 は穏やかな条件として扱いやすいので、立ち上がりの勾配差が小さくなる見え方を確認します。"
+                        title: "CS-10 の穏やかさ",
+                        body: "CS-10 は比較的穏やかな摩耗輪として、条件差の見分けに向きます。",
                     };
                 }
                 return {
-                    title: "標準輪としての見え方を基準にする",
-                    body: "H-18 を基準に置いて、他の摩耗輪がどの方向にずれるかを比較すると説明しやすくなります。"
+                    title: "H-18 を基準に見る",
+                    body: "H-18 を基準に、他の摩耗輪で勾配と終点がどう変わるかを比較します。",
                 };
             }
             return Number(state.visual.load) >= 1000
                 ? {
-                    title: "高荷重で急増位置が前倒しになりやすい",
-                    body: "荷重を上げると増えやすくなりますが、単純比例と決めず、どこから悪化が目立つかを曲線の形で見ます。"
+                    title: "重い荷重で差が開く",
+                    body: "高荷重では摩耗量が増えやすく、条件差も短時間で見えやすくなります。",
                 }
                 : Number(state.visual.load) <= 250
                     ? {
-                        title: "低荷重では差が穏やかに出る",
-                        body: "250 g では標準比較線との差が小さく見えやすい条件です。差がないのではなく、立ち上がりが遅い点を見ます。"
+                        title: "軽い荷重で初期を見る",
+                        body: "250 g では変化が緩やかになり、初期挙動を比較しやすくなります。",
                     }
                     : {
-                        title: "500 g を基準に条件差を読む",
-                        body: "まずは標準比較線との差を基準として、荷重変更で勾配と急増位置がどうずれるかを確認します。"
+                        title: "500 g を基準に比較する",
+                        body: "中間荷重では、強すぎず弱すぎない条件として差を見やすくできます。",
                     };
         }
 
         if (topicId === "nanoin") {
             if (field === "material") {
                 return {
-                    title: "材料モデルで曲線の戻り方が変わる",
-                    body: activeVisualModel.note || "材料モデルを変えたら、曲線の形と残留深さの変化を先に見ます。"
+                    title: "材料差を読む",
+                    body: activeVisualModel.note || "材料ごとに曲線の形と残留深さの出方が変わります。",
                 };
             }
             if (field === "filmThickness") {
                 const ratio = scenario.thickness ? scenario.maxDepth / scenario.thickness : 0;
                 return ratio >= 0.3
                     ? {
-                        title: "膜に対して深く入り始めている",
-                        body: `最大深さが膜厚の ${(ratio * 100).toFixed(0)}% 付近です。膜だけでなく、基板影響リスクも一緒に確認する段階です。`
+                        title: "基板影響に注意する",
+                        body: `押し込み深さが膜厚の ${(ratio * 100).toFixed(0)}% に近く、下地の影響を受けやすい条件です。`,
                     }
                     : {
-                        title: "まだ膜寄りの読みを保ちやすい",
-                        body: `最大深さは膜厚の ${(ratio * 100).toFixed(0)}% 付近です。まずは接触深さが膜厚に対してどこまで近づくかを見ます。`
+                        title: "膜単体に近い読み",
+                        body: `押し込み深さが膜厚の ${(ratio * 100).toFixed(0)}% 程度で、膜の挙動を読みやすい条件です。`,
                     };
             }
             if (field === "roughness") {
                 return Number(state.visual.roughness) >= 12
                     ? {
-                        title: "浅部ノイズを材料差と誤読しやすい",
-                        body: "粗さが大きいので、最浅部の散りを材料固有の depth dependence と決める前に、表面状態の寄与を疑います。"
+                        title: "浅部ノイズを読む",
+                        body: "表面粗さが大きいと、浅い領域の立ち上がりが揺れやすくなります。",
                     }
                     : {
-                        title: "浅部ノイズは比較的抑えやすい",
-                        body: "粗さは中程度なので、浅部の読みはまだ安定域にあります。次は先端丸みと合わせて見ます。"
+                        title: "浅部が比較的安定する",
+                        body: "粗さが小さいため、初期接触の違いを読み取りやすい条件です。",
                     };
             }
             if (field === "tipRadius") {
                 return Number(state.visual.tipRadius) >= 70
                     ? {
-                        title: "先端丸みが最浅部をなだらかにする",
-                        body: "鋭い差が出にくくなるので、浅部の接触深さをそのまま材料差として読むと外しやすくなります。"
+                        title: "丸い先端で接触が広がる",
+                        body: "先端が丸いほど、初期接触面積が広くなり、浅部の勾配が変わります。",
                     }
                     : {
-                        title: "先端はまだ鋭めで浅部を拾いやすい",
-                        body: "最浅部の反応が出やすい条件です。粗さ由来の散りと区別しながら見ます。"
+                        title: "鋭い先端で食い込みやすい",
+                        body: "先端が鋭いほど、浅い領域でも深さが入りやすくなります。",
                     };
             }
         }
 
         if (field === "material") {
             return {
-                title: "材料モデルでピーク構成が変わる",
-                body: activeVisualModel.note || "まずは主ピークの位置と、どのエネルギー帯が強いかを見ます。"
+                title: "試料モデルを基準に読む",
+                body: activeVisualModel.note || "試料モデルごとにピークと背景の見え方が変わります。",
             };
         }
         if (field === "atmosphere") {
             return state.visual.atmosphere === "helium"
                 ? {
-                    title: "低エネルギー側を見やすくする条件",
-                    body: "He パージでは軽元素側が持ち上がりやすくなります。まずは低エネルギー側の見え方を確認します。"
+                    title: "He 雰囲気で軽元素を見る",
+                    body: "He 雰囲気では低エネルギー側の減衰が抑えられ、軽元素が見えやすくなります。",
                 }
                 : {
-                    title: "空気中では軽元素側が落ちやすい",
-                    body: "空気中では低エネルギー側が弱くなりやすいので、見えないことを即ゼロと解釈しないことが重要です。"
+                    title: "真空で主要ピークを安定化",
+                    body: "真空では散乱が少なく、主要ピークの比較を安定して行いやすくなります。",
                 };
         }
         if (field === "coatingThickness") {
             return Number(state.visual.coatingThickness) >= 20
                 ? {
-                    title: "表面層が主ピークの見え方を変えやすい",
-                    body: "表面層が厚いので、主ピークや軽元素の見え方に表面の寄与が混ざりやすい条件です。"
+                    title: "膜ピークが優勢になる",
+                    body: "被覆が厚いほど、膜由来のピークが強まり下地ピークは見えにくくなります。",
                 }
                 : {
-                    title: "表面層の影響はまだ限定的",
-                    body: "表面層が薄いので、まずは母材側のピーク構成を読みやすい条件です。"
+                    title: "下地ピークも残る",
+                    body: "被覆が薄いと、膜と下地の両方を読み分ける必要があります。",
                 };
         }
         return Number(state.visual.acquisitionTime) <= 10
             ? {
-                title: "短時間でピーク判定が不安定になりやすい",
-                body: "取得時間が短いので、ピーク高さの差を材料差と決める前に統計ゆらぎを疑います。"
+                title: "短時間ではノイズが残る",
+                body: "測定時間が短いと、微小ピークの判断が難しくなります。",
             }
             : {
-                title: "取得時間に少し余裕がある",
-                body: "ピーク高さの比較がしやすい条件です。次はマトリクス影響と表面層の寄与を切り分けます。"
+                title: "時間をかけるとピークが見やすい",
+                body: "測定時間を伸ばすと、微弱なピークとバックグラウンドの差を読みやすくなります。",
             };
     }
 
@@ -1485,7 +1875,7 @@
                 <div class="flex items-center justify-between gap-3">
                     <div>
                         <div class="text-[11px] font-black tracking-[0.18em] text-slate-500">READING GUIDE</div>
-                        <div class="mt-2 text-base font-black text-slate-900">どの違いを見比べるかを固定する</div>
+                        <div class="mt-2 text-base font-black text-slate-900">どこを見れば違いが分かるか</div>
                     </div>
                     <div class="tag tag-neutral">${escapeHtml(getVisualGuideItems().find((item) => item.field === guideField)?.label || "")}</div>
                 </div>
@@ -1508,6 +1898,137 @@
                     </div>
                     ${guide.note ? `<p class="mt-2 text-xs leading-5 text-slate-500" data-visual-guide-note>${escapeHtml(guide.note)}</p>` : `<p class="mt-2 text-xs leading-5 text-slate-500" data-visual-guide-note></p>`}
                 </div>
+            </div>
+        `;
+    }
+
+    function renderTaverIntroJourneyCard() {
+        if (topicId !== "taver") {
+            return "";
+        }
+        return `
+            <div class="intro-journey-card rounded-[28px] p-6 sm:p-8">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <div class="text-xs font-bold tracking-[0.18em] text-blue-700">FIRST ROUTE</div>
+                        <h3 class="mt-2 text-2xl font-black text-slate-900">最初に見る順番を決めておく</h3>
+                        <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
+                            テーバーは、いきなり摩耗量だけを見るよりも、装置の動きと摩耗メカニズムを先に押さえると結果が読みやすくなります。
+                        </p>
+                    </div>
+                    <div class="tag tag-good">taver 導線</div>
+                </div>
+                <div class="intro-journey-grid mt-6 grid gap-3">
+                    <div class="intro-journey-step">
+                        <div class="intro-journey-badge">01</div>
+                        <div class="mt-3 text-base font-black text-slate-900">測定原理</div>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">offset 配置と rub-wear action を先に見て、装置が何をしているかを押さえます。</p>
+                    </div>
+                    <div class="intro-journey-step">
+                        <div class="intro-journey-badge">02</div>
+                        <div class="mt-3 text-base font-black text-slate-900">概念地図</div>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">abrasive / adhesive / fatigue の違いを並べて、何が効くかを整理します。</p>
+                    </div>
+                    <div class="intro-journey-step">
+                        <div class="intro-journey-badge">03</div>
+                        <div class="mt-3 text-base font-black text-slate-900">図解</div>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">摩耗輪と荷重を変えて、摩耗量がどう増えるかを条件付きで比較します。</p>
+                    </div>
+                </div>
+                <div class="mt-6 flex flex-wrap gap-3">
+                    <button class="rounded-full bg-slate-900 px-5 py-3 text-sm font-bold text-white" data-action="goto-section" data-section="principle">測定原理から見る</button>
+                    <button class="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700" data-action="goto-section" data-section="concepts">概念地図へ進む</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderVisualComparePanel(scenario) {
+        if (topicId !== "taver" && topicId !== "epma") {
+            return "";
+        }
+
+        const snapshot = state.visual.compareSnapshot;
+        const compareSummary = scenario.compareSummary;
+        const isEpma = topicId === "epma";
+        const bodyText = isEpma
+            ? "今の条件を固定して、加速電圧や検出モードを変えた時の見え方を重ねて比較します。"
+            : "今の条件を固定して、摩耗輪や荷重を変えた時の差を同じ目盛で比較します。";
+        const emptyText = "比較したい条件を一度固定してから、他の条件を動かしてください。";
+        const compareMetricTitle = isEpma ? "相互作用深さの差" : "1000 回後との差";
+        const compareMetricValue = isEpma
+            ? escapeHtml(compareSummary && compareSummary.depthDelta ? compareSummary.depthDelta : "0.00 um")
+            : escapeHtml(compareSummary && compareSummary.delta ? compareSummary.delta : "0.0 mg");
+        const compareMetricNote = isEpma
+            ? `固定条件の深さ: ${escapeHtml(compareSummary && compareSummary.interactionDepth ? compareSummary.interactionDepth : "-")} / チャージ: ${escapeHtml(compareSummary && compareSummary.chargingRisk ? compareSummary.chargingRisk : "-")} / 分離しやすさ: ${escapeHtml(compareSummary && compareSummary.peakSeparation ? compareSummary.peakSeparation : "-")}`
+            : `固定条件の wear index: ${escapeHtml(compareSummary && compareSummary.finalWear ? compareSummary.finalWear : "-")}`;
+
+        return `
+            <div class="visual-compare-card rounded-[24px] border border-slate-200 bg-white p-4">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                        <div class="text-[11px] font-black tracking-[0.18em] text-slate-500">COMPARE HOLD</div>
+                        <div class="mt-2 text-base font-black text-slate-900">固定条件を残して比較する</div>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">
+                            ${bodyText}
+                        </p>
+                    </div>
+                    <div class="tag tag-neutral">${snapshot ? "固定済み" : "未固定"}</div>
+                </div>
+                ${snapshot && compareSummary ? `
+                    <div class="visual-compare-grid mt-4 grid gap-3 sm:grid-cols-2">
+                        <div class="visual-compare-metric">
+                            <div class="text-[11px] font-black tracking-[0.16em] text-slate-500">固定した条件</div>
+                            <div class="mt-2 text-sm font-bold leading-6 text-slate-800">${escapeHtml(scenario.compareSnapshotLabel || "固定条件")}</div>
+                        </div>
+                        <div class="visual-compare-metric">
+                            <div class="text-[11px] font-black tracking-[0.16em] text-slate-500">${compareMetricTitle}</div>
+                            <div class="mt-2 text-lg font-black text-amber-600">${compareMetricValue}</div>
+                            <p class="mt-1 text-xs leading-5 text-slate-500">${compareMetricNote}</p>
+                        </div>
+                    </div>
+                ` : `
+                    <div class="mt-4 rounded-2xl bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-600">
+                        ${emptyText}
+                    </div>
+                `}
+                <div class="mt-4 flex flex-wrap gap-3">
+                    <button class="rounded-full bg-slate-900 px-4 py-3 text-sm font-bold text-white" data-action="capture-visual-compare">
+                        ${snapshot ? "固定条件を更新" : "今の条件を固定"}
+                    </button>
+                    ${snapshot ? `<button class="rounded-full border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700" data-action="clear-visual-compare">固定比較を解除</button>` : ""}
+                </div>
+            </div>
+        `;
+    }
+
+    function renderVisualPeakOverlay(scenario) {
+        const markers = asArray(scenario && scenario.peakMarkers);
+        if (!markers.length) {
+            return "";
+        }
+        const xAxisRange = VISUAL_LEARNING.xAxisRange || {};
+        const min = Number.isFinite(xAxisRange.min) ? xAxisRange.min : 0;
+        const max = Number.isFinite(xAxisRange.max) ? xAxisRange.max : 1;
+        const span = Math.max(max - min, 0.001);
+        const reverse = Boolean(VISUAL_LEARNING.reverseXAxis);
+        const peakUnit = scenario && scenario.peakMarkerUnit ? scenario.peakMarkerUnit : "";
+        return `
+            <div class="visual-peak-overlay" aria-hidden="true">
+                ${markers.map((peak, index) => {
+                    const position = Number(peak.position !== undefined ? peak.position : peak.energy);
+                    const ratio = reverse ? (max - position) / span : (position - min) / span;
+                    const left = Math.min(Math.max(ratio * 100, 4), 96);
+                    return `
+                        <div class="visual-peak-marker visual-peak-marker-lane-${index % 2}" style="left:${left}%">
+                            <div class="visual-peak-stem"></div>
+                            <div class="visual-peak-badge">
+                                <div class="visual-peak-label">${escapeHtml(peak.label)}</div>
+                                <div class="visual-peak-energy">${escapeHtml(position.toFixed(0))}${peakUnit ? ` ${escapeHtml(peakUnit)}` : ""}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join("")}
             </div>
         `;
     }
@@ -1543,7 +2064,7 @@
     function renderHeader() {
         const intro = introSummary();
         const activeRole = getActiveRole();
-        const currentSection = APP_SECTIONS[sectionIndex[state.currentSection]] || APP_SECTIONS[0] || { label: "導入" };
+        const currentSection = APP_SECTIONS[sectionIndex[state.currentSection]] || APP_SECTIONS[0] || { label: "蟆主・" };
         const started = hasMeaningfulProgress();
         return `
             <header class="mx-auto max-w-6xl px-4 pb-6 pt-5 sm:px-6 sm:pt-8">
@@ -1560,7 +2081,7 @@
                     <section class="panel-card glass-card panel-card-soft overflow-hidden p-6 sm:p-8">
                         <div class="mb-5 inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-bold tracking-[0.18em] text-blue-700">${escapeHtml(HERO.eyebrow || "ADAPTIVE LEARNING")}</div>
                         <h1 class="max-w-3xl text-2xl font-black leading-snug text-slate-900 sm:text-4xl">
-                            ${escapeHtml(HERO.titleLead || `${topicName}を`)}
+                            ${escapeHtml(HERO.titleLead || `${topicName}?`)}
                             <span class="text-blue-700">${escapeHtml(HERO.titleAccent || "説明できる状態")}</span>
                             ${escapeHtml(HERO.titleTrail || "まで持っていく")}
                         </h1>
@@ -1590,7 +2111,7 @@
                             <dl class="mt-5 space-y-3 text-sm">
                                 <div class="metric-card p-4">
                                     <dt class="font-bold text-slate-700">現在の役割</dt>
-                                    <dd class="mt-1 text-slate-600">${escapeHtml(activeRole ? activeRole.label : "標準")}</dd>
+                                    <dd class="mt-1 text-slate-600">${escapeHtml(activeRole ? activeRole.label : "未設定")}</dd>
                                 </div>
                                 <div class="metric-card p-4">
                                     <dt class="font-bold text-slate-700">現在地</dt>
@@ -1602,10 +2123,8 @@
                             <h2 class="mt-2 text-2xl font-black text-slate-900">まずは 3 問だけ答える</h2>
                             <p class="mt-4 text-sm leading-7 text-slate-600">
                                 最初のセルフチェックが終わるまでは、進捗や詳細スキルは出しません。今はどこから始めるかだけ決めれば十分です。
-                            </p>
                             <div class="mt-5 rounded-2xl bg-slate-50 p-4 text-sm leading-7 text-slate-700">
-                                セルフチェック完了後に、おすすめ導線と役割別の進み方を出します。
-                            </div>
+                                セルフチェック後に、おすすめ導線と役割別の進み方を出します。
                         `}
                     </aside>
                 </div>
@@ -1637,11 +2156,21 @@
         const answeredCount = introAnsweredCount();
         const currentQuestion = nextIntroQuestion();
         const activeRole = getActiveRole();
+        const introPrimaryAction = topicId === "taver"
+            ? `
+                <button class="rounded-full bg-slate-900 px-4 py-3 text-sm font-bold text-white" data-action="goto-section" data-section="principle">測定原理から始める</button>
+                <button class="rounded-full border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700" data-action="goto-section" data-section="concepts">概念地図を整理する</button>
+            `
+            : renderSmartAction(
+                topCompetencies(1)[0] && topCompetencies(1)[0].definition.nextStep,
+                topCompetencies(1)[0] && topCompetencies(1)[0].definition.nextStep && topCompetencies(1)[0].definition.nextStep.label,
+                "rounded-full bg-slate-900 px-4 py-3 text-sm font-bold text-white"
+            );
         return `
             <section class="space-y-6">
                 <div class="panel-card p-6 sm:p-8">
                     <div class="text-xs font-bold tracking-[0.18em] text-slate-500">START HERE</div>
-                    <h2 class="mt-2 text-2xl font-black">${escapeHtml(INTRO_OVERVIEW_CARDS[0] ? INTRO_OVERVIEW_CARDS[0].title : `${topicName}を学ぶ`)}</h2>
+                    <h2 class="mt-2 text-2xl font-black">${escapeHtml(INTRO_OVERVIEW_CARDS[0] ? INTRO_OVERVIEW_CARDS[0].title : `${topicName}???`)}</h2>
                     <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
                         ${escapeHtml(HERO.description || (INTRO_OVERVIEW_CARDS[0] && INTRO_OVERVIEW_CARDS[0].body) || "")}
                     </p>
@@ -1672,11 +2201,11 @@
                                     `).join("")}
                                 </div>
                                 <p class="mt-4 text-xs leading-6 text-slate-500">
-                                    回答すると自動で保存されます。残り ${Math.max(INTRO_SELF_CHECK.length - answeredCount - 1, 0)} 問です。
-                                </p>
+                                    保存すると自動で反映されます。残り ${Math.max(INTRO_SELF_CHECK.length - answeredCount - 1, 0)} 問です。
                             </div>
                         ` : ""}
                     </div>
+                    ${renderTaverIntroJourneyCard()}
                     ${selfCheckComplete() ? `
                         <div class="mt-6 rounded-3xl bg-slate-50 p-5">
                             <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -1688,7 +2217,7 @@
                             </div>
                             <div class="mt-4 flex flex-wrap gap-3">
                                 ${renderSmartAction(topCompetencies(1)[0] && topCompetencies(1)[0].definition.nextStep, topCompetencies(1)[0] && topCompetencies(1)[0].definition.nextStep && topCompetencies(1)[0].definition.nextStep.label, "rounded-full bg-slate-900 px-4 py-3 text-sm font-bold text-white")}
-                                <button class="rounded-full border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700" data-action="goto-section" data-section="diagnosis">誤解診断へ進む</button>
+                                <button class="rounded-full border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700" data-action="goto-section" data-section="diagnosis">理解診断へ進む</button>
                                 <button class="rounded-full border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700" data-action="reset-intro-check">セルフチェックをやり直す</button>
                             </div>
                         </div>
@@ -1700,14 +2229,14 @@
                         <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                             <div>
                                 <div class="text-xs font-bold tracking-[0.18em] text-slate-500">ROLE BLUEPRINT</div>
-                                <h2 class="mt-2 text-2xl font-black">${escapeHtml(activeRole.label)}向けの進み方</h2>
+                                <h2 class="mt-2 text-2xl font-black">${escapeHtml(activeRole.label)} 向けの進み方</h2>
                                 <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-600">${escapeHtml(activeRole.summary)}</p>
                             </div>
                             <div class="tag tag-good">${escapeHtml(activeRole.label)}</div>
                         </div>
                         ${renderRoleTrackSelector()}
                         <div class="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-5">
-                            <div class="text-sm font-bold text-slate-900">続ける人向けの詳細</div>
+                            <div class="text-sm font-bold text-slate-900">続けるときの導線</div>
                             <div class="mt-4 grid gap-4 md:grid-cols-2">
                                 ${topCompetencies(2).map((item) => `
                                     <div class="skill-card">
@@ -1750,7 +2279,7 @@
                             <div class="text-xs font-bold tracking-[0.18em] text-blue-700">${escapeHtml(PRINCIPLE.eyebrow || "MEASUREMENT PRINCIPLE")}</div>
                             <h2 class="mt-2 text-2xl font-black">${escapeHtml(PRINCIPLE.title || "測定原理をつかむ")}</h2>
                             <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-                                ${escapeHtml(PRINCIPLE.description || "この section では、装置が何を入れて、何を返してきて、どこを解釈の支点にするかを整理します。")}
+                                ${escapeHtml(PRINCIPLE.description || "装置が何を入力し、どこで信号が生まれ、何を読み取るのかを先に整理します。")}
                             </p>
                         </div>
                         <div class="tag tag-neutral">${escapeHtml(topicName)}</div>
@@ -1808,8 +2337,8 @@
                     ` : ""}
 
                     <div class="mt-6 flex flex-wrap gap-3">
-                        <button class="rounded-full bg-slate-900 px-4 py-3 text-sm font-bold text-white" data-action="goto-section" data-section="concepts">概念比較へ進む</button>
-                        <button class="rounded-full border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700" data-action="goto-section" data-section="visual">条件比較を見る</button>
+                        <button class="rounded-full bg-slate-900 px-4 py-3 text-sm font-bold text-white" data-action="goto-section" data-section="concepts">概念地図へ進む</button>
+                        <button class="rounded-full border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700" data-action="goto-section" data-section="visual">図解を見る</button>
                     </div>
                 </div>
             </section>
@@ -1825,14 +2354,13 @@
                     <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                         <div>
                             <div class="text-xs font-bold tracking-[0.18em] text-blue-700">CONCEPT MAP</div>
-                            <h2 class="mt-2 text-2xl font-black">中核概念を動きと関係でつかむ</h2>
+                            <h2 class="mt-2 text-2xl font-black">主要概念を短くつないで見る</h2>
                             <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-                                ノードをタップすると、初学者向け説明と一歩踏み込んだ説明を切り替えられます。
-                                単語単体ではなく、何が動きの起点で、どこへ効くかを順番で見てください。
+                                ノードをたどるより、まず一番大事な概念を見てから関連概念へ広げられる構成にしています。
                             </p>
                         </div>
                         <div class="inline-flex rounded-full bg-slate-100 p-1">
-                            <button class="rounded-full px-4 py-2 text-sm font-bold ${state.conceptLevel === "basic" ? "bg-white text-blue-700 shadow-sm" : "text-slate-600"}" data-action="set-concept-level" data-level="basic">初学者向け</button>
+                            <button class="rounded-full px-4 py-2 text-sm font-bold ${state.conceptLevel === "basic" ? "bg-white text-blue-700 shadow-sm" : "text-slate-600"}" data-action="set-concept-level" data-level="basic">基礎で読む</button>
                             <button class="rounded-full px-4 py-2 text-sm font-bold ${state.conceptLevel === "advanced" ? "bg-white text-blue-700 shadow-sm" : "text-slate-600"}" data-action="set-concept-level" data-level="advanced">少し踏み込む</button>
                         </div>
                     </div>
@@ -1895,7 +2423,7 @@
                     <div class="text-xs font-bold tracking-[0.18em] text-emerald-700">VISUAL LEARNING</div>
                     <h2 class="mt-2 text-2xl font-black">${escapeHtml(VISUAL_LEARNING.title || "条件を動かして、どこを読むべきかを見る")}</h2>
                     <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-                        ${escapeHtml(VISUAL_LEARNING.description || "ここでは精密な実測再現ではなく、解釈の軸をつかむための概念モデルを使います。スライダーを動かし、どの条件でどの誤読が起きやすいかを確認してください。")}
+                        ${escapeHtml(VISUAL_LEARNING.description || "ここでは精密な実測再現ではなく、解釈の軸をつかむための概念モデルを使います。条件を変えた時に、どこがどう動くかを見てください。")}
                     </p>
                     <div class="visual-workbench mt-6">
                         <div class="visual-cockpit-card rounded-[28px] border border-slate-200 bg-white p-5">
@@ -1908,7 +2436,13 @@
                             </div>
                             <div class="visual-cockpit-grid mt-5 grid gap-5">
                                 <div class="visual-figure-column space-y-4">
-                                    <div class="visual-metrics-grid grid gap-3 sm:grid-cols-2">
+                                    <div class="visual-chart-panel rounded-[24px] bg-slate-50 p-4">
+                                        <div class="chart-wrap">
+                                            <canvas id="visualChart"></canvas>
+                                            ${renderVisualPeakOverlay(scenario)}
+                                        </div>
+                                    </div>
+                                    <div class="visual-metrics-grid visual-metrics-grid-compact grid gap-3 sm:grid-cols-2">
                                         ${(scenario.metrics || []).map((metric, index) => `
                                             <div class="metric-card p-4">
                                                 <div class="text-xs font-bold tracking-[0.18em] text-slate-500" data-visual-metric-label="${index}">${escapeHtml(metric.label)}</div>
@@ -1916,11 +2450,7 @@
                                             </div>
                                         `).join("")}
                                     </div>
-                                    <div class="visual-chart-panel rounded-[24px] bg-slate-50 p-4">
-                                        <div class="chart-wrap">
-                                            <canvas id="visualChart"></canvas>
-                                        </div>
-                                    </div>
+                                    ${renderVisualComparePanel(scenario)}
                                     <div class="visual-inline-controls grid gap-3">
                                         ${controls.map((control) => `
                                             <div class="visual-control-item">
@@ -1951,7 +2481,7 @@
                                         `).join("")}
                                     </div>
                                     <p class="text-xs leading-6 text-slate-500" data-visual-caption>
-                                        ${escapeHtml(VISUAL_LEARNING.chartCaption || "赤: 負荷、青: 除荷、点: hmax / hc / hf。数値そのものより「どこが解釈の支点か」を見るための概念図です。")}
+                                        ${escapeHtml(VISUAL_LEARNING.chartCaption || "数値の絶対値よりも、曲線やピークがどこでどう変わるかを見るための概念図です。")}
                                     </p>
                                 </div>
                                 <aside class="visual-side-rail space-y-4">
@@ -2012,7 +2542,7 @@
                             <div class="text-xs font-bold tracking-[0.18em] text-amber-700">MISCONCEPTION DIAGNOSIS</div>
                             <h2 class="mt-2 text-2xl font-black">よくある誤解を先に見つける</h2>
                             <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-                                分岐順ではなく、代表的な誤解を最初からすべて並べています。各設問は選ぶとすぐに正誤と解説が出ます。
+                                先に誤解しやすい点を見つけておくと、その後の図解や概念地図が読みやすくなります。推測で答えず、理由まで確認してください。
                             </p>
                         </div>
                         <button class="rounded-full border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700" data-action="reset-diagnosis">診断をやり直す</button>
@@ -2024,11 +2554,11 @@
                             <div class="mt-2 text-2xl font-black text-slate-900">${state.diagnosis.history.length}</div>
                         </div>
                         <div class="metric-card p-4">
-                            <div class="text-xs font-bold tracking-[0.18em] text-slate-500">正答数</div>
+                            <div class="text-xs font-bold tracking-[0.18em] text-slate-500">正解数</div>
                             <div class="mt-2 text-2xl font-black text-slate-900">${state.diagnosis.correctCount}</div>
                         </div>
                         <div class="metric-card p-4">
-                            <div class="text-xs font-bold tracking-[0.18em] text-slate-500">正答率</div>
+                            <div class="text-xs font-bold tracking-[0.18em] text-slate-500">正解率</div>
                             <div class="mt-2 text-2xl font-black text-slate-900">${diagnosisAccuracy()}%</div>
                         </div>
                     </div>
@@ -2038,10 +2568,10 @@
                             const entry = diagnosisEntry(question.id);
                             return `
                                 <div class="rounded-[30px] border border-slate-200 bg-white p-6">
-                                    <div class="text-xs font-bold tracking-[0.18em] text-slate-500">設問</div>
+                                    <div class="text-xs font-bold tracking-[0.18em] text-slate-500">QUESTION</div>
                                     <h3 class="mt-2 text-xl font-black leading-tight text-slate-900">${escapeHtml(question.prompt)}</h3>
                                     <p class="mt-3 text-sm leading-7 text-slate-600">
-                                        引っかかりやすい理由:
+                                        ひっかけポイント:
                                         ${escapeHtml(question.whyEasy)}
                                     </p>
                                     <div class="mt-5 space-y-3">
@@ -2053,8 +2583,8 @@
                                     </div>
                                     ${entry ? `
                                         <div class="mt-5 rounded-3xl ${entry.correct ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-900"} p-5">
-                                            <div class="text-sm font-black">${entry.correct ? "正解です" : "不正解です"}</div>
-                                            <div class="mt-1 text-xs font-bold tracking-[0.16em]">${entry.correct ? "誤解を回避できています" : "この誤解は起こりやすいです"}</div>
+                                            <div class="text-sm font-black">${entry.correct ? "正解" : "要復習"}</div>
+                                            <div class="mt-1 text-xs font-bold tracking-[0.16em]">${entry.correct ? "理解できています" : "理由まで確認する"}</div>
                                             <p class="mt-2 text-sm leading-7">${escapeHtml(entry.explanation)}</p>
                                         </div>
                                     ` : ""}
@@ -2066,13 +2596,13 @@
                     ${state.diagnosis.complete ? `
                         <div class="mt-6 grid gap-4 lg:grid-cols-[1fr_0.9fr]">
                             <div class="rounded-3xl border border-slate-200 p-6">
-                                <div class="text-xs font-bold tracking-[0.18em] text-slate-500">診断結果</div>
-                                <h3 class="mt-2 text-2xl font-black text-slate-900">弱点の傾向</h3>
+                                <div class="text-xs font-bold tracking-[0.18em] text-slate-500">診断サマリー</div>
+                                <h3 class="mt-2 text-2xl font-black text-slate-900">理解の要点</h3>
                                 <p class="mt-3 text-sm leading-7 text-slate-600">${escapeHtml(diagnosisSummaryText())}</p>
                                 <div class="mt-5 flex flex-wrap gap-2">
                                     ${(state.diagnosis.revisit || []).length
                                         ? state.diagnosis.revisit.map((item) => `<span class="tag tag-weak">${escapeHtml(item)}</span>`).join("")
-                                        : `<span class="tag tag-good">${escapeHtml(DIAGNOSIS_UI.noRevisitTagText || "再学習候補はまだ絞られていません")}</span>`
+                                        : `<span class="tag tag-good">${escapeHtml(DIAGNOSIS_UI.noRevisitTagText || "今のところ大きな弱点は見えていません")}</span>`
                                     }
                                 </div>
                             </div>
@@ -2080,9 +2610,9 @@
                                 <div class="text-sm font-bold text-blue-900">次のおすすめ</div>
                                 <div class="mt-4 space-y-3">
                                     ${(DIAGNOSIS_UI.nextActions || [
-                                        { section: "visual", label: "図解で曲線と深さを見直す" },
-                                        { section: "ai", label: "AI対話で弱点を言語化する" },
-                                        { section: "mastery", label: "選択式テストで仕上げる" }
+                                        { section: "visual", label: "図解で見直す" },
+                                        { section: "ai", label: "AI 対話で要点を整理する" },
+                                        { section: "mastery", label: "理解確認へ進む" }
                                     ]).map((item) => `
                                         <button class="w-full rounded-2xl bg-white px-4 py-4 text-left text-sm font-bold text-slate-800" data-action="goto-section" data-section="${item.section}">${escapeHtml(item.label)}</button>
                                     `).join("")}
@@ -2107,24 +2637,24 @@
                         <div class="space-y-5">
                             <div>
                                 <div class="text-xs font-bold tracking-[0.18em] text-blue-700">LEARNING COACH</div>
-                                <h2 class="mt-2 text-2xl font-black">会話より先に、次の行動を出す</h2>
+                                <h2 class="mt-2 text-2xl font-black">対話しながら次の理解へ進む</h2>
                                 <p class="mt-3 text-sm leading-7 text-slate-600">
-                                    まずは今の役割と弱点に合わせて、次の 5 問、見直す図、参照資料を即実行できる形で出します。自由質問はその下で補助的に使います。
+                                    まだ曖昧な用語や条件を対話で整理します。次の 5 手はそのまま学習導線として使えますし、自由入力での相談もできます。
                                 </p>
                             </div>
 
                             <div class="grid gap-3 md:grid-cols-3">
                                 <button class="coach-action ${state.ai.actionPanel === "questions" ? "coach-action-active" : ""} text-left" data-action="set-ai-action-panel" data-panel="questions">
-                                    <div class="text-sm font-black text-slate-900">次の5問</div>
-                                    <p class="mt-2 text-sm leading-6 text-slate-600">未回答と弱点から、今やるべき設問を並べます。</p>
+                                    <div class="text-sm font-black text-slate-900">次の 5 手</div>
+                                    <p class="mt-2 text-sm leading-6 text-slate-600">未回答や弱点から、次に見ると良い項目を並べます。</p>
                                 </button>
                                 <button class="coach-action text-left" data-action="launch-visual-review">
-                                    <div class="text-sm font-black text-slate-900">この図を見直す</div>
-                                    <p class="mt-2 text-sm leading-6 text-slate-600">${escapeHtml(visualMission ? visualMission.title : "図解セクションへ移動")}</p>
+                                    <div class="text-sm font-black text-slate-900">この図解を見る</div>
+                                    <p class="mt-2 text-sm leading-6 text-slate-600">${escapeHtml(visualMission ? visualMission.title : "おすすめの図解へ移動します")}</p>
                                 </button>
                                 <button class="coach-action text-left" data-action="open-primary-media">
-                                    <div class="text-sm font-black text-slate-900">この動画を見る</div>
-                                    <p class="mt-2 text-sm leading-6 text-slate-600">${escapeHtml(mediaTarget ? mediaTarget.title : "利用可能な参考資料を開きます")}</p>
+                                    <div class="text-sm font-black text-slate-900">この資料を見る</div>
+                                    <p class="mt-2 text-sm leading-6 text-slate-600">${escapeHtml(mediaTarget ? mediaTarget.title : "参考資料を開きます")}</p>
                                 </button>
                             </div>
 
@@ -2132,7 +2662,7 @@
                                 <div class="flex items-center justify-between gap-4">
                                     <div>
                                         <div class="text-xs font-bold tracking-[0.18em] text-slate-500">ACTION QUEUE</div>
-                                        <div class="mt-2 text-xl font-black text-slate-900">今やる 5 項目</div>
+                                        <div class="mt-2 text-xl font-black text-slate-900">次の 5 手</div>
                                     </div>
                                     <div class="tag tag-neutral">${queue.length} items</div>
                                 </div>
@@ -2156,7 +2686,7 @@
                             </div>
 
                             <div class="rounded-3xl border border-slate-200 p-5">
-                                <div class="text-sm font-bold text-slate-900">自由質問に切り替えるときの候補</div>
+                                <div class="text-sm font-bold text-slate-900">自分で質問を作るときの例</div>
                                 <div class="mt-4 flex flex-wrap gap-3">
                                     ${AI_SUGGESTED_PATHS.map((prompt) => `
                                         <button class="rounded-full border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700" data-action="send-ai-suggestion" data-prompt="${escapeHtml(prompt)}">${escapeHtml(prompt)}</button>
@@ -2169,17 +2699,17 @@
                             <div class="rounded-3xl bg-slate-50 p-5">
                                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                     <div>
-                                        <div class="text-sm font-bold text-slate-900">接続状態</div>
-                                        <div class="mt-1 text-sm text-slate-600">${state.settings.geminiApiKey ? "Gemini adapter を使用可能" : "ローカル分岐モードで動作中"}</div>
+                                        <div class="text-sm font-bold text-slate-900">対話モード</div>
+                                        <div class="mt-1 text-sm text-slate-600">${state.settings.geminiApiKey ? "Gemini adapter を使用可能" : "ローカルモードで応答中"}</div>
                                     </div>
-                                    <div class="tag ${state.settings.geminiApiKey ? "tag-good" : "tag-neutral"}">${escapeHtml(state.ai.lastMode === "gemini" ? "直近応答: Gemini" : "直近応答: Local")}</div>
+                                    <div class="tag ${state.settings.geminiApiKey ? "tag-good" : "tag-neutral"}">${escapeHtml(state.ai.lastMode === "gemini" ? "現在: Gemini" : "現在: Local")}</div>
                                 </div>
                                 <div class="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
-                                    <input id="apiKeyInput" type="password" class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm" placeholder="Gemini API キー（任意）" value="${escapeHtml(state.settings.geminiApiKey)}">
+                                    <input id="apiKeyInput" type="password" class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm" placeholder="Gemini API key" value="${escapeHtml(state.settings.geminiApiKey)}">
                                     <button class="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-bold text-white" data-action="clear-api-key">クリア</button>
                                 </div>
                                 <p class="mt-2 text-xs leading-6 text-slate-500">
-                                    キーはこのブラウザの localStorage にのみ保存します。未設定でも学習機能は止まりません。
+                                    キーはこのブラウザの localStorage にのみ保存します。共有端末では保存しない運用を推奨します。
                                 </p>
                             </div>
 
@@ -2212,10 +2742,10 @@
                             </div>
 
                             <div class="rounded-[28px] border border-slate-200 bg-white p-4">
-                                <label class="text-sm font-bold text-slate-900" for="aiPrompt">自由質問を書く</label>
-                                <textarea id="aiPrompt" class="mt-3 min-h-[140px] w-full rounded-3xl border border-slate-300 px-4 py-4 text-sm leading-7" placeholder="${escapeHtml(AI_UI.textareaPlaceholder || "例: 荷重-変位曲線の除荷勾配とヤング率の関係を、硬さとの違いも含めて説明してください。")}">${escapeHtml(state.ai.input)}</textarea>
+                                <label class="text-sm font-bold text-slate-900" for="aiPrompt">質問を入力</label>
+                                <textarea id="aiPrompt" class="mt-3 min-h-[140px] w-full rounded-3xl border border-slate-300 px-4 py-4 text-sm leading-7" placeholder="例: この条件で何を見ればよい？">${escapeHtml(state.ai.input)}</textarea>
                                 <div class="mt-4 flex items-center justify-between gap-4">
-                                    <p class="text-xs leading-6 text-slate-500">即実行アクションで足りないときだけ、自由質問に切り替えてください。</p>
+                                    <p class="text-xs leading-6 text-slate-500">具体的な条件や見えている違和感を書くと、返答が整理しやすくなります。</p>
                                     <button class="rounded-full bg-blue-700 px-5 py-3 text-sm font-bold text-white ${state.ai.pending ? "opacity-50" : ""}" data-action="submit-ai">送信する</button>
                                 </div>
                             </div>
@@ -2235,13 +2765,13 @@
                         <div class="space-y-5">
                             <div>
                                 <div class="text-xs font-bold tracking-[0.18em] text-emerald-700">MASTERY CHECK</div>
-                                <h2 class="mt-2 text-2xl font-black">最後は選択式テストで仕上げる</h2>
+                                <h2 class="mt-2 text-2xl font-black">最後に理解確認テストで仕上げる</h2>
                                 <p class="mt-3 text-sm leading-7 text-slate-600">
-                                    入力欄は使わず、短い選択式で中核概念を確認します。選ぶとすぐ正誤と解説が出ます。
+                                    ここまで見てきた要点を短いテストで確認します。答えた後に理由まで読み、説明できる状態まで持っていきます。
                                 </p>
                             </div>
                             <div class="rounded-3xl bg-slate-50 p-5">
-                                <div class="text-sm font-bold text-slate-900">合格ラインの目安</div>
+                                <div class="text-sm font-bold text-slate-900">説明ルーブリックの視点</div>
                                 <div class="mt-4 space-y-3">
                                     ${EXPLANATION_RUBRIC.map((item) => `
                                         <div class="rounded-2xl bg-white p-4 text-sm leading-7 text-slate-700">
@@ -2258,11 +2788,11 @@
                                     <div class="mt-2 text-2xl font-black text-slate-900">${result.answered}</div>
                                 </div>
                                 <div class="metric-card p-4">
-                                    <div class="text-xs font-bold tracking-[0.18em] text-slate-500">正答数</div>
+                                    <div class="text-xs font-bold tracking-[0.18em] text-slate-500">正解数</div>
                                     <div class="mt-2 text-2xl font-black text-slate-900">${result.correct}</div>
                                 </div>
                                 <div class="metric-card p-4">
-                                    <div class="text-xs font-bold tracking-[0.18em] text-slate-500">正答率</div>
+                                    <div class="text-xs font-bold tracking-[0.18em] text-slate-500">正解率</div>
                                     <div class="mt-2 text-2xl font-black text-slate-900">${result.accuracy}%</div>
                                 </div>
                             </div>
@@ -2282,7 +2812,7 @@
                                             </div>
                                             ${selectedChoice ? `
                                                 <div class="mt-4 rounded-3xl ${selectedChoice.correct ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-900"} p-4">
-                                                    <div class="text-sm font-black">${selectedChoice.correct ? "正解" : "不正解"}</div>
+                                                    <div class="text-sm font-black">${selectedChoice.correct ? "正解" : "要復習"}</div>
                                                     <p class="mt-2 text-sm leading-7">${escapeHtml(selectedChoice.explanation)}</p>
                                                 </div>
                                             ` : ""}
@@ -2293,16 +2823,16 @@
                             ${result.answered ? `
                                 <div class="rounded-[30px] border border-slate-200 bg-slate-50 p-5">
                                     <div class="flex items-center justify-between gap-4">
-                                        <div class="text-sm font-bold text-slate-900">結果サマリー</div>
+                                        <div class="text-sm font-bold text-slate-900">サマリー</div>
                                         <div class="tag ${result.accuracy >= 75 ? "tag-good" : "tag-weak"}">${escapeHtml(result.level)}</div>
                                     </div>
                                     <div class="mt-4 grid gap-4 md:grid-cols-2">
                                         <div class="rounded-2xl bg-white p-4">
-                                            <div class="text-xs font-bold tracking-[0.18em] text-slate-500">まだ弱い問い</div>
+                                            <div class="text-xs font-bold tracking-[0.18em] text-slate-500">まだ弱い項目</div>
                                             <ul class="mt-3 space-y-2 text-sm leading-7 text-slate-700">
                                                 ${(result.weakQuestions.length
                                                     ? result.weakQuestions
-                                                    : ["現時点で大きな取りこぼしはありません"]
+                                                    : ["今のところ大きな弱点はありません"]
                                                 ).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
                                             </ul>
                                         </div>
@@ -2311,15 +2841,15 @@
                                             <ul class="mt-3 space-y-2 text-sm leading-7 text-slate-700">
                                                 ${(result.missing.length
                                                     ? result.missing
-                                                    : ["全問回答済みです"]
+                                                    : ["未回答はありません"]
                                                 ).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
                                             </ul>
                                         </div>
                                     </div>
                                     <div class="mt-4 rounded-2xl bg-blue-50 p-4 text-sm leading-7 text-blue-900">
                                         ${result.accuracy >= 75
-                                            ? "選択式では中核を押さえています。次は AI 対話で、自分の言葉でも説明できるか確認してください。"
-                                            : "正答率が低い問いは、図解と誤解診断の該当部分へ戻ってから再挑戦すると定着しやすいです。"}
+                                            ? "説明に自信があれば、AI 対話で言語化の練習まで進めます。"
+                                            : "正答だけで終わらせず、概念地図や図解に戻って理由まで確認してください。"}
                                     </div>
                                 </div>
                             ` : ""}
@@ -2340,9 +2870,9 @@
                     <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                         <div>
                             <div class="text-xs font-bold tracking-[0.18em] text-slate-500">LEARNING RECORD</div>
-                            <h2 class="mt-2 text-2xl font-black">学習状態の保存と振り返り</h2>
+                            <h2 class="mt-2 text-2xl font-black">学習記録を保存して振り返る</h2>
                             <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-                                どこまで進んだか、どこでつまずいたか、何を再学習すべきかをローカルに保持します。
+                                どこまで進んだか、どこでつまずいたかを見返します。必要ならここから弱点セクションへ戻れます。
                             </p>
                         </div>
                         <button class="rounded-full border border-red-300 bg-white px-4 py-3 text-sm font-bold text-red-700" data-action="reset-progress">保存データを初期化する</button>
@@ -2352,21 +2882,21 @@
                         <div class="metric-card p-5">
                             <div class="text-xs font-bold tracking-[0.18em] text-slate-500">現在の役割</div>
                             <div class="mt-3 text-sm leading-7 text-slate-700">
-                                ${escapeHtml(activeRole ? `${activeRole.label}: ${activeRole.summary}` : "標準導線")}
+                                ${escapeHtml(activeRole ? `${activeRole.label}: ${activeRole.summary}` : "役割はまだ設定されていません")}
                             </div>
                         </div>
                         <div class="metric-card p-5">
-                            <div class="text-xs font-bold tracking-[0.18em] text-slate-500">誤解が出やすかった点</div>
+                            <div class="text-xs font-bold tracking-[0.18em] text-slate-500">理解が弱いままの点</div>
                             <div class="mt-3 flex flex-wrap gap-2">
-                                ${revisit.length ? revisit.map((item) => `<span class="tag tag-weak">${escapeHtml(item)}</span>`).join("") : '<span class="tag tag-good">まだ未診断または大きな偏りなし</span>'}
+                                ${revisit.length ? revisit.map((item) => `<span class="tag tag-weak">${escapeHtml(item)}</span>`).join("") : '<span class="tag tag-good">今のところ大きな弱点はありません</span>'}
                             </div>
                         </div>
                         <div class="metric-card p-5">
-                            <div class="text-xs font-bold tracking-[0.18em] text-slate-500">操作課題</div>
+                            <div class="text-xs font-bold tracking-[0.18em] text-slate-500">課題ミッション</div>
                             <div class="mt-3 text-sm leading-7 text-slate-700">
                                 ${(state.visual.completedMissions || []).length
-                                    ? `${(state.visual.completedMissions || []).length} / ${SIMULATION_MISSIONS.length} 課題を完了`
-                                    : "まだ未完了です。図解セクションでミッションを 1 つ選んでください。"}
+                                    ? `${(state.visual.completedMissions || []).length} / ${SIMULATION_MISSIONS.length} 件の mission を完了`
+                                    : "まだ完了した mission はありません"}
                             </div>
                         </div>
                     </div>
@@ -2417,11 +2947,11 @@
                     <div class="mt-6 rounded-[30px] border border-slate-200 bg-white p-6">
                         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                                <div class="text-sm font-bold text-slate-900">参考資料</div>
-                                <p class="mt-2 text-sm leading-6 text-slate-600">必要な人だけ外部教材を開く構成にしています。</p>
+                                <div class="text-sm font-bold text-slate-900">参考メディア</div>
+                                <p class="mt-2 text-sm leading-6 text-slate-600">補助的に動画や外部資料を開きたいときだけ表示します。</p>
                             </div>
                             <button class="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700" data-action="toggle-ui-panel" data-panel="showResources">
-                                ${state.ui && state.ui.showResources ? "参考資料を閉じる" : "参考資料を開く"}
+                                ${state.ui && state.ui.showResources ? "閉じる" : "表示する"}
                             </button>
                         </div>
                         ${state.ui && state.ui.showResources ? `
@@ -2481,8 +3011,7 @@
                     <div class="text-xs font-bold tracking-[0.18em] text-rose-700">RENDER ERROR</div>
                     <h1 class="mt-2 text-2xl font-black text-slate-900">表示に失敗しました</h1>
                     <p class="mt-4 text-sm leading-7 text-slate-600">
-                        保存済みの状態やブラウザキャッシュが、現在のUI構造と合わずに壊れている可能性があります。
-                    </p>
+                        保存済みの状態やブラウザキャッシュが、現在の UI 構造と合わずに壊れている可能性があります。
                     <div class="mt-5 rounded-2xl bg-slate-50 p-4 text-sm leading-7 text-slate-700">
                         ${escapeHtml(message)}
                     </div>
@@ -2555,12 +3084,16 @@
             return;
         }
         const xAxisRange = VISUAL_LEARNING.xAxisRange || {};
+        const yAxisRange = VISUAL_LEARNING.yAxisRange || {};
         chart.data.datasets = getVisualChartDatasets(chartConfig);
         chart.options.plugins.tooltip.callbacks.label = chartTooltipLabel;
         chart.options.scales.x.title.text = (VISUAL_LEARNING.axisLabels && VISUAL_LEARNING.axisLabels.x) || "X";
         chart.options.scales.x.min = xAxisRange.min;
         chart.options.scales.x.max = xAxisRange.max;
+        chart.options.scales.x.reverse = Boolean(VISUAL_LEARNING.reverseXAxis);
         chart.options.scales.y.title.text = (VISUAL_LEARNING.axisLabels && VISUAL_LEARNING.axisLabels.y) || "Y";
+        chart.options.scales.y.min = yAxisRange.min;
+        chart.options.scales.y.max = yAxisRange.max;
         chart.update("none");
     }
 
@@ -2660,6 +3193,7 @@
                         type: "linear",
                         min: VISUAL_LEARNING.xAxisRange && VISUAL_LEARNING.xAxisRange.min,
                         max: VISUAL_LEARNING.xAxisRange && VISUAL_LEARNING.xAxisRange.max,
+                        reverse: Boolean(VISUAL_LEARNING.reverseXAxis),
                         title: {
                             display: true,
                             text: (VISUAL_LEARNING.axisLabels && VISUAL_LEARNING.axisLabels.x) || "X"
@@ -2669,6 +3203,8 @@
                         }
                     },
                     y: {
+                        min: VISUAL_LEARNING.yAxisRange && VISUAL_LEARNING.yAxisRange.min,
+                        max: VISUAL_LEARNING.yAxisRange && VISUAL_LEARNING.yAxisRange.max,
                         title: {
                             display: true,
                             text: (VISUAL_LEARNING.axisLabels && VISUAL_LEARNING.axisLabels.y) || "Y"
@@ -2743,7 +3279,7 @@
             state.ai.messages.push({
                 role: "assistant",
                 mode: "local",
-                content: "応答の取得に失敗しました。ローカル分岐モードで続けるか、質問をもう少し具体化してください。"
+                content: "応答中にエラーが出ました。少し時間を置いてから、もう一度質問してください。",
             });
             state.ai.lastMode = "local";
         } finally {
@@ -2877,6 +3413,20 @@
             return;
         }
 
+        if (action === "capture-visual-compare") {
+            state.visual.compareSnapshot = extractComparableVisualState(state.visual);
+            persist();
+            renderApp();
+            return;
+        }
+
+        if (action === "clear-visual-compare") {
+            state.visual.compareSnapshot = null;
+            persist();
+            renderApp();
+            return;
+        }
+
         if (action === "open-concept") {
             openConcept(button.dataset.concept);
             return;
@@ -2976,7 +3526,7 @@
         }
 
         if (action === "reset-progress") {
-            if (window.confirm("学習状態を初期化します。保存済みの進捗、AI 履歴、診断結果も消えます。続けますか。")) {
+            if (window.confirm("学習記録を初期化します。AI の対話履歴も消えます。よろしいですか？")) {
                 state = resetState();
                 renderApp();
                 window.scrollTo({ top: 0, behavior: "smooth" });

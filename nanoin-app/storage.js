@@ -33,7 +33,8 @@
             material: defaultMaterial,
             guideField: "material",
             currentMissionId: "",
-            completedMissions: []
+            completedMissions: [],
+            compareSnapshot: null
         }, clone(defaults.visual || {})),
         diagnosis: {
             currentQuestionId: diagnosisStartQuestionId,
