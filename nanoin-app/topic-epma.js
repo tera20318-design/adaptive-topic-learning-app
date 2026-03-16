@@ -185,9 +185,75 @@
     ];
 
     const EPMA_FIGURE_CARDS = [
-        { id: "column", title: "電子光学系", description: "電子銃、レンズ、試料位置の関係を押さえ、細いビームと相互作用体積の差を理解する。" },
-        { id: "spectrometer", title: "分光系", description: "EDS は一括取得、WDS は結晶で波長を選別する。分離能と速度の違いをここで整理する。" },
-        { id: "prepflow", title: "試料作製フロー", description: "切断、包埋、研磨、洗浄、炭素蒸着までを一つの品質プロセスとして捉える。" }
+        {
+            id: "column",
+            title: "電子光学系",
+            label: "図 1",
+            illustration: `<svg viewBox='0 0 260 120' class='w-full'>
+                <rect x='114' y='8' width='32' height='18' rx='6' fill='#0f172a'/>
+                <rect x='120' y='26' width='20' height='32' rx='4' fill='#334155'/>
+                <ellipse cx='130' cy='64' rx='18' ry='6' fill='none' stroke='#3b82f6' stroke-width='2.5'/>
+                <ellipse cx='130' cy='76' rx='14' ry='5' fill='none' stroke='#3b82f6' stroke-width='2'/>
+                <line x1='130' y1='58' x2='130' y2='92' stroke='#2563eb' stroke-width='2' stroke-dasharray='3 2'/>
+                <ellipse cx='130' cy='98' rx='26' ry='10' fill='rgba(14,165,233,0.18)' stroke='rgba(14,165,233,0.5)' stroke-width='1.5'/>
+                <text x='170' y='100' font-size='10' fill='#475569'>相互作用体積</text>
+                <text x='148' y='16' font-size='10' fill='#0f172a'>電子銃</text>
+            </svg>`,
+            bullets: [
+                { label: "電子銃", body: "高エネルギー電子線を生成し、レンズで細く絞る" },
+                { label: "相互作用体積", body: "試料内で涙滴状に広がりながら特性 X 線が発生する" },
+                { label: "局所性", body: "加速電圧が上がるほど分析深さと横広がりが増す" }
+            ]
+        },
+        {
+            id: "spectrometer",
+            title: "分光系",
+            label: "図 2",
+            illustration: `<svg viewBox='0 0 260 120' class='w-full'>
+                <rect x='16' y='44' width='54' height='28' rx='10' fill='#1d4ed8'/>
+                <rect x='192' y='36' width='54' height='28' rx='10' fill='#0f766e'/>
+                <rect x='108' y='16' width='44' height='36' rx='12' fill='#f59e0b'/>
+                <text x='28' y='62' font-size='10' fill='#fff' font-weight='bold'>EDS</text>
+                <text x='200' y='54' font-size='10' fill='#fff' font-weight='bold'>WDS</text>
+                <text x='115' y='38' font-size='10' fill='#0f172a'>結晶</text>
+                <line x1='70' y1='58' x2='108' y2='34' stroke='#94a3b8' stroke-width='2' stroke-dasharray='4 3'/>
+                <line x1='152' y1='34' x2='192' y2='50' stroke='#94a3b8' stroke-width='2'/>
+                <text x='72' y='100' font-size='10' fill='#475569'>全元素を同時取得</text>
+                <text x='162' y='100' font-size='10' fill='#475569'>高分離・微量対応</text>
+            </svg>`,
+            bullets: [
+                { label: "EDS", body: "全元素を同時に取得する広域スクリーニング向け" },
+                { label: "WDS", body: "分光結晶で波長を選別し高い分解能で読む" },
+                { label: "使い分け", body: "入口は EDS、精密定量・近接ピークは WDS" }
+            ]
+        },
+        {
+            id: "prepflow",
+            title: "試料作製フロー",
+            label: "図 3",
+            illustration: `<svg viewBox='0 0 260 120' class='w-full'>
+                <rect x='14' y='40' width='46' height='34' rx='10' fill='#e2e8f0'/>
+                <rect x='78' y='40' width='46' height='34' rx='10' fill='#bfdbfe'/>
+                <rect x='142' y='40' width='46' height='34' rx='10' fill='#d1fae5'/>
+                <rect x='206' y='40' width='44' height='34' rx='10' fill='#fef3c7'/>
+                <path d='M60 57h14' stroke='#94a3b8' stroke-width='3' marker-end='url(#a)' stroke-linecap='round'/>
+                <path d='M124 57h14' stroke='#94a3b8' stroke-width='3' stroke-linecap='round'/>
+                <path d='M188 57h14' stroke='#94a3b8' stroke-width='3' stroke-linecap='round'/>
+                <text x='20' y='61' font-size='9' fill='#334155'>切断</text>
+                <text x='22' y='70' font-size='9' fill='#334155'>包埋</text>
+                <text x='84' y='61' font-size='9' fill='#1d4ed8'>研磨</text>
+                <text x='84' y='70' font-size='9' fill='#1d4ed8'>洗浄</text>
+                <text x='148' y='61' font-size='9' fill='#065f46'>炭素</text>
+                <text x='148' y='70' font-size='9' fill='#065f46'>蒸着</text>
+                <text x='210' y='61' font-size='9' fill='#92400e'>測定</text>
+                <text x='210' y='70' font-size='9' fill='#92400e'>開始</text>
+            </svg>`,
+            bullets: [
+                { label: "平坦性", body: "鏡面研磨で X 線経路長のばらつきを抑える" },
+                { label: "清浄性", body: "研磨材・汚染物の残留は偽ピークにつながる" },
+                { label: "導電性", body: "炭素蒸着でチャージを抑えながら X 線吸収を最小化" }
+            ]
+        }
     ];
 
     const EPMA_CONCEPTS = [
@@ -537,7 +603,7 @@
     const EPMA_TOPIC = {
         id: "epma",
         name: "EPMA",
-        pageTitle: "EPMA電子線マイクロアナライザ 適応型学習アプリ",
+        pageTitle: "EPMA 電子線マイクロアナライザ 適応型学習アプリ",
         storageKeySuffix: "epma",
         hero: EPMA_HERO,
         principle: EPMA_PRINCIPLE,

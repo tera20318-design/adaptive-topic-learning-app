@@ -1,4 +1,4 @@
-﻿(function () {
+(function () {
     const content = window.NanoLearnContent || {};
     const meta = content.meta || {};
     const TOPICS = content.topics || {};
@@ -30,6 +30,9 @@
     const SIMULATION_MISSIONS = topic.simulationMissions || [];
     const { loadState, saveState, resetState, defaultState: storageDefaultState } = window.NanoLearnStorage;
     const { AIService } = window.NanoLearnAI;
+    const nanoinUi = window.NanoLearnNanoinUi || {};
+    const xrfUi = window.NanoLearnXrfUi || {};
+    const taverUi = window.NanoLearnTaverUi || {};
     const epmaUi = window.NanoLearnEpmaUi || {};
     const irUi = window.NanoLearnIrUi || {};
 
@@ -365,7 +368,7 @@
                         title: question.prompt,
                         detail: competencyState.definition.title,
                         section: "mastery",
-                        buttonLabel: "逅・ｧ｣遒ｺ隱阪∈"
+                        buttonLabel: "習熟確認へ"
                     });
                 }
             });
@@ -690,13 +693,13 @@
             })
             .map((question) => question.prompt);
 
-        let level = "???";
+        let level = "未回答";
         if (answered === MASTERY_QUIZ.length && correct === MASTERY_QUIZ.length) {
-            level = "???";
+            level = "完全理解";
         } else if (correct >= 3) {
-            level = "???";
+            level = "概ね理解";
         } else if (answered > 0) {
-            level = "???";
+            level = "要復習";
         }
 
         return {
@@ -824,161 +827,24 @@
     }
 
     function renderNanoIndentScene(options) {
-        const sceneClass = options.sceneClass || "";
-        const labels = asArray(options.labels).slice(0, 3);
-        return `
-            <div class="concept-scene ${sceneClass}">
-                <div class="scene-frame scene-frame-nano">
-                    <div class="scene-frame-grid"></div>
-                    <div class="scene-frame-glow"></div>
-                    <div class="scene-frame-label scene-frame-label-left">${escapeHtml(options.frameLabelLeft || "FORCE")}</div>
-                    <div class="scene-frame-label scene-frame-label-right">${escapeHtml(options.frameLabelRight || "READOUT")}</div>
-                    <div class="scene-indent-wrap">
-                        <div class="scene-probe"></div>
-                        <div class="scene-force-line"></div>
-                        ${options.showContactHalo ? '<div class="scene-contact-halo"></div>' : ""}
-                        ${options.showStressFan ? '<div class="scene-stress-fan"></div>' : ""}
-                        ${options.showDepthMarker ? '<div class="scene-depth-marker"></div>' : ""}
-                        <div class="scene-surface ${options.roughSurface ? "scene-surface-rough" : ""}"></div>
-                        ${options.showFilm ? '<div class="scene-film-layer"></div>' : ""}
-                        ${options.showSubstrate ? '<div class="scene-substrate-layer"></div>' : ""}
-                        <div class="scene-indent-mark ${options.indentClass || ""}"></div>
-                        ${options.showCurve ? '<div class="scene-mini-curve"></div>' : ""}
-                        ${options.showSpring ? '<div class="scene-spring-arc"></div>' : ""}
-                    </div>
-                </div>
-                <div class="scene-legend">
-                    ${labels.map((label) => `<span class="scene-legend-chip">${escapeHtml(label)}</span>`).join("")}
-                </div>
-                <p class="scene-caption">${escapeHtml(options.caption || "")}</p>
-            </div>
-        `;
+        if (typeof nanoinUi !== "undefined" && typeof nanoinUi.renderScene === "function") {
+            return nanoinUi.renderScene(options, { escapeHtml, asArray });
+        }
+        return "";
     }
 
     function renderXrfScene(options) {
-        const labels = asArray(options.labels).slice(0, 3);
-        return `
-            <div class="concept-scene ${options.sceneClass || ""}">
-                <div class="scene-frame scene-frame-xrf">
-                    <div class="scene-frame-grid"></div>
-                    <div class="scene-frame-glow"></div>
-                    <div class="scene-frame-label scene-frame-label-left">${escapeHtml(options.frameLabelLeft || "SOURCE")}</div>
-                    <div class="scene-frame-label scene-frame-label-right">${escapeHtml(options.frameLabelRight || "DETECTOR")}</div>
-                    <div class="scene-xrf-wrap">
-                        <div class="scene-source-box">${escapeHtml(options.sourceLabel || "SOURCE")}</div>
-                        <div class="scene-beam scene-beam-forward"></div>
-                        ${options.showShield ? '<div class="scene-shield"></div>' : ""}
-                        <div class="scene-sample-block ${options.sampleClass || ""}">
-                            <div class="scene-sample-core"></div>
-                        </div>
-                        ${options.showMatrixLayers ? '<div class="scene-matrix-layers"><span></span><span></span><span></span></div>' : ""}
-                        <div class="scene-beam scene-beam-return"></div>
-                        <div class="scene-detector-box">${escapeHtml(options.detectorLabel || "DETECT")}</div>
-                        ${options.showPeaks ? '<div class="scene-spectrum-peaks"></div>' : ""}
-                        ${options.showScan ? '<div class="scene-scan-line"></div>' : ""}
-                        ${options.showDoor ? '<div class="scene-door-panel"></div>' : ""}
-                    </div>
-                </div>
-                <div class="scene-legend">
-                    ${labels.map((label) => `<span class="scene-legend-chip">${escapeHtml(label)}</span>`).join("")}
-                </div>
-                <p class="scene-caption">${escapeHtml(options.caption || "")}</p>
-            </div>
-        `;
+        if (typeof xrfUi !== "undefined" && typeof xrfUi.renderScene === "function") {
+            return xrfUi.renderScene(options, { escapeHtml, asArray });
+        }
+        return "";
     }
 
     function renderTaverScene(options) {
-        const labels = asArray(options.labels).slice(0, 3);
-        const variant = options.variant || "topview";
-
-        let stage = "";
-        if (variant === "abrasive") {
-            stage = `
-                <div class="scene-taver-wear scene-taver-wear-abrasive">
-                    <div class="scene-taver-bed"></div>
-                    <div class="scene-taver-bed-edge"></div>
-                    <div class="scene-taver-abrasive-tool">
-                        <span class="scene-taver-abrasive-grit scene-taver-abrasive-grit-a"></span>
-                        <span class="scene-taver-abrasive-grit scene-taver-abrasive-grit-b"></span>
-                        <span class="scene-taver-abrasive-grit scene-taver-abrasive-grit-c"></span>
-                    </div>
-                    <div class="scene-taver-scratch-band"></div>
-                    <div class="scene-taver-scratch-band scene-taver-scratch-band-2"></div>
-                    <div class="scene-taver-chip scene-taver-chip-a"></div>
-                    <div class="scene-taver-chip scene-taver-chip-b"></div>
-                </div>
-            `;
-        } else if (variant === "adhesive") {
-            stage = `
-                <div class="scene-taver-wear scene-taver-wear-adhesive">
-                    <div class="scene-taver-bed"></div>
-                    <div class="scene-taver-bed-edge"></div>
-                    <div class="scene-taver-adhesive-top">
-                        <div class="scene-taver-adhesive-bond"></div>
-                    </div>
-                    <div class="scene-taver-adhesive-shadow"></div>
-                    <div class="scene-taver-adhesive-transfer"></div>
-                </div>
-            `;
-        } else if (variant === "fatigue") {
-            stage = `
-                <div class="scene-taver-wear scene-taver-wear-fatigue">
-                    <div class="scene-taver-fatigue-hit scene-taver-fatigue-hit-a"></div>
-                    <div class="scene-taver-fatigue-hit scene-taver-fatigue-hit-b"></div>
-                    <div class="scene-taver-fatigue-hit scene-taver-fatigue-hit-c"></div>
-                    <div class="scene-taver-fatigue-echo scene-taver-fatigue-echo-a"></div>
-                    <div class="scene-taver-fatigue-echo scene-taver-fatigue-echo-b"></div>
-                    <div class="scene-taver-bed"></div>
-                    <div class="scene-taver-bed-edge scene-taver-fatigue-edge"></div>
-                    <div class="scene-taver-fatigue-crack"></div>
-                </div>
-            `;
-        } else if (variant === "wearindex") {
-            stage = `
-                <div class="scene-taver-wear scene-taver-wear-index">
-                    <div class="scene-taver-index-axis scene-taver-index-axis-y"></div>
-                    <div class="scene-taver-index-axis scene-taver-index-axis-x"></div>
-                    <div class="scene-taver-index-bar scene-taver-index-bar-a"></div>
-                    <div class="scene-taver-index-bar scene-taver-index-bar-b"></div>
-                    <div class="scene-taver-index-bar scene-taver-index-bar-c"></div>
-                    <div class="scene-taver-index-guide"></div>
-                </div>
-            `;
-        } else {
-            stage = `
-                <div class="scene-taver-topview">
-                    <div class="scene-taver-platter">
-                        <div class="scene-taver-table"></div>
-                        <div class="scene-taver-dash"></div>
-                        <div class="scene-taver-ring"></div>
-                        <div class="scene-taver-track scene-taver-track-a"></div>
-                        <div class="scene-taver-track scene-taver-track-b"></div>
-                        <div class="scene-taver-hub"></div>
-                    </div>
-                    <div class="scene-taver-carriage">
-                        <div class="scene-taver-wheel scene-taver-wheel-left"></div>
-                        <div class="scene-taver-wheel scene-taver-wheel-right"></div>
-                        <div class="scene-taver-axis"></div>
-                    </div>
-                </div>
-            `;
+        if (typeof taverUi !== "undefined" && typeof taverUi.renderScene === "function") {
+            return taverUi.renderScene(options, { escapeHtml, asArray });
         }
-
-        return `
-            <div class="concept-scene ${options.sceneClass || ""}">
-                <div class="scene-frame scene-frame-taver">
-                    <div class="scene-frame-grid"></div>
-                    <div class="scene-frame-glow"></div>
-                    <div class="scene-frame-label scene-frame-label-left">${escapeHtml(options.frameLabelLeft || "TABER")}</div>
-                    <div class="scene-frame-label scene-frame-label-right">${escapeHtml(options.frameLabelRight || "MOTION")}</div>
-                    ${stage}
-                </div>
-                <div class="scene-legend">
-                    ${labels.map((label) => `<span class="scene-legend-chip">${escapeHtml(label)}</span>`).join("")}
-                </div>
-                <p class="scene-caption">${escapeHtml(options.caption || "")}</p>
-            </div>
-        `;
+        return "";
     }
 
     function renderEpmaScene(options) {
@@ -1078,7 +944,7 @@
     }
 
     function renderIrScene(options) {
-        if (typeof irUi.renderScene === "function") {
+        if (typeof irUi !== "undefined" && typeof irUi.renderScene === "function") {
             return irUi.renderScene(options, { escapeHtml, asArray });
         }
         return renderXrfScene(options);
@@ -1596,98 +1462,22 @@
     }
 
     function getVisualControlGuide(field) {
-        if (topicId === "ir" && typeof irUi.getControlGuide === "function") {
+        if (topicId === "ir" && typeof irUi !== "undefined" && typeof irUi.getControlGuide === "function") {
             return irUi.getControlGuide(field);
         }
-        if (topicId === "epma" && typeof epmaUi.getControlGuide === "function") {
+        if (topicId === "epma" && typeof epmaUi !== "undefined" && typeof epmaUi.getControlGuide === "function") {
             return epmaUi.getControlGuide(field);
         }
-        if (topicId === "taver") {
-            const guides = {
-                material: {
-                    focus: ["摩耗量", "曲線の傾き"],
-                    note: "試料側の違いで、同じ条件でも摩耗の増え方が変わります。",
-                },
-                wearMode: {
-                    focus: ["立ち上がり", "終点"],
-                    note: "摩耗メカニズムを変えると、初期と後半の増え方が変わります。",
-                },
-                wheelType: {
-                    focus: ["勾配", "最終摩耗量"],
-                    note: "摩耗輪の種類で削れ方の強さと安定性を見分けます。",
-                },
-                load: {
-                    focus: ["摩耗量", "測定時間"],
-                    note: "荷重を上げると摩耗は増えやすい一方で、比較条件も揃える必要があります。",
-                }
-            };
-            return guides[field] || { focus: [], note: "" };
+        if (topicId === "taver" && typeof taverUi !== "undefined" && typeof taverUi.getControlGuide === "function") {
+            return taverUi.getControlGuide(field);
         }
-        if (topicId === "epma") {
-            const guides = {
-                material: {
-                    focus: ["ピーク形状", "低エネルギー側"],
-                    note: "試料母材で自己吸収やチャージの出やすさが変わります。",
-                },
-                acceleratingVoltage: {
-                    focus: ["相互作用深さ", "ピーク分離"],
-                    note: "加速電圧で励起できる線種と分析深さが変わります。",
-                },
-                beamCurrent: {
-                    focus: ["S/N", "チャージ"],
-                    note: "ビーム電流はカウントを増やしますが、損傷や帯電も強めます。",
-                },
-                detectorMode: {
-                    focus: ["ピーク分離", "検出感度"],
-                    note: "EDS と WDS で、見える情報の粒度が変わります。",
-                },
-                carbonCoating: {
-                    focus: ["チャージ", "低エネルギー側"],
-                    note: "炭素蒸着は帯電を抑えますが、低エネルギー側の見え方にも影響します。",
-                }
-            };
-            return guides[field] || { focus: [], note: "" };
+        if (topicId === "nanoin" && typeof nanoinUi !== "undefined" && typeof nanoinUi.getControlGuide === "function") {
+            return nanoinUi.getControlGuide(field);
         }
-        const guides = {
-            nanoin: {
-                material: {
-                    focus: ["曲線の形", "残留深さ"],
-                    note: "材料モデルで負荷曲線と除荷後の戻り方が変わります。",
-                },
-                filmThickness: {
-                    focus: ["接触深さ", "基板影響"],
-                    note: "膜厚に対して押し込みが深すぎると、下地の影響を受けやすくなります。",
-                },
-                roughness: {
-                    focus: ["浅部ノイズ", "読み取りの揺れ"],
-                    note: "表面粗さが大きいほど、浅い領域の読みが不安定になります。",
-                },
-                tipRadius: {
-                    focus: ["初期勾配", "接触面積"],
-                    note: "先端が丸いほど、初期接触の見え方と接触面積が変わります。",
-                }
-            },
-            xrf: {
-                material: {
-                    focus: ["ピーク位置", "バックグラウンド"],
-                    note: "母材によって、注目ピークと背景の見えやすさが変わります。",
-                },
-                atmosphere: {
-                    focus: ["軽元素", "低エネルギー側"],
-                    note: "雰囲気を変えると、低エネルギー側の減衰が変わります。",
-                },
-                coatingThickness: {
-                    focus: ["膜ピーク", "下地ピーク"],
-                    note: "被覆厚みを変えると、膜由来と下地由来の比率が変わります。",
-                },
-                acquisitionTime: {
-                    focus: ["S/N", "微小ピーク"],
-                    note: "測定時間を伸ばすと、微弱なピークの見分けがしやすくなります。",
-                }
-            }
-        };
-        const topicGuides = guides[topicId] || {};
-        return topicGuides[field] || { focus: [], note: "" };
+        if (topicId === "xrf" && typeof xrfUi !== "undefined" && typeof xrfUi.getControlGuide === "function") {
+            return xrfUi.getControlGuide(field);
+        }
+        return { focus: [], note: "" };
     }
 
     function getVisualGuideItems() {
@@ -1710,159 +1500,25 @@
     }
 
     function getVisualGuideNarration(field, scenario, activeVisualModel) {
-        if (topicId === "ir" && typeof irUi.getGuideNarration === "function") {
-            return irUi.getGuideNarration(field, {
-                stateVisual: state.visual,
-                scenario,
-                activeVisualModel
-            });
+        if (topicId === "ir" && typeof irUi !== "undefined" && typeof irUi.getGuideNarration === "function") {
+            return irUi.getGuideNarration(field, { stateVisual: state.visual, scenario, activeVisualModel });
         }
-        if (topicId === "epma" && typeof epmaUi.getGuideNarration === "function") {
-            return epmaUi.getGuideNarration(field, {
-                stateVisual: state.visual,
-                scenario,
-                activeVisualModel
-            });
+        if (topicId === "epma" && typeof epmaUi !== "undefined" && typeof epmaUi.getGuideNarration === "function") {
+            return epmaUi.getGuideNarration(field, { stateVisual: state.visual, scenario, activeVisualModel });
         }
-        if (topicId === "taver") {
-            if (field === "material") {
-                return {
-                    title: "試料差の読み方",
-                    body: activeVisualModel.note || "試料によって同じ条件でも摩耗の増え方が変わります。",
-                };
-            }
-            if (field === "wearMode") {
-                if (state.visual.wearMode === "adhesive") {
-                    return {
-                        title: "凝着摩耗の見え方",
-                        body: "移着や引きずりが効くと、途中から摩耗量の増え方が変わりやすくなります。",
-                    };
-                }
-                if (state.visual.wearMode === "fatigue") {
-                    return {
-                        title: "疲労摩耗の見え方",
-                        body: "繰り返し荷重で表面が崩れると、後半の摩耗増加が強く出やすくなります。",
-                    };
-                }
-                return {
-                    title: "アブレシブ摩耗の見え方",
-                    body: "削る成分が支配的なときは、摩耗曲線が比較的素直に立ち上がります。",
-                };
-            }
-            if (field === "wheelType") {
-                if (state.visual.wheelType === "h22") {
-                    return {
-                        title: "H-22 の強さ",
-                        body: "H-22 は強めの条件になりやすく、短い時間でも差が開きやすい設定です。",
-                    };
-                }
-                if (state.visual.wheelType === "cs10") {
-                    return {
-                        title: "CS-10 の穏やかさ",
-                        body: "CS-10 は比較的穏やかな摩耗輪として、条件差の見分けに向きます。",
-                    };
-                }
-                return {
-                    title: "H-18 を基準に見る",
-                    body: "H-18 を基準に、他の摩耗輪で勾配と終点がどう変わるかを比較します。",
-                };
-            }
-            return Number(state.visual.load) >= 1000
-                ? {
-                    title: "重い荷重で差が開く",
-                    body: "高荷重では摩耗量が増えやすく、条件差も短時間で見えやすくなります。",
-                }
-                : Number(state.visual.load) <= 250
-                    ? {
-                        title: "軽い荷重で初期を見る",
-                        body: "250 g では変化が緩やかになり、初期挙動を比較しやすくなります。",
-                    }
-                    : {
-                        title: "500 g を基準に比較する",
-                        body: "中間荷重では、強すぎず弱すぎない条件として差を見やすくできます。",
-                    };
+        if (topicId === "taver" && typeof taverUi !== "undefined" && typeof taverUi.getGuideNarration === "function") {
+            return taverUi.getGuideNarration(field, { stateVisual: state.visual, scenario, activeVisualModel });
         }
-
-        if (topicId === "nanoin") {
-            if (field === "material") {
-                return {
-                    title: "材料差を読む",
-                    body: activeVisualModel.note || "材料ごとに曲線の形と残留深さの出方が変わります。",
-                };
-            }
-            if (field === "filmThickness") {
-                const ratio = scenario.thickness ? scenario.maxDepth / scenario.thickness : 0;
-                return ratio >= 0.3
-                    ? {
-                        title: "基板影響に注意する",
-                        body: `押し込み深さが膜厚の ${(ratio * 100).toFixed(0)}% に近く、下地の影響を受けやすい条件です。`,
-                    }
-                    : {
-                        title: "膜単体に近い読み",
-                        body: `押し込み深さが膜厚の ${(ratio * 100).toFixed(0)}% 程度で、膜の挙動を読みやすい条件です。`,
-                    };
-            }
-            if (field === "roughness") {
-                return Number(state.visual.roughness) >= 12
-                    ? {
-                        title: "浅部ノイズを読む",
-                        body: "表面粗さが大きいと、浅い領域の立ち上がりが揺れやすくなります。",
-                    }
-                    : {
-                        title: "浅部が比較的安定する",
-                        body: "粗さが小さいため、初期接触の違いを読み取りやすい条件です。",
-                    };
-            }
-            if (field === "tipRadius") {
-                return Number(state.visual.tipRadius) >= 70
-                    ? {
-                        title: "丸い先端で接触が広がる",
-                        body: "先端が丸いほど、初期接触面積が広くなり、浅部の勾配が変わります。",
-                    }
-                    : {
-                        title: "鋭い先端で食い込みやすい",
-                        body: "先端が鋭いほど、浅い領域でも深さが入りやすくなります。",
-                    };
-            }
+        if (topicId === "nanoin" && typeof nanoinUi !== "undefined" && typeof nanoinUi.getGuideNarration === "function") {
+            return nanoinUi.getGuideNarration(field, { stateVisual: state.visual, scenario, activeVisualModel });
         }
-
-        if (field === "material") {
-            return {
-                title: "試料モデルを基準に読む",
-                body: activeVisualModel.note || "試料モデルごとにピークと背景の見え方が変わります。",
-            };
+        if (topicId === "xrf" && typeof xrfUi !== "undefined" && typeof xrfUi.getGuideNarration === "function") {
+            return xrfUi.getGuideNarration(field, { stateVisual: state.visual, scenario, activeVisualModel });
         }
-        if (field === "atmosphere") {
-            return state.visual.atmosphere === "helium"
-                ? {
-                    title: "He 雰囲気で軽元素を見る",
-                    body: "He 雰囲気では低エネルギー側の減衰が抑えられ、軽元素が見えやすくなります。",
-                }
-                : {
-                    title: "真空で主要ピークを安定化",
-                    body: "真空では散乱が少なく、主要ピークの比較を安定して行いやすくなります。",
-                };
-        }
-        if (field === "coatingThickness") {
-            return Number(state.visual.coatingThickness) >= 20
-                ? {
-                    title: "膜ピークが優勢になる",
-                    body: "被覆が厚いほど、膜由来のピークが強まり下地ピークは見えにくくなります。",
-                }
-                : {
-                    title: "下地ピークも残る",
-                    body: "被覆が薄いと、膜と下地の両方を読み分ける必要があります。",
-                };
-        }
-        return Number(state.visual.acquisitionTime) <= 10
-            ? {
-                title: "短時間ではノイズが残る",
-                body: "測定時間が短いと、微小ピークの判断が難しくなります。",
-            }
-            : {
-                title: "時間をかけるとピークが見やすい",
-                body: "測定時間を伸ばすと、微弱なピークとバックグラウンドの差を読みやすくなります。",
-            };
+        return {
+            title: "条件を比較する",
+            body: "条件を変えてグラフを観察します。"
+        };
     }
 
     function renderVisualGuideDeck(scenario, activeVisualModel) {
@@ -2064,7 +1720,7 @@
     function renderHeader() {
         const intro = introSummary();
         const activeRole = getActiveRole();
-        const currentSection = APP_SECTIONS[sectionIndex[state.currentSection]] || APP_SECTIONS[0] || { label: "蟆主・" };
+        const currentSection = APP_SECTIONS[sectionIndex[state.currentSection]] || APP_SECTIONS[0] || { label: "セクション" };
         const started = hasMeaningfulProgress();
         return `
             <header class="mx-auto max-w-6xl px-4 pb-6 pt-5 sm:px-6 sm:pt-8">
@@ -2170,7 +1826,7 @@
             <section class="space-y-6">
                 <div class="panel-card p-6 sm:p-8">
                     <div class="text-xs font-bold tracking-[0.18em] text-slate-500">START HERE</div>
-                    <h2 class="mt-2 text-2xl font-black">${escapeHtml(INTRO_OVERVIEW_CARDS[0] ? INTRO_OVERVIEW_CARDS[0].title : `${topicName}???`)}</h2>
+                    <h2 class="mt-2 text-2xl font-black">${escapeHtml(INTRO_OVERVIEW_CARDS[0] ? INTRO_OVERVIEW_CARDS[0].title : `${topicName} の導入`)}</h2>
                     <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
                         ${escapeHtml(HERO.description || (INTRO_OVERVIEW_CARDS[0] && INTRO_OVERVIEW_CARDS[0].body) || "")}
                     </p>
