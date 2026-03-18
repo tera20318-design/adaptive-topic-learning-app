@@ -41,6 +41,11 @@
     let state;
     let chart = null;
     let currentChartConfig = null;
+    const runtimeStatus = {
+        chartIssue: !window.Chart
+            ? "グラフ描画ライブラリの読み込みに失敗したため、図解は文章ガイドのみで表示しています。"
+            : ""
+    };
     const visualModelKeys = Object.keys(VISUAL_MODELS);
     const defaultMaterial = (storageDefaultState.visual && storageDefaultState.visual.material && VISUAL_MODELS[storageDefaultState.visual.material])
         ? storageDefaultState.visual.material
@@ -152,6 +157,15 @@
             return "text-sky-700";
         }
         return "text-emerald-700";
+    }
+
+    function renderChartFallback(message) {
+        return `
+            <div class="chart-fallback rounded-[24px] border border-dashed border-slate-300 bg-slate-50 p-5">
+                <div class="text-sm font-bold text-slate-900">図解グラフを表示できませんでした</div>
+                <p class="mt-2 text-sm leading-7 text-slate-600">${escapeHtml(message)}</p>
+            </div>
+        `;
     }
 
     function persist() {
@@ -744,7 +758,7 @@
         const featured = MEDIA.featuredVideo;
         if (!featured) {
             return `
-                <div class="rounded-[28px] border border-dashed border-slate-300 bg-slate-50 p-5">
+                <div class="media-frame rounded-[28px] border border-dashed border-slate-300 bg-slate-50 p-5">
                     <div class="text-sm font-bold text-slate-900">${escapeHtml(AI_UI.mediaEmptyTitle || "参考メディアはまだありません")}</div>
                     <p class="mt-2 text-sm leading-7 text-slate-600">
                         ${escapeHtml(AI_UI.mediaEmptyBody || "この topic では外部メディアをまだ紐づけていません。必要なら後で追加できます。")}
@@ -755,7 +769,7 @@
 
         if (featured.type === "youtube") {
             return `
-                <div class="overflow-hidden rounded-[28px] border border-slate-200 bg-slate-50">
+                <div class="media-frame overflow-hidden rounded-[28px] border border-slate-200 bg-slate-50">
                     <div class="aspect-video bg-slate-100">
                         <iframe
                             class="h-full w-full"
@@ -772,7 +786,7 @@
 
         if (featured.type === "file") {
             return `
-                <div class="overflow-hidden rounded-[28px] border border-slate-200 bg-slate-50 p-3">
+                <div class="media-frame overflow-hidden rounded-[28px] border border-slate-200 bg-slate-50 p-3">
                     <video class="aspect-video w-full rounded-[22px] bg-slate-100" controls preload="metadata" ${featured.poster ? `poster="${featured.poster}"` : ""}>
                         <source src="${featured.src}">
                     </video>
@@ -799,9 +813,9 @@
                 <div class="mt-5">
                     ${renderFeaturedMedia()}
                 </div>
-                <div class="mt-5 grid gap-5 lg:grid-cols-3">
+                <div class="media-resource-grid mt-5 grid gap-5 lg:grid-cols-3">
                     ${(MEDIA.resources || []).map((resource) => `
-                        <div class="rounded-[30px] border border-slate-200 bg-white p-4">
+                        <div class="media-resource-card rounded-[30px] border border-slate-200 bg-white p-4">
                             <div class="rounded-3xl bg-slate-50 p-5">
                                 <div class="text-xs font-bold tracking-[0.18em] text-slate-500">${escapeHtml(resource.source)}</div>
                                 <div class="mt-2 text-lg font-black text-slate-900">${escapeHtml(resource.title)}</div>
@@ -1734,7 +1748,7 @@
                     </div>
                 ` : ""}
                 <div class="hero-grid">
-                    <section class="panel-card glass-card panel-card-soft overflow-hidden p-6 sm:p-8">
+                    <section class="hero-panel panel-card glass-card panel-card-soft overflow-hidden p-6 sm:p-8">
                         <div class="mb-5 inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-bold tracking-[0.18em] text-blue-700">${escapeHtml(HERO.eyebrow || "ADAPTIVE LEARNING")}</div>
                         <h1 class="max-w-3xl text-2xl font-black leading-snug text-slate-900 sm:text-4xl">
                             ${escapeHtml(HERO.titleLead || `${topicName}?`)}
@@ -1745,13 +1759,13 @@
                         <p class="mt-4 max-w-3xl text-sm leading-7 text-slate-600">
                             ${escapeHtml(HERO.description || "")}
                         </p>
-                        <div class="mt-6 flex flex-wrap gap-3">
+                        <div class="hero-actions mt-6 flex flex-wrap gap-3">
                             <button class="rounded-full bg-blue-700 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800" data-action="goto-section" data-section="intro">学習を始める</button>
                             <button class="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-blue-300 hover:text-blue-700" data-action="goto-section" data-section="diagnosis">誤解診断から入る</button>
                             <button class="rounded-full border border-rose-300 bg-rose-50 px-5 py-3 text-sm font-bold text-rose-700 transition hover:bg-rose-100" data-action="reset-progress">初期状態に戻す</button>
                         </div>
                     </section>
-                    <aside class="panel-card glass-card p-6">
+                    <aside class="hero-progress-card panel-card glass-card p-6">
                         ${started ? `
                             <div class="flex items-start justify-between gap-4">
                                 <div>
@@ -1791,8 +1805,8 @@
     function renderSectionNav() {
         return `
             <nav class="mx-auto max-w-6xl px-4 sm:px-6">
-                <div class="panel-card glass-card overflow-x-auto px-3 py-3">
-                    <div class="flex min-w-max gap-2">
+                <div class="section-nav-shell panel-card glass-card overflow-x-auto px-3 py-3">
+                    <div class="section-nav-row flex min-w-max gap-2">
                         ${APP_SECTIONS.map((section) => `
                             <button
                                 class="section-chip ${section.id === state.currentSection ? "section-chip-active" : ""} rounded-full px-4 py-2 text-sm font-bold"
@@ -2092,15 +2106,19 @@
                             </div>
                             <div class="visual-cockpit-grid mt-5 grid gap-5">
                                 <div class="visual-figure-column space-y-4">
-                                    <div class="visual-chart-panel rounded-[24px] bg-slate-50 p-4">
-                                        <div class="chart-wrap">
-                                            <canvas id="visualChart"></canvas>
-                                            ${renderVisualPeakOverlay(scenario)}
+                                    <div class="visual-card visual-chart-panel rounded-[24px] bg-slate-50 p-4">
+                                        <div class="chart-wrap" data-chart-shell>
+                                            ${runtimeStatus.chartIssue
+                                                ? renderChartFallback(runtimeStatus.chartIssue)
+                                                : `
+                                                    <canvas id="visualChart"></canvas>
+                                                    ${renderVisualPeakOverlay(scenario)}
+                                                `}
                                         </div>
                                     </div>
                                     <div class="visual-metrics-grid visual-metrics-grid-compact grid gap-3 sm:grid-cols-2">
                                         ${(scenario.metrics || []).map((metric, index) => `
-                                            <div class="metric-card p-4">
+                                            <div class="metric-card visual-metric-card p-4">
                                                 <div class="text-xs font-bold tracking-[0.18em] text-slate-500" data-visual-metric-label="${index}">${escapeHtml(metric.label)}</div>
                                                 <div class="mt-2 text-2xl font-black ${metric.tone ? metricToneClass(metric.tone) : "text-slate-900"}" data-visual-metric-value="${index}">${escapeHtml(String(metric.value))}</div>
                                             </div>
@@ -2173,7 +2191,7 @@
                         </div>
                         <div class="mt-5 grid gap-4 sm:grid-cols-3">
                             ${insights.map((insight, index) => `
-                                <div class="rounded-3xl bg-slate-50 p-5">
+                                <div class="visual-insight-card rounded-3xl bg-slate-50 p-5">
                                     <div class="text-sm font-bold text-slate-900" data-visual-insight-title="${index}">${escapeHtml(insight.title)}</div>
                                     <p class="mt-2 text-sm leading-7 text-slate-600" data-visual-insight-body="${index}">${escapeHtml(insight.body)}</p>
                                 </div>
@@ -2534,20 +2552,20 @@
                         <button class="rounded-full border border-red-300 bg-white px-4 py-3 text-sm font-bold text-red-700" data-action="reset-progress">保存データを初期化する</button>
                     </div>
 
-                    <div class="mt-6 grid gap-4 lg:grid-cols-3">
-                        <div class="metric-card p-5">
+                    <div class="record-summary-grid mt-6 grid gap-4 lg:grid-cols-3">
+                        <div class="metric-card record-summary-card p-5">
                             <div class="text-xs font-bold tracking-[0.18em] text-slate-500">現在の役割</div>
                             <div class="mt-3 text-sm leading-7 text-slate-700">
                                 ${escapeHtml(activeRole ? `${activeRole.label}: ${activeRole.summary}` : "役割はまだ設定されていません")}
                             </div>
                         </div>
-                        <div class="metric-card p-5">
+                        <div class="metric-card record-summary-card p-5">
                             <div class="text-xs font-bold tracking-[0.18em] text-slate-500">理解が弱いままの点</div>
                             <div class="mt-3 flex flex-wrap gap-2">
                                 ${revisit.length ? revisit.map((item) => `<span class="tag tag-weak">${escapeHtml(item)}</span>`).join("") : '<span class="tag tag-good">今のところ大きな弱点はありません</span>'}
                             </div>
                         </div>
-                        <div class="metric-card p-5">
+                        <div class="metric-card record-summary-card p-5">
                             <div class="text-xs font-bold tracking-[0.18em] text-slate-500">課題ミッション</div>
                             <div class="mt-3 text-sm leading-7 text-slate-700">
                                 ${(state.visual.completedMissions || []).length
@@ -2826,52 +2844,63 @@
         destroyChart();
         currentChartConfig = chartConfig;
 
-        chart = new window.Chart(canvas.getContext("2d"), {
-            type: chartConfig.type || "scatter",
-            data: {
-                datasets: getVisualChartDatasets(chartConfig)
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: "top"
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: chartTooltipLabel
-                        }
-                    }
+        try {
+            runtimeStatus.chartIssue = "";
+            chart = new window.Chart(canvas.getContext("2d"), {
+                type: chartConfig.type || "scatter",
+                data: {
+                    datasets: getVisualChartDatasets(chartConfig)
                 },
-                scales: {
-                    x: {
-                        type: "linear",
-                        min: VISUAL_LEARNING.xAxisRange && VISUAL_LEARNING.xAxisRange.min,
-                        max: VISUAL_LEARNING.xAxisRange && VISUAL_LEARNING.xAxisRange.max,
-                        reverse: Boolean(VISUAL_LEARNING.reverseXAxis),
-                        title: {
-                            display: true,
-                            text: (VISUAL_LEARNING.axisLabels && VISUAL_LEARNING.axisLabels.x) || "X"
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: "top"
                         },
-                        grid: {
-                            color: "#e5e7eb"
+                        tooltip: {
+                            callbacks: {
+                                label: chartTooltipLabel
+                            }
                         }
                     },
-                    y: {
-                        min: VISUAL_LEARNING.yAxisRange && VISUAL_LEARNING.yAxisRange.min,
-                        max: VISUAL_LEARNING.yAxisRange && VISUAL_LEARNING.yAxisRange.max,
-                        title: {
-                            display: true,
-                            text: (VISUAL_LEARNING.axisLabels && VISUAL_LEARNING.axisLabels.y) || "Y"
+                    scales: {
+                        x: {
+                            type: "linear",
+                            min: VISUAL_LEARNING.xAxisRange && VISUAL_LEARNING.xAxisRange.min,
+                            max: VISUAL_LEARNING.xAxisRange && VISUAL_LEARNING.xAxisRange.max,
+                            reverse: Boolean(VISUAL_LEARNING.reverseXAxis),
+                            title: {
+                                display: true,
+                                text: (VISUAL_LEARNING.axisLabels && VISUAL_LEARNING.axisLabels.x) || "X"
+                            },
+                            grid: {
+                                color: "#e5e7eb"
+                            }
                         },
-                        grid: {
-                            color: "#e5e7eb"
+                        y: {
+                            min: VISUAL_LEARNING.yAxisRange && VISUAL_LEARNING.yAxisRange.min,
+                            max: VISUAL_LEARNING.yAxisRange && VISUAL_LEARNING.yAxisRange.max,
+                            title: {
+                                display: true,
+                                text: (VISUAL_LEARNING.axisLabels && VISUAL_LEARNING.axisLabels.y) || "Y"
+                            },
+                            grid: {
+                                color: "#e5e7eb"
+                            }
                         }
                     }
                 }
+            });
+        } catch (error) {
+            console.warn("failed to render chart", error);
+            destroyChart();
+            runtimeStatus.chartIssue = "グラフの描画に失敗したため、下の指標と解説を先に確認してください。";
+            const chartShell = root.querySelector("[data-chart-shell]");
+            if (chartShell) {
+                chartShell.innerHTML = renderChartFallback(runtimeStatus.chartIssue);
             }
-        });
+        }
     }
 
     function setDiagnosisComplete() {

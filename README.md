@@ -9,7 +9,7 @@
 - AI は `nanoin-app/ai.js` で adapter を分離
 - 動画は必須ではなく、任意メディアとして topic 定義へぶら下げる
 - 保存状態は topic ごとに `localStorage` を分離
-- URL パラメータまたは UI ボタンで topic を切り替えられる
+- URL パラメータで topic を切り替えられる
 
 ## 起動方法
 
@@ -32,72 +32,6 @@ python -m http.server 8000
 
 - `http://localhost:8000/nanoin.html?topic=nanoin`
 - `http://localhost:8000/nanoin.html?topic=xrf`
-
-## GitHub Pages 公開
-
-この repo には GitHub Pages 用の workflow を追加してあります。
-
-- [pages.yml](/Users/7522857/Documents/Playground/.github/workflows/pages.yml)
-- [index.html](/Users/7522857/Documents/Playground/index.html)
-
-公開までの最短手順:
-
-1. GitHub で空の repository を作る
-2. このフォルダで remote を追加する
-3. `master` を push する
-4. GitHub の `Settings > Pages` で `Source: GitHub Actions` を選ぶ
-5. Actions の `Deploy GitHub Pages` が通れば、`https://<user>.github.io/<repo>/` で見られる
-
-PowerShell 例:
-
-```powershell
-cd C:\Users\7522857\Documents\Playground
-git add .
-git commit -m "Set up schema-driven learning app and GitHub Pages deploy"
-git remote add origin https://github.com/<user>/<repo>.git
-git push -u origin master
-```
-
-公開URLの例:
-
-- `https://<user>.github.io/<repo>/`
-- `https://<user>.github.io/<repo>/?topic=nanoin`
-- `https://<user>.github.io/<repo>/?topic=xrf`
-
-`index.html` から `nanoin.html` へリダイレクトするので、トップURLでもそのまま開けます。
-
-## 家PCで編集する方法
-
-できます。基本は GitHub に push して、家PCで clone / pull するだけです。
-
-家PCの初回:
-
-```powershell
-git clone https://github.com/<user>/<repo>.git
-cd <repo>
-```
-
-家PCで更新を取り込む:
-
-```powershell
-git pull
-```
-
-家PCで編集して戻す:
-
-```powershell
-git add .
-git commit -m "Update content"
-git push
-```
-
-会社PCへ戻したら:
-
-```powershell
-git pull
-```
-
-同じファイルを両方のPCで同時に触ると競合は起きるので、編集前に毎回 `git pull` は入れた方が安全です。
 
 ## 画面構成
 
@@ -126,35 +60,23 @@ nanoin-app/
 
 `nanoin-app/content.js` では、少なくとも次を topic 単位で持てます。
 
-- `id`, `name`, `pageTitle`
+- `id`, `name`
 - `hero`
-- `introSummaryStates`
 - `introCards`, `selfCheck`, `concepts`
-- `figureCards`, `conceptSupplements`
 - `visualModels`
-- `visualLearning`
 - `diagnosisQuestions`
-- `diagnosisUi`
-- `ai.systemInstruction`, `ai.suggestedPaths`, `ai.localTopics`, `ai.explanationRubric`, `ai.ui`
+- `ai.suggestedPaths`, `ai.localTopics`, `ai.explanationRubric`
 - `masteryQuiz`
 - `media.featuredVideo`, `media.resources`
-- `defaults`
-
-`defaults` には、初期表示セクション、初期概念、図解パラメータ、AI 初期文言、API モデルなどを持たせています。
-`visualLearning.buildScenario` を持たせると、topic ごとに図解用の数値モデルとチャートデータを差し替えられます。
 
 ## 主要コンポーネント
 
 - `nanoin-app/content.js`
   - topic 定義
-  - topic ごとの初期値
-  - セルフチェック後の導線文言
-  - AI 指示文
-  - 図カードと概念補助図
-  - 図解UIのラベル、スライダー定義、インサイト生成
+  - 導入カード
+  - 診断、クイズ、AI fallback の内容
   - 任意メディア定義
 - `nanoin-app/storage.js`
-  - topic ごとの保存キー生成
   - 保存 / 復元 / 初期化
 - `nanoin-app/ai.js`
   - `LocalAIAdapter`
@@ -182,9 +104,8 @@ OpenAI など別の LLM を使う場合は、adapter を追加し、`AIService.r
 ## 動作確認ポイント
 
 - `nanoin.html` を開いて 7 画面を移動できる
-- `index.html` から `nanoin.html` へ自動遷移する
 - リロード後も進捗が保持される
-- `保存データを初期化する` で topic の状態だけ消える
+- `保存データを初期化する` で状態が消える
 - AI キー未設定でもローカル応答が返る
 - `media.featuredVideo` が `null` でも UI が崩れない
 - KLA リンク一覧だけでも導入画面が成立する
@@ -192,5 +113,5 @@ OpenAI など別の LLM を使う場合は、adapter を追加し、`AIService.r
 ## 次の拡張ポイント
 
 - `media.featuredVideo` に YouTube またはローカル動画を差し込む
-- 診断サマリー文や AI 接続説明など、残る topic 固有文言をさらに `content.js` 側へ寄せる
+- 概念補助図や図解ラベルも topic データへ寄せる
 - topic 一覧を `content.js` 以外の JSON へ分離し、テーマ追加をデータ更新だけで回せる形にする
