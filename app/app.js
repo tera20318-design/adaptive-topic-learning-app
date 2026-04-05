@@ -10,7 +10,6 @@
 // ===== 定数 =====
 const STORAGE_KEY = 'quiz_app_v1';
 let viewportHeightRaf = 0;
-let layoutMetricsRaf = 0;
 
 // ===== 状態管理 =====
 let state = {
@@ -268,7 +267,7 @@ function startQuiz(mode, chapterId, shuffle_ = false) {
 
   showScreen('quiz');
   renderQuestion();
-  scheduleLayoutMetrics();
+  resetQuizScroll();
 }
 
 // ===== 問題表示 =====
@@ -324,14 +323,7 @@ function renderQuestion() {
   document.getElementById('btn-submit').disabled = true;
   document.getElementById('btn-next').style.display = 'none';
 
-  // モバイルでは前問のスクロール位置が残ると選択肢が見切れやすいので、
-  // 新しい問題を出すたびに必ず先頭へ戻す。
-  const quizContent = document.getElementById('quiz-content');
-  if (quizContent) {
-    quizContent.scrollTop = 0;
-  }
-
-  scheduleLayoutMetrics();
+  resetQuizScroll();
 }
 
 function numLabel(i) {
@@ -443,9 +435,6 @@ function nextQuestion() {
   if (state.current < state.questions.length - 1) {
     state.current++;
     renderQuestion();
-    // スクロールをトップに戻す
-    document.getElementById('quiz-content').scrollTop = 0;
-    scheduleLayoutMetrics();
   } else {
     showResult();
   }
@@ -522,22 +511,11 @@ function syncViewportHeight() {
   document.documentElement.style.setProperty('--app-height', `${height}px`);
 }
 
-function syncQuizFooterGap() {
-  const footer = document.querySelector('.quiz-footer');
-  const footerHeight = footer ? Math.ceil(footer.getBoundingClientRect().height) : 0;
-  const gap = Math.max(160, footerHeight + 24);
-  document.documentElement.style.setProperty('--quiz-footer-gap', `${gap}px`);
-}
-
-function scheduleLayoutMetrics() {
-  if (layoutMetricsRaf) {
-    cancelAnimationFrame(layoutMetricsRaf);
+function resetQuizScroll() {
+  const quizScreen = document.getElementById('screen-quiz');
+  if (quizScreen) {
+    quizScreen.scrollTop = 0;
   }
-  layoutMetricsRaf = requestAnimationFrame(() => {
-    syncViewportHeight();
-    syncQuizFooterGap();
-    layoutMetricsRaf = 0;
-  });
 }
 
 function bindViewportHeight() {
@@ -546,12 +524,12 @@ function bindViewportHeight() {
       cancelAnimationFrame(viewportHeightRaf);
     }
     viewportHeightRaf = requestAnimationFrame(() => {
-      scheduleLayoutMetrics();
+      syncViewportHeight();
       viewportHeightRaf = 0;
     });
   };
 
-  scheduleLayoutMetrics();
+  syncViewportHeight();
   window.addEventListener('resize', schedule, { passive: true });
   window.addEventListener('orientationchange', schedule, { passive: true });
   if (window.visualViewport) {
@@ -646,7 +624,6 @@ async function init() {
   bindEvents();
   renderHome();
   showScreen('home');
-  scheduleLayoutMetrics();
 
   // タイトル設定
   const title = state.data?.meta?.title || '学習問題集';

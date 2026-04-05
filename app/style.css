@@ -31,7 +31,6 @@
   --shadow-md: 0 4px 6px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06);
   --transition: 0.15s ease;
   --app-height: 100vh;
-  --quiz-footer-gap: 160px;
 }
 
 html {
@@ -76,6 +75,12 @@ body {
   flex: 1;
   min-height: 0;       /* flexの縮小を許可 */
   overflow: hidden;    /* 子のスクロールを閉じ込める */
+}
+
+#screen-quiz.screen.active {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 
 /* ===== ヘッダー ===== */
@@ -330,20 +335,11 @@ body {
 
 /* ===== 問題カード ===== */
 .quiz-content {
-  flex: 1;
-  min-height: 0;          /* flex子要素の縮小を許可 ★重要 */
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
+  flex: 0 0 auto;
+  min-height: 0;
+  overflow: visible;
+  padding: 16px 16px 24px;
   touch-action: pan-y;
-  padding: 16px 16px calc(16px + var(--quiz-footer-gap) + env(safe-area-inset-bottom, 0px));
-  scroll-padding-bottom: calc(var(--quiz-footer-gap) + env(safe-area-inset-bottom, 0px));
-}
-
-.quiz-content::after {
-  content: "";
-  display: block;
-  height: var(--quiz-footer-gap);
 }
 
 .question-card {
@@ -496,6 +492,8 @@ body {
   display: flex;
   gap: 10px;
   box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+  position: relative;
+  z-index: 1;
 }
 
 .quiz-footer .btn {
