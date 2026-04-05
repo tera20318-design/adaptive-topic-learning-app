@@ -18,7 +18,15 @@ page1.png
 sample_page.png
 gh-auth.*.txt
 main.py
-parse_questions.py
+
+# app/ 以下のファイルは追跡する (*.json の除外ルールより優先)
+!app/
+!app/**
+!app/questions.json
+!app/manifest.json
+
+# パーサースクリプトも追跡
+!parse_questions.py
 ocr_result.txt
 .claude/
 cool_brown_report_pages/
