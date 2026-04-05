@@ -9,6 +9,7 @@
 
 // ===== 定数 =====
 const STORAGE_KEY = 'quiz_app_v1';
+let viewportHeightRaf = 0;
 
 // ===== 状態管理 =====
 let state = {
@@ -510,6 +511,32 @@ function clearHistory() {
   alert('削除しました');
 }
 
+function syncViewportHeight() {
+  const viewport = window.visualViewport;
+  const height = Math.round((viewport && viewport.height) ? viewport.height : window.innerHeight);
+  document.documentElement.style.setProperty('--app-height', `${height}px`);
+}
+
+function bindViewportHeight() {
+  const schedule = () => {
+    if (viewportHeightRaf) {
+      cancelAnimationFrame(viewportHeightRaf);
+    }
+    viewportHeightRaf = requestAnimationFrame(() => {
+      syncViewportHeight();
+      viewportHeightRaf = 0;
+    });
+  };
+
+  syncViewportHeight();
+  window.addEventListener('resize', schedule, { passive: true });
+  window.addEventListener('orientationchange', schedule, { passive: true });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', schedule, { passive: true });
+    window.visualViewport.addEventListener('scroll', schedule, { passive: true });
+  }
+}
+
 // ===== イベントバインド =====
 function bindEvents() {
   // タブバー
@@ -582,6 +609,7 @@ function bindEvents() {
 async function init() {
   // ローディング表示
   document.getElementById('loading').style.display = 'flex';
+  bindViewportHeight();
 
   try {
     state.data = await loadData();

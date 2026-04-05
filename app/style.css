@@ -30,6 +30,7 @@
   --shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
   --shadow-md: 0 4px 6px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06);
   --transition: 0.15s ease;
+  --app-height: 100vh;
 }
 
 html {
@@ -44,6 +45,7 @@ html {
 body {
   height: 100%;
   overflow: hidden;
+  overscroll-behavior: none;
   font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP',
     'Yu Gothic', sans-serif;
   background: var(--gray-100);
@@ -56,9 +58,8 @@ body {
 #app {
   max-width: 640px;
   margin: 0 auto;
-  /* dvh = アドレスバーを除いた実際の高さ、未対応ブラウザは vh にフォールバック */
-  height: 100vh;
-  height: 100dvh;
+  height: var(--app-height);
+  min-height: var(--app-height);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -333,6 +334,7 @@ body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
+  touch-action: pan-y;
   padding: 16px 16px calc(16px + 112px + env(safe-area-inset-bottom, 0px));
   scroll-padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
 }
@@ -593,7 +595,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  height: var(--app-height);
   gap: 16px;
   color: var(--gray-400);
 }
