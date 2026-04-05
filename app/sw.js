@@ -1,8 +1,9 @@
 /**
- * Service Worker - オフライン対応 & キャッシュ
+ * Service Worker - network-first with cache fallback
+ * Latest pages are preferred so mobile devices do not get stuck on old UI.
  */
 
-const CACHE_NAME = 'quiz-app-v2';
+const CACHE_NAME = 'quiz-app-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -11,51 +12,46 @@ const ASSETS = [
   './questions.json',
 ];
 
-// インストール時にキャッシュ
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ASSETS).catch(err => {
-        console.warn('キャッシュ追加失敗 (一部ファイルが存在しない可能性):', err);
-      });
-    })
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
   self.skipWaiting();
 });
 
-// 古いキャッシュを削除
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(
-        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-      )
+      Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))
     )
   );
   self.clients.claim();
 });
 
-// フェッチ: キャッシュファースト、なければネットワーク
 self.addEventListener('fetch', event => {
-  // chrome-extension などは無視
+  if (event.request.method !== 'GET') return;
   if (!event.request.url.startsWith('http')) return;
 
+  const request = event.request;
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
+
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request).then(response => {
-        // 成功したレスポンスはキャッシュに追加
-        if (response && response.status === 200) {
+    fetch(request)
+      .then(response => {
+        if (response && response.ok) {
           const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
         }
         return response;
-      }).catch(() => {
-        // オフライン時
-        if (event.request.destination === 'document') {
+      })
+      .catch(async () => {
+        const cached = await caches.match(request);
+        if (cached) return cached;
+        if (request.destination === 'document') {
           return caches.match('./index.html');
         }
-      });
-    })
+        throw new Error('Network failed and no cached response was available');
+      })
   );
 });

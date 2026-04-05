@@ -367,8 +367,10 @@
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => {
-      // HTTPではなくfile://で開いた場合は失敗するが問題なし
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(registration => {
+      registration.update().catch(() => {});
+    }).catch(() => {
+      // For HTTP/file preview only.
     });
   });
 }
