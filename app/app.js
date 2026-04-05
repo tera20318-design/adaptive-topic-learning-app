@@ -9,6 +9,7 @@
 
 // ===== 定数 =====
 const STORAGE_KEY = 'quiz_app_v1';
+const APP_UPDATED_AT = '2026/04/05';
 let viewportHeightRaf = 0;
 
 // ===== 状態管理 =====
@@ -194,6 +195,10 @@ function renderHome() {
   document.getElementById('stat-total').textContent = stats.total;
   document.getElementById('stat-done').textContent = stats.done;
   document.getElementById('stat-correct').textContent = stats.correct;
+  const updatedAt = document.getElementById('app-updated-at');
+  if (updatedAt) {
+    updatedAt.textContent = `\u6700\u7d42\u66f4\u65b0: ${APP_UPDATED_AT}`;
+  }
   document.getElementById('home-progress-fill').style.width = pct + '%';
   document.getElementById('home-progress-label').textContent =
     `${stats.done}/${stats.total} 問 解答済み (正解率 ${stats.total ? Math.round(stats.correct/stats.total*100) : 0}%)`;
