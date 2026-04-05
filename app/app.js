@@ -10,6 +10,7 @@
 // ===== 定数 =====
 const STORAGE_KEY = 'quiz_app_v1';
 let viewportHeightRaf = 0;
+let layoutMetricsRaf = 0;
 
 // ===== 状態管理 =====
 let state = {
@@ -267,6 +268,7 @@ function startQuiz(mode, chapterId, shuffle_ = false) {
 
   showScreen('quiz');
   renderQuestion();
+  scheduleLayoutMetrics();
 }
 
 // ===== 問題表示 =====
@@ -328,6 +330,8 @@ function renderQuestion() {
   if (quizContent) {
     quizContent.scrollTop = 0;
   }
+
+  scheduleLayoutMetrics();
 }
 
 function numLabel(i) {
@@ -441,6 +445,7 @@ function nextQuestion() {
     renderQuestion();
     // スクロールをトップに戻す
     document.getElementById('quiz-content').scrollTop = 0;
+    scheduleLayoutMetrics();
   } else {
     showResult();
   }
@@ -517,18 +522,36 @@ function syncViewportHeight() {
   document.documentElement.style.setProperty('--app-height', `${height}px`);
 }
 
+function syncQuizFooterGap() {
+  const footer = document.querySelector('.quiz-footer');
+  const footerHeight = footer ? Math.ceil(footer.getBoundingClientRect().height) : 0;
+  const gap = Math.max(160, footerHeight + 24);
+  document.documentElement.style.setProperty('--quiz-footer-gap', `${gap}px`);
+}
+
+function scheduleLayoutMetrics() {
+  if (layoutMetricsRaf) {
+    cancelAnimationFrame(layoutMetricsRaf);
+  }
+  layoutMetricsRaf = requestAnimationFrame(() => {
+    syncViewportHeight();
+    syncQuizFooterGap();
+    layoutMetricsRaf = 0;
+  });
+}
+
 function bindViewportHeight() {
   const schedule = () => {
     if (viewportHeightRaf) {
       cancelAnimationFrame(viewportHeightRaf);
     }
     viewportHeightRaf = requestAnimationFrame(() => {
-      syncViewportHeight();
+      scheduleLayoutMetrics();
       viewportHeightRaf = 0;
     });
   };
 
-  syncViewportHeight();
+  scheduleLayoutMetrics();
   window.addEventListener('resize', schedule, { passive: true });
   window.addEventListener('orientationchange', schedule, { passive: true });
   if (window.visualViewport) {
@@ -623,6 +646,7 @@ async function init() {
   bindEvents();
   renderHome();
   showScreen('home');
+  scheduleLayoutMetrics();
 
   // タイトル設定
   const title = state.data?.meta?.title || '学習問題集';
