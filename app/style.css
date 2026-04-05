@@ -324,7 +324,7 @@ body {
   flex: 1;
   overflow-y: auto;
   padding: 16px;
-  padding-bottom: 80px; /* 固定フッター分の余白 */
+  padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)); /* 固定フッター分の余白 */
   min-height: 0;
 }
 
@@ -666,8 +666,7 @@ body {
   }
 }
 
-/* ===== スクロールバー非表示 ===== */
-.quiz-content::-webkit-scrollbar,
+/* ===== スクロールバー (quiz-contentは表示、listは非表示) ===== */
 .list-wrap::-webkit-scrollbar {
   display: none;
 }
