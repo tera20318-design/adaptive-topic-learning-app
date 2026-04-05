@@ -1,0 +1,10 @@
+.claude/
+__pycache__/
+ocr_output/
+page1.png
+sample_page.png
+*.lock
+main.py
+parse_questions.py
+ocr_result.txt
+gh-auth.*.txt

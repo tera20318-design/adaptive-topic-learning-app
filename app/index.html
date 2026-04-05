@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="学習問題集">
+  <title>学習問題集</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+
+<!-- ローディング -->
+<div id="loading" class="loading" style="display:none">
+  <div class="spinner"></div>
+  <p>読み込み中...</p>
+</div>
+
+<div id="app">
+
+  <!-- ===== ホーム画面 ===== -->
+  <div id="screen-home" class="screen">
+    <div class="header">
+      <span class="header-title" id="app-title">学習問題集</span>
+    </div>
+
+    <div class="home-hero">
+      <h1>学習問題集</h1>
+      <p>問題を解いて理解を深めましょう</p>
+    </div>
+
+    <!-- 統計 -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number" id="stat-total">0</div>
+        <div class="stat-label">総問題数</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="stat-done">0</div>
+        <div class="stat-label">解答済み</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="stat-correct">0</div>
+        <div class="stat-label">正解数</div>
+      </div>
+    </div>
+
+    <!-- 進捗バー -->
+    <div class="progress-wrap" style="padding: 0 16px 16px">
+      <div class="progress-bar">
+        <div class="progress-fill" id="home-progress-fill" style="width:0%"></div>
+      </div>
+      <div class="progress-label" id="home-progress-label">0/0 問 解答済み</div>
+    </div>
+
+    <!-- アクション -->
+    <div class="home-actions">
+      <button class="btn btn-primary" id="btn-start-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+        すべての問題を解く
+      </button>
+      <button class="btn btn-secondary" id="btn-start-shuffle">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/>
+          <polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/>
+        </svg>
+        シャッフルで解く
+      </button>
+    </div>
+
+    <div style="flex:1"></div>
+
+    <!-- タブバー -->
+    <nav class="tab-bar">
+      <button class="tab-btn active" data-screen="home">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+        </svg>
+        ホーム
+      </button>
+      <button class="tab-btn" data-screen="mode">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/>
+        </svg>
+        モード
+      </button>
+      <button class="tab-btn" data-screen="chapters">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/>
+        </svg>
+        章一覧
+      </button>
+      <button class="tab-btn" data-screen="info">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+        </svg>
+        情報
+      </button>
+    </nav>
+  </div>
+
+  <!-- ===== モード選択 ===== -->
+  <div id="screen-mode" class="screen">
+    <div class="header">
+      <span class="header-title">出題モード</span>
+    </div>
+
+    <div class="mode-grid">
+      <div class="mode-card" id="mode-all">
+        <div class="mode-icon">📚</div>
+        <div class="mode-name">全問</div>
+        <div class="mode-desc">最初から順番に</div>
+      </div>
+      <div class="mode-card" id="mode-shuffle">
+        <div class="mode-icon">🔀</div>
+        <div class="mode-name">シャッフル</div>
+        <div class="mode-desc">ランダムな順番</div>
+      </div>
+      <div class="mode-card" id="mode-wrong">
+        <div class="mode-icon">❌</div>
+        <div class="mode-name">苦手問題</div>
+        <div class="mode-desc mode-wrong-count" id="mode-wrong-count">-</div>
+      </div>
+      <div class="mode-card" id="mode-bookmarks">
+        <div class="mode-icon">⭐</div>
+        <div class="mode-name">お気に入り</div>
+        <div class="mode-desc" id="mode-bm-count">-</div>
+      </div>
+      <div class="mode-card" id="mode-unanswered">
+        <div class="mode-icon">❓</div>
+        <div class="mode-name">未解答</div>
+        <div class="mode-desc" id="mode-unans-count">-</div>
+      </div>
+      <div class="mode-card" id="mode-chapters">
+        <div class="mode-icon">📖</div>
+        <div class="mode-name">章を選ぶ</div>
+        <div class="mode-desc">章ごとに学習</div>
+      </div>
+    </div>
+
+    <div style="flex:1"></div>
+
+    <nav class="tab-bar">
+      <button class="tab-btn" data-screen="home">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        ホーム
+      </button>
+      <button class="tab-btn active" data-screen="mode">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+        モード
+      </button>
+      <button class="tab-btn" data-screen="chapters">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/></svg>
+        章一覧
+      </button>
+      <button class="tab-btn" data-screen="info">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        情報
+      </button>
+    </nav>
+  </div>
+
+  <!-- ===== 章一覧 ===== -->
+  <div id="screen-chapter_list" class="screen">
+    <div class="header">
+      <span class="header-title">章一覧</span>
+    </div>
+
+    <div class="list-wrap" id="chapter-list">
+      <!-- JS で生成 -->
+    </div>
+
+    <nav class="tab-bar">
+      <button class="tab-btn" data-screen="home">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        ホーム
+      </button>
+      <button class="tab-btn" data-screen="mode">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+        モード
+      </button>
+      <button class="tab-btn active" data-screen="chapters">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/></svg>
+        章一覧
+      </button>
+      <button class="tab-btn" data-screen="info">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        情報
+      </button>
+    </nav>
+  </div>
+
+  <!-- ===== クイズ画面 ===== -->
+  <div id="screen-quiz" class="screen">
+    <div class="header">
+      <button class="btn-icon" id="quiz-back">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+      <div style="flex:1">
+        <div class="header-title" id="quiz-chapter">-</div>
+        <div class="header-sub" id="quiz-qnum">問題 1</div>
+      </div>
+      <button class="star-btn" id="star-btn" title="お気に入り">☆</button>
+    </div>
+
+    <!-- プログレス -->
+    <div class="progress-wrap">
+      <div class="progress-bar">
+        <div class="progress-fill" id="quiz-progress-fill" style="width:0%"></div>
+      </div>
+      <div class="progress-label" id="quiz-progress-label">1 / 1 問</div>
+    </div>
+
+    <!-- スクロール可能コンテンツ -->
+    <div class="quiz-content" id="quiz-content">
+      <!-- 問題カード -->
+      <div class="question-card">
+        <div class="question-meta">
+          <span id="review-badge" class="needs-review-badge" style="display:none">要確認</span>
+        </div>
+        <div class="question-text" id="question-text"></div>
+      </div>
+
+      <!-- 選択肢 -->
+      <div class="choices-list" id="choices-list"></div>
+
+      <!-- 判定パネル -->
+      <div id="result-panel" class="result-panel" style="display:none">
+        <div class="result-label" id="result-label">-</div>
+        <div class="explanation" id="explanation-text"></div>
+        <div class="correct-answer" id="correct-answer-text" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- フッター -->
+    <div class="quiz-footer">
+      <button class="btn btn-primary" id="btn-submit" disabled>回答する</button>
+      <button class="btn btn-success" id="btn-next" style="display:none">次の問題 →</button>
+    </div>
+  </div>
+
+  <!-- ===== 結果画面 ===== -->
+  <div id="screen-result" class="screen">
+    <div class="header">
+      <span class="header-title">セッション結果</span>
+    </div>
+
+    <div class="result-screen">
+      <div class="score-circle">
+        <div class="score-number" id="score-number">0</div>
+        <div class="score-denom" id="score-denom">/ 0 問</div>
+      </div>
+
+      <h2 id="result-pct">正解率 0%</h2>
+      <p id="result-msg">-</p>
+
+      <div class="result-actions">
+        <button class="btn btn-primary" id="btn-retry">もう一度</button>
+        <button class="btn btn-secondary" id="btn-retry-shuffle">シャッフルでもう一度</button>
+        <button class="btn btn-secondary" id="btn-home">ホームに戻る</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 情報画面 ===== -->
+  <div id="screen-info" class="screen">
+    <div class="header">
+      <span class="header-title">情報・設定</span>
+    </div>
+
+    <div class="info-section">
+      <div class="info-card">
+        <h3>データ情報</h3>
+        <div class="info-row">
+          <span>タイトル</span>
+          <span class="info-val" id="info-title">-</span>
+        </div>
+        <div class="info-row">
+          <span>バージョン</span>
+          <span class="info-val" id="info-version">-</span>
+        </div>
+        <div class="info-row">
+          <span>総問題数</span>
+          <span class="info-val" id="info-total">-</span>
+        </div>
+        <div class="info-row">
+          <span>要確認問題</span>
+          <span class="info-val" id="info-review">-</span>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <h3>学習記録</h3>
+        <div class="info-row">
+          <span>解答済み</span>
+          <span class="info-val" id="info-done">-</span>
+        </div>
+        <div class="info-row">
+          <span>正解数</span>
+          <span class="info-val" id="info-correct">-</span>
+        </div>
+        <div class="info-row">
+          <span>正解率</span>
+          <span class="info-val" id="info-rate">-</span>
+        </div>
+        <div class="info-row">
+          <span>お気に入り</span>
+          <span class="info-val" id="info-bm">-</span>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <h3>データ管理</h3>
+        <p style="font-size:0.82rem; color:var(--gray-500); margin-bottom:12px; line-height:1.6">
+          問題データは <code>questions.json</code> を編集して更新できます。<br>
+          OCR解析後のデータは <code>needs_review: true</code> が付いています。
+        </p>
+        <button class="btn btn-secondary" id="btn-clear-history" style="border-color: var(--danger); color: var(--danger)">
+          学習履歴を削除
+        </button>
+      </div>
+
+      <div class="info-card">
+        <h3>使い方</h3>
+        <div style="font-size:0.85rem; color:var(--gray-600); line-height:1.8">
+          <p>1. <strong>ホーム</strong> で全問題を開始、または</p>
+          <p>2. <strong>モード</strong> から出題方式を選択</p>
+          <p>3. <strong>章一覧</strong> で章ごとに学習</p>
+          <p>4. 問題に回答 → 正誤判定 → 解説確認</p>
+          <p>5. ⭐ でお気に入り登録</p>
+          <p><br>PWAとして使うには<br>HTTP サーバーで配信してください</p>
+        </div>
+      </div>
+    </div>
+
+    <nav class="tab-bar">
+      <button class="tab-btn" data-screen="home">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        ホーム
+      </button>
+      <button class="tab-btn" data-screen="mode">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+        モード
+      </button>
+      <button class="tab-btn" data-screen="chapters">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/></svg>
+        章一覧
+      </button>
+      <button class="tab-btn active" data-screen="info">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        情報
+      </button>
+    </nav>
+  </div>
+
+</div><!-- #app -->
+
+<script src="app.js"></script>
+
+<!-- PWA Service Worker 登録 -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {
+      // HTTPではなくfile://で開いた場合は失敗するが問題なし
+    });
+  });
+}
+</script>
+
+</body>
+</html>

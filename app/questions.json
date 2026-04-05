@@ -1,0 +1,83 @@
+{
+  "meta": {
+    "title": "学習問題集",
+    "version": "1.0",
+    "source": "ocr_output\\all_documents_clean.md",
+    "total_questions": 4,
+    "ocr_parsed": 1,
+    "needs_review_count": 1,
+    "notes": [
+      "needs_review: true の問題は手動確認が必要です",
+      "answer フィールドは 0始まりのインデックスです",
+      "raw_choices は確認後に削除できます"
+    ]
+  },
+  "questions": [
+    {
+      "id": "demo_001",
+      "chapter": "デモ問題",
+      "page": 0,
+      "text": "これはデモ問題です。正しい選択肢を選んでください。\n\n※ 実際の問題はOCR解析後にquestions.jsonを更新してください。",
+      "choices": [
+        "①　選択肢A (正解)",
+        "②　選択肢B",
+        "③　選択肢C",
+        "④　選択肢D"
+      ],
+      "answer": 0,
+      "explanation": "選択肢Aが正解です。これはデモ用の解説です。実際の解説はOCRテキストを確認して手動で入力してください。",
+      "needs_review": false,
+      "raw_choices": []
+    },
+    {
+      "id": "demo_002",
+      "chapter": "デモ問題",
+      "page": 0,
+      "text": "2問目のデモ問題です。どれが正しいでしょうか？",
+      "choices": [
+        "①　誤りの選択肢",
+        "②　これが正解",
+        "③　誤りの選択肢",
+        "④　誤りの選択肢"
+      ],
+      "answer": 1,
+      "explanation": "②が正解です。デモ用の解説テキストです。",
+      "needs_review": false,
+      "raw_choices": []
+    },
+    {
+      "id": "demo_003",
+      "chapter": "デモ問題",
+      "page": 0,
+      "text": "3問目のデモ問題です。5択の問題です。",
+      "choices": [
+        "①　選択肢A",
+        "②　選択肢B",
+        "③　選択肢C (正解)",
+        "④　選択肢D",
+        "⑤　選択肢E"
+      ],
+      "answer": 2,
+      "explanation": "③が正解です。",
+      "needs_review": false,
+      "raw_choices": []
+    },
+    {
+      "id": "q0001",
+      "chapter": "002_2026-04-03_12_08_32_AM",
+      "page": 1,
+      "text": "問一競H<\\>当町中 』単本Sew・「Hevヽゝ>燥S束洪-S習所正ao選で海で洗っ<Hペ\\>き漏江 さ世革到(SS洗舟きぶ活直電池事・当到海部治吉江で君野SS ボボ>S当>ペーやい党いろ赴噴地めい台二流きい。 おoe民みoS周噴o束守和三朋ゆさや志選や・ぶS涯る下』oっ習い 邊てで\"。〇(よX下ーー1gて)在」恒・@ぃ幻ミ二王のさやnnや浪てでろSo。 人信 --ビでニニトビ |還・誰の| OL \"本訂ホ記京 いいて o」 __oco_o_o_民還o」 癌= oo _o_orooo_omo] |屋| |の|の| -_o_o_e_o-画o」 二* 原還国国器国還 |国墨る回還る還還 amsなも mo噴o噴oo守=時の言構局= 局= [PSYミey束※_o_o_o_o」_o|_ | _o」__o」 導き吉- o_ __o_o oo _必同族任ぎ _o[o_o[o_o_o_o_o_o_o] _Fき革s- To_o_o_o8 ボ ミっS豆且王1さ%Wわ大さや弥味詩噴2や己べ計湯てやeSやかo。 いせ・滞息下許噴い下且(寂朋o)下部い串「HV\\\\燥S速」圧脂ゆざい。 一He\\>畑8在海 【型本]]Hv\\>ゝき調澤でてでべ・選でてラeS下さいと",
+      "choices": [
+        "部洪やミミ計いて究注Sぶとみやきい。",
+        "Hy\\>燥S江漁正光学テ=注~"
+      ],
+      "answer": null,
+      "explanation": "",
+      "needs_review": true,
+      "raw_choices": [
+        "(])部洪やミミ計いて究注Sぶとみやきい。",
+        "(ぃ)Hy\\>燥S江漁正光学テ=注~"
+      ]
+    }
+  ]
+}
