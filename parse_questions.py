@@ -126,22 +126,32 @@ def parse_file(path: Path, doc_name: str) -> list[RawQuestion]:
                     j += 1
                 elif lines[j].strip() == "":
                     # 空行をまたいでも継続 (OCRでは空行挿入されることが多い)
-                    # ただし2行連続空行は終了
-                    if j + 1 < n and lines[j + 1].strip() == "":
+                    # ただし3行連続空行は終了
+                    empty_count = 0
+                    k = j
+                    while k < n and lines[k].strip() == "":
+                        empty_count += 1
+                        k += 1
+                    if empty_count >= 3:
                         break
-                    # 次の行が選択肢っぽければ空行を飛ばして継続
-                    if j + 1 < n:
-                        ok3, _, _ = is_choice_line(lines[j + 1])
-                        if ok3:
-                            j += 1
-                            continue
-                    break
+                    j = k
+                    continue
                 else:
                     # 選択肢でも空行でもない行: 前の選択肢のテキスト続きの可能性
-                    # 短ければ追加、長ければ終了
-                    if len(lines[j].strip()) < 80 and choice_lines:
+                    # ページ区切りや新しい問題ヘッダーなら終了
+                    sl = lines[j].strip()
+                    if PAGE_RE.match(sl) or QHEADER_RE.match(sl):
+                        break
+                    # 長すぎる行や次の行に選択肢マーカーがある場合は
+                    # 前の選択肢の続きとして追加
+                    if choice_lines:
                         last_m, last_t = choice_lines[-1]
-                        choice_lines[-1] = (last_m, last_t + " " + lines[j].strip())
+                        # 次の行が選択肢マーカーなら継続
+                        next_is_choice = (j + 1 < n and is_choice_line(lines[j + 1])[0])
+                        if next_is_choice or len(sl) < 100:
+                            choice_lines[-1] = (last_m, (last_t + " " + sl).strip())
+                            j += 1
+                            continue
                     j += 1
                     break
 
