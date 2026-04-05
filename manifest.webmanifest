@@ -1,0 +1,10 @@
+{
+  "name": "ナノインデンター適応型学習アプリ",
+  "short_name": "NanoLearn",
+  "start_url": "./nanoin.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#f8fafc",
+  "lang": "ja",
+  "description": "ナノインデンターの概念理解、誤解診断、AI対話、理解確認を行う学習ウェブアプリ"
+}

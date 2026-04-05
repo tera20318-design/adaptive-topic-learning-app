@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ja" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>蛍光X線分析装置 説明ガイド</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background:
+                radial-gradient(circle at top left, rgba(14, 165, 233, 0.12), transparent 28%),
+                radial-gradient(circle at top right, rgba(13, 148, 136, 0.12), transparent 24%),
+                linear-gradient(180deg, #f8fafc 0%, #f5fbfb 52%, #f8fafc 100%);
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.25s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 42vh;
+            min-height: 280px;
+            max-height: 400px;
+        }
+        .beam-card {
+            background:
+                radial-gradient(circle at 28% 30%, rgba(56, 189, 248, 0.28), transparent 18%),
+                linear-gradient(180deg, #0f172a 0%, #111827 100%);
+        }
+        .beam {
+            height: 4px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, rgba(255,255,255,0), #38bdf8, #fde68a);
+            box-shadow: 0 0 16px rgba(56, 189, 248, 0.8);
+            animation: beamPulse 2.8s infinite ease-in-out;
+        }
+        .beam.return {
+            background: linear-gradient(90deg, rgba(255,255,255,0), #34d399, #ccfbf1);
+            box-shadow: 0 0 16px rgba(52, 211, 153, 0.7);
+            animation-delay: 0.6s;
+        }
+        @keyframes beamPulse {
+            0%, 100% { opacity: 0.45; }
+            50% { opacity: 1; }
+        }
+        .faq-item[open] { box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08); }
+        .faq-item summary::-webkit-details-marker { display: none; }
+    </style>
+</head>
+<body class="text-slate-800 font-sans leading-relaxed tracking-wide">
+    <nav class="bg-white/85 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-slate-200/70">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <span class="text-xl font-bold text-teal-700 tracking-wider">XRF Guide</span>
+                <div class="hidden md:flex items-center space-x-6 text-sm font-medium text-slate-600">
+                    <a href="#principle" class="hover:text-teal-600 transition-colors">原理</a>
+                    <a href="#elements" class="hover:text-teal-600 transition-colors">測定元素</a>
+                    <a href="#workflow" class="hover:text-teal-600 transition-colors">使い方</a>
+                    <a href="#faq" class="hover:text-teal-600 transition-colors">FAQ</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header class="max-w-6xl mx-auto px-4 pt-14 pb-20 sm:pt-20 sm:pb-24">
+        <div class="grid lg:grid-cols-[1.1fr_0.9fr] gap-10 items-center">
+            <div>
+                <div class="inline-flex items-center rounded-full border border-teal-200 bg-white/80 px-4 py-1.5 text-sm font-semibold text-teal-800 shadow-sm">
+                    社内説明用ページ
+                </div>
+                <h1 class="mt-6 text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight">
+                    蛍光X線分析装置
+                    <span class="block text-teal-700">利用説明ガイド</span>
+                </h1>
+                <p class="mt-6 text-lg text-slate-600 max-w-2xl">
+                    蛍光X線分析装置で何がわかるか、どこに限界があるか、どう安全に使うかを社内向けにまとめた説明ページです。
+                </p>
+                <div class="mt-8 flex flex-col sm:flex-row gap-4">
+                    <a href="#principle" class="inline-block bg-teal-700 text-white px-8 py-3 rounded-full font-semibold hover:bg-teal-800 transition-colors shadow-md text-center">説明を開始する</a>
+                    <a href="#workflow" class="inline-block bg-white text-teal-700 border-2 border-teal-700 px-8 py-3 rounded-full font-semibold hover:bg-teal-50 transition-colors shadow-sm text-center">装置の使い方を見る</a>
+                </div>
+                <div class="mt-8 grid sm:grid-cols-3 gap-3 max-w-3xl">
+                    <div class="rounded-2xl bg-white/90 border border-slate-200 p-4 shadow-sm">
+                        <p class="text-xs font-bold tracking-[0.18em] text-sky-600 uppercase">Point 01</p>
+                        <p class="mt-2 font-semibold text-slate-900">非破壊で元素確認</p>
+                        <p class="mt-1 text-sm text-slate-600">金属や粉末を短時間でスクリーニングできます。</p>
+                    </div>
+                    <div class="rounded-2xl bg-white/90 border border-slate-200 p-4 shadow-sm">
+                        <p class="text-xs font-bold tracking-[0.18em] text-teal-600 uppercase">Point 02</p>
+                        <p class="mt-2 font-semibold text-slate-900">軽元素は条件依存</p>
+                        <p class="mt-1 text-sm text-slate-600">雰囲気、窓材、面状態の影響を強く受けます。</p>
+                    </div>
+                    <div class="rounded-2xl bg-white/90 border border-slate-200 p-4 shadow-sm">
+                        <p class="text-xs font-bold tracking-[0.18em] text-amber-600 uppercase">Point 03</p>
+                        <p class="mt-2 font-semibold text-slate-900">安全を最優先</p>
+                        <p class="mt-1 text-sm text-slate-600">扉開放測定やインターロック無効化は厳禁です。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-[30px] border border-slate-200 bg-white/80 backdrop-blur-sm shadow-xl p-5 sm:p-7">
+                <div class="beam-card relative rounded-[24px] p-6 h-[280px] overflow-hidden">
+                    <div class="absolute left-8 top-8 rounded-full bg-white/10 px-3 py-1 text-xs font-bold tracking-[0.18em] text-cyan-100 uppercase">X-ray Tube</div>
+                    <div class="absolute right-8 top-8 rounded-full bg-white/10 px-3 py-1 text-xs font-bold tracking-[0.18em] text-emerald-100 uppercase">Detector</div>
+                    <div class="absolute right-10 bottom-8 rounded-full bg-white/10 px-3 py-1 text-xs font-bold tracking-[0.18em] text-teal-50 uppercase">Sample</div>
+                    <div class="absolute left-12 top-20 h-24 w-16 rounded-[20px] bg-gradient-to-b from-slate-200 via-slate-500 to-slate-900"></div>
+                    <div class="absolute right-12 top-20 h-20 w-20 rounded-[24px] bg-gradient-to-b from-slate-200 via-slate-500 to-slate-900"></div>
+                    <div class="absolute right-16 top-24 h-12 w-12 rounded-full bg-gradient-to-br from-sky-200 to-slate-900"></div>
+                    <div class="absolute right-12 bottom-12 h-16 w-44 rounded-[22px] bg-gradient-to-b from-emerald-300 via-teal-600 to-teal-900 shadow-2xl shadow-teal-900/30"></div>
+                    <div class="beam absolute left-28 top-[132px] w-56 rotate-[15deg]"></div>
+                    <div class="beam return absolute left-[58%] top-[150px] w-32 -rotate-[48deg]"></div>
+                </div>
+                <div class="mt-5 grid sm:grid-cols-3 gap-3 text-sm">
+                    <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4">
+                        <p class="font-bold text-slate-900">照射</p>
+                        <p class="mt-1 text-slate-600">一次X線を試料に当てます。</p>
+                    </div>
+                    <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4">
+                        <p class="font-bold text-slate-900">励起</p>
+                        <p class="mt-1 text-slate-600">元素固有の蛍光X線が発生します。</p>
+                    </div>
+                    <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4">
+                        <p class="font-bold text-slate-900">解析</p>
+                        <p class="mt-1 text-slate-600">エネルギーと強度から元素を読みます。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 pb-24 space-y-24">
+        <section id="principle" class="scroll-mt-24">
+            <div class="text-center mb-10">
+                <span class="text-sm font-bold text-teal-600 tracking-widest uppercase">Section 01</span>
+                <h2 class="text-2xl sm:text-3xl font-bold mt-2">原理</h2>
+                <p class="mt-4 text-slate-600 max-w-3xl mx-auto">
+                    元素ごとに異なる蛍光X線のエネルギーを読むことで、試料に含まれる元素を判定します。ピークの大きさは概ね量に対応しますが、母材や膜厚の影響を受けます。
+                </p>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="flex flex-wrap border-b border-slate-200 bg-slate-100/60">
+                    <button class="tab-btn flex-1 py-4 px-4 text-center font-semibold text-teal-700 border-b-2 border-teal-700 bg-white" data-target="tab-flow">測定の流れ</button>
+                    <button class="tab-btn flex-1 py-4 px-4 text-center font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors" data-target="tab-spectrum">スペクトルの見方</button>
+                    <button class="tab-btn flex-1 py-4 px-4 text-center font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-colors" data-target="tab-limit">限界と注意点</button>
+                </div>
+
+                <div class="p-6 sm:p-10">
+                    <div id="tab-flow" class="tab-content active">
+                        <div class="grid lg:grid-cols-3 gap-4 text-sm">
+                            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                                <p class="font-bold text-teal-700">1. 一次X線照射</p>
+                                <p class="mt-2 text-slate-600">X線管から出た一次X線が試料の原子を励起します。</p>
+                            </div>
+                            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                                <p class="font-bold text-teal-700">2. 蛍光X線発生</p>
+                                <p class="mt-2 text-slate-600">内殻電子の空席を埋める遷移で元素固有のX線が出ます。</p>
+                            </div>
+                            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                                <p class="font-bold text-teal-700">3. 検出と定量</p>
+                                <p class="mt-2 text-slate-600">ピーク位置で元素を同定し、強度から量を推定します。</p>
+                            </div>
+                        </div>
+                        <div class="mt-6 rounded-2xl bg-teal-50 border border-teal-100 p-5 text-sm text-teal-900">
+                            <strong class="block mb-2">社内説明の一言</strong>
+                            「元素ごとに違うバーコードを読む装置」と伝えると、初学者にも仕組みが伝わりやすくなります。
+                        </div>
+                    </div>
+
+                    <div id="tab-spectrum" class="tab-content">
+                        <div class="grid xl:grid-cols-[0.9fr_1.1fr] gap-8">
+                            <div class="space-y-4">
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                                    <label for="samplePreset" class="block text-sm font-bold text-slate-700 mb-2">サンプル例</label>
+                                    <select id="samplePreset" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                                        <option value="sus304" selected>SUS系合金</option>
+                                        <option value="brass">真鍮</option>
+                                        <option value="mineral">鉱物・粉末</option>
+                                        <option value="polymer">樹脂添加元素</option>
+                                    </select>
+                                </div>
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                                    <label for="atmosphereMode" class="block text-sm font-bold text-slate-700 mb-2">測定雰囲気</label>
+                                    <select id="atmosphereMode" class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                                        <option value="air" selected>空気中</option>
+                                        <option value="helium">Heパージ / 真空に近い条件</option>
+                                    </select>
+                                    <p class="mt-2 text-xs text-slate-500">低エネルギー側は空気中で減衰しやすく、軽元素の見え方に差が出ます。</p>
+                                </div>
+                                <div class="rounded-2xl bg-teal-50 border border-teal-100 p-5">
+                                    <p id="spectrumTitle" class="text-sm font-bold text-teal-900 mb-2">SUS系合金の典型スペクトル</p>
+                                    <p id="spectrumDescription" class="text-sm text-teal-800">Fe、Cr、Ni のピークが主で、主成分確認の説明に向く例です。</p>
+                                </div>
+                            </div>
+                            <div class="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6">
+                                <div class="chart-container">
+                                    <canvas id="spectrumChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab-limit" class="tab-content">
+                        <div class="grid md:grid-cols-2 gap-6 text-sm">
+                            <div class="rounded-3xl border border-slate-200 bg-slate-50 p-6">
+                                <h3 class="text-xl font-bold text-slate-900 mb-4">できること</h3>
+                                <ul class="space-y-3 text-slate-600">
+                                    <li>金属、ガラス、セラミックス、粉末の元素スクリーニング</li>
+                                    <li>Pb、Cr、Br などの有無確認</li>
+                                    <li>異材混入や材質違いの一次判定</li>
+                                    <li>めっきや表面処理の成分確認</li>
+                                </ul>
+                            </div>
+                            <div class="rounded-3xl border border-amber-200 bg-amber-50 p-6">
+                                <h3 class="text-xl font-bold text-amber-950 mb-4">苦手なこと</h3>
+                                <ul class="space-y-3 text-amber-900">
+                                    <li>H、He、Li、Be の測定</li>
+                                    <li>C、N、O など軽元素の厳密定量</li>
+                                    <li>価数や化学結合状態の判定</li>
+                                    <li>粗面、多孔質、濡れた試料の再現性確保</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="elements" class="scroll-mt-24">
+            <div class="text-center mb-10">
+                <span class="text-sm font-bold text-teal-600 tracking-widest uppercase">Section 02</span>
+                <h2 class="text-2xl sm:text-3xl font-bold mt-2">測定できる元素</h2>
+                <p class="mt-4 text-slate-600 max-w-3xl mx-auto">
+                    実際の下限は装置仕様、雰囲気、測定時間、試料形状で変わります。ここでは社内説明に使いやすい一般的な目安を示します。
+                </p>
+            </div>
+
+            <div class="grid xl:grid-cols-[1fr_0.95fr] gap-6">
+                <div class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm">
+                    <div class="grid sm:grid-cols-3 gap-4 text-sm">
+                        <div class="rounded-2xl bg-slate-50 border border-slate-200 p-5">
+                            <p class="font-bold text-slate-900">基本的に困難</p>
+                            <p class="mt-2 text-slate-600">H, He, Li, Be</p>
+                        </div>
+                        <div class="rounded-2xl bg-sky-50 border border-sky-100 p-5">
+                            <p class="font-bold text-sky-900">条件依存が大きい</p>
+                            <p class="mt-2 text-sky-800">B, C, N, O, F, Na, Mg, Al</p>
+                        </div>
+                        <div class="rounded-2xl bg-emerald-50 border border-emerald-100 p-5">
+                            <p class="font-bold text-emerald-900">比較的扱いやすい</p>
+                            <p class="mt-2 text-emerald-800">Si 以降、特に P-S-Cl-K-Ca-Ti 以降</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 grid md:grid-cols-2 gap-4 text-sm">
+                        <div class="rounded-2xl border border-slate-200 p-5">
+                            <p class="font-bold text-slate-900 mb-2">説明用の安全な言い方</p>
+                            <p class="text-slate-600">一般的な卓上XRFでは、Heパージや真空条件で Na-U、空気中では Mg-U または Al-U 以降を目安に説明すると無理が少ないです。</p>
+                        </div>
+                        <div class="rounded-2xl border border-slate-200 p-5">
+                            <p class="font-bold text-slate-900 mb-2">見えない理由</p>
+                            <p class="text-slate-600">元素が無いだけでなく、膜が薄い、母材ピークに埋もれる、表面汚れや水分がある場合でも検出しにくくなります。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="bg-slate-900 text-slate-100 rounded-3xl p-6 shadow-sm">
+                        <h3 class="text-xl font-bold mb-4">注意点</h3>
+                        <ul class="space-y-3 text-sm text-slate-300">
+                            <li>マトリクス効果で、同じ濃度でも母材により見え方が変わります。</li>
+                            <li>薄膜やめっきでは母材の寄与が入るため、表面だけを見ているとは限りません。</li>
+                            <li>曲面、段差、粉末偏析、粗面は再現性を悪化させます。</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+                        <h3 class="text-xl font-bold text-slate-900 mb-4">試料相談時の確認項目</h3>
+                        <ul class="space-y-3 text-sm text-slate-600">
+                            <li>何を知りたいか: 有無確認、概略組成、異常解析</li>
+                            <li>試料の形: 板、粉末、液体、フィルム、部品</li>
+                            <li>狙う元素: 軽元素か、RoHS対象か、主成分か微量成分か</li>
+                            <li>必要精度: スクリーニングか、比較用の再現性重視か</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="workflow" class="scroll-mt-24">
+            <div class="text-center mb-10">
+                <span class="text-sm font-bold text-teal-600 tracking-widest uppercase">Section 03</span>
+                <h2 class="text-2xl sm:text-3xl font-bold mt-2">装置の使い方 / 安全</h2>
+            </div>
+
+            <div class="grid lg:grid-cols-[1.1fr_0.9fr] gap-6">
+                <div class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm">
+                    <h3 class="text-xl font-bold text-slate-900 mb-6">標準ワークフロー</h3>
+                    <div class="space-y-5 text-sm">
+                        <div><strong class="text-teal-700">1.</strong> 依頼内容を確認する。知りたい元素、試料形状、前処理可否を聞く。</div>
+                        <div><strong class="text-teal-700">2.</strong> 試料を準備する。測定面を清掃し、乾燥・平滑・識別可能な状態にする。</div>
+                        <div><strong class="text-teal-700">3.</strong> 測定メソッドを選ぶ。迷う場合は標準メソッドから始める。</div>
+                        <div><strong class="text-teal-700">4.</strong> 試料をセットして扉を閉める。干渉や高さ超過が無いか確認する。</div>
+                        <div><strong class="text-teal-700">5.</strong> スペクトルを確認する。狙い元素のピーク、異常散乱、再測定要否を見る。</div>
+                        <div><strong class="text-teal-700">6.</strong> 結果と条件を保存し、試料室と周辺を清掃する。</div>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="bg-red-50 rounded-3xl border border-red-200 p-6 shadow-sm">
+                        <h3 class="text-xl font-bold text-red-950 mb-4">安全</h3>
+                        <ul class="space-y-3 text-sm text-red-900">
+                            <li>インターロックを無効化しない。扉開放で照射しない。</li>
+                            <li>異常アラームや機械干渉があれば、その場で停止して管理者へ連絡する。</li>
+                            <li>揮発、漏液、発熱のおそれがある試料は事前相談なしで測定しない。</li>
+                        </ul>
+                    </div>
+                    <div class="bg-amber-50 rounded-3xl border border-amber-200 p-6 shadow-sm">
+                        <h3 class="text-xl font-bold text-amber-950 mb-4">誤差を増やす要因</h3>
+                        <ul class="space-y-3 text-sm text-amber-900">
+                            <li>油、水分、指紋、粉の偏り</li>
+                            <li>曲面や小片で位置が安定しないこと</li>
+                            <li>測定時間不足で S/N が足りないこと</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="faq" class="scroll-mt-24">
+            <div class="text-center mb-10">
+                <span class="text-sm font-bold text-teal-600 tracking-widest uppercase">Section 04</span>
+                <h2 class="text-2xl sm:text-3xl font-bold mt-2">FAQ</h2>
+            </div>
+
+            <div class="grid gap-4 max-w-5xl mx-auto">
+                <details class="faq-item rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <summary class="flex items-center justify-between cursor-pointer list-none font-bold text-slate-900">
+                        <span>XRF で化学状態や価数もわかりますか？</span>
+                        <span class="text-teal-600 text-xl">+</span>
+                    </summary>
+                    <p class="mt-4 text-sm text-slate-600">基本的には元素の種類と量の情報が中心です。価数や結合状態は別手法が必要になることが多いです。</p>
+                </details>
+                <details class="faq-item rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <summary class="flex items-center justify-between cursor-pointer list-none font-bold text-slate-900">
+                        <span>軽元素が見えないのはなぜですか？</span>
+                        <span class="text-teal-600 text-xl">+</span>
+                    </summary>
+                    <p class="mt-4 text-sm text-slate-600">低エネルギーX線は空気や窓材で減衰しやすいからです。Heパージや真空、清浄な表面が重要です。</p>
+                </details>
+                <details class="faq-item rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <summary class="flex items-center justify-between cursor-pointer list-none font-bold text-slate-900">
+                        <span>めっきや薄膜も測定できますか？</span>
+                        <span class="text-teal-600 text-xl">+</span>
+                    </summary>
+                    <p class="mt-4 text-sm text-slate-600">可能ですが、膜厚が薄いと母材の寄与が大きくなります。膜厚用メソッドや標準試料が必要な場合があります。</p>
+                </details>
+                <details class="faq-item rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <summary class="flex items-center justify-between cursor-pointer list-none font-bold text-slate-900">
+                        <span>液体や粉末はそのまま測れますか？</span>
+                        <span class="text-teal-600 text-xl">+</span>
+                    </summary>
+                    <p class="mt-4 text-sm text-slate-600">指定セルやフィルムを使えば測れます。ただし漏れ、沈降、偏析、膜破れのリスク管理が必要です。</p>
+                </details>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-slate-950 text-slate-400 py-8 text-center text-sm">
+        <div class="max-w-6xl mx-auto px-4">
+            <p>蛍光X線分析装置 説明ガイド | Facility User Education Tool</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tabBtns.forEach(b => {
+                        b.classList.remove('text-teal-700', 'border-b-2', 'border-teal-700', 'bg-white');
+                        b.classList.add('text-slate-500', 'hover:text-slate-700', 'hover:bg-slate-50');
+                    });
+                    btn.classList.add('text-teal-700', 'border-b-2', 'border-teal-700', 'bg-white');
+                    btn.classList.remove('text-slate-500', 'hover:text-slate-700', 'hover:bg-slate-50');
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    document.getElementById(btn.dataset.target).classList.add('active');
+                });
+            });
+
+            const samplePreset = document.getElementById('samplePreset');
+            const atmosphereMode = document.getElementById('atmosphereMode');
+            const spectrumTitle = document.getElementById('spectrumTitle');
+            const spectrumDescription = document.getElementById('spectrumDescription');
+
+            const presets = {
+                sus304: {
+                    title: 'SUS系合金の典型スペクトル',
+                    description: 'Fe、Cr、Ni のピークが主で、主成分確認の説明に向く例です。',
+                    peaks: [{ e: 5.41, i: 40, l: 'Cr' }, { e: 6.40, i: 90, l: 'Fe' }, { e: 7.48, i: 34, l: 'Ni' }]
+                },
+                brass: {
+                    title: '真鍮の典型スペクトル',
+                    description: 'Cu と Zn のピークが支配的で、材質違いの説明に使いやすい例です。',
+                    peaks: [{ e: 8.04, i: 100, l: 'Cu' }, { e: 8.90, i: 78, l: 'Zn' }]
+                },
+                mineral: {
+                    title: '鉱物・粉末の典型スペクトル',
+                    description: 'Si、Ca、Ti、Fe など複数元素が見える構成です。低エネルギー側の感度差を説明できます。',
+                    peaks: [{ e: 1.74, i: 48, l: 'Si' }, { e: 3.69, i: 42, l: 'Ca' }, { e: 4.51, i: 32, l: 'Ti' }, { e: 6.40, i: 52, l: 'Fe' }]
+                },
+                polymer: {
+                    title: '樹脂添加元素の典型スペクトル',
+                    description: 'Cl や Br のようなハロゲン元素の有無確認イメージです。',
+                    peaks: [{ e: 2.62, i: 30, l: 'Cl' }, { e: 3.69, i: 18, l: 'Ca' }, { e: 11.92, i: 74, l: 'Br' }]
+                }
+            };
+
+            const makeSpectrum = (key, mode) => {
+                const lowThreshold = mode === 'air' ? 2.2 : 1.1;
+                const points = [];
+                for (let x = 0; x <= 16; x += 0.1) {
+                    let y = 3;
+                    presets[key].peaks.forEach(peak => {
+                        const penalty = peak.e < lowThreshold ? (mode === 'air' ? 0.42 : 0.88) : 1;
+                        y += peak.i * penalty * Math.exp(-Math.pow(x - peak.e, 2) / (2 * Math.pow(0.18, 2)));
+                    });
+                    points.push({ x: Number(x.toFixed(1)), y: Number(y.toFixed(1)) });
+                }
+                return points;
+            };
+
+            const labelPoints = (key, mode) => presets[key].peaks.map(peak => {
+                const penalty = peak.e < (mode === 'air' ? 2.2 : 1.1) ? (mode === 'air' ? 0.42 : 0.88) : 1;
+                return { x: peak.e, y: peak.i * penalty + 8, label: peak.l };
+            });
+
+            const chart = new Chart(document.getElementById('spectrumChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    datasets: [
+                        {
+                            label: '概念スペクトル',
+                            data: makeSpectrum(samplePreset.value, atmosphereMode.value),
+                            parsing: false,
+                            borderColor: '#0f766e',
+                            backgroundColor: 'rgba(15, 118, 110, 0.12)',
+                            pointRadius: 0,
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.2
+                        },
+                        {
+                            type: 'scatter',
+                            label: '元素ピーク',
+                            data: labelPoints(samplePreset.value, atmosphereMode.value),
+                            parsing: false,
+                            pointBackgroundColor: '#0ea5e9',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.92)',
+                            callbacks: {
+                                title: items => `${items[0].parsed.x.toFixed(2)} keV`,
+                                label: context => context.raw.label ? `元素: ${context.raw.label}` : `相対強度: ${context.parsed.y.toFixed(1)}`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { type: 'linear', min: 0, max: 16, title: { display: true, text: 'エネルギー (keV)' } },
+                        y: { beginAtZero: true, title: { display: true, text: '相対強度 (a.u.)' } }
+                    }
+                },
+                plugins: [{
+                    id: 'peakLabels',
+                    afterDatasetsDraw(chartInstance) {
+                        const ctx = chartInstance.ctx;
+                        const meta = chartInstance.getDatasetMeta(1);
+                        ctx.save();
+                        ctx.fillStyle = '#0f172a';
+                        ctx.font = '12px sans-serif';
+                        meta.data.forEach((point, index) => {
+                            const raw = chartInstance.data.datasets[1].data[index];
+                            ctx.fillText(raw.label, point.x + 8, point.y - 8);
+                        });
+                        ctx.restore();
+                    }
+                }]
+            });
+
+            const updateChart = () => {
+                const key = samplePreset.value;
+                spectrumTitle.textContent = presets[key].title;
+                spectrumDescription.textContent = presets[key].description;
+                chart.data.datasets[0].data = makeSpectrum(key, atmosphereMode.value);
+                chart.data.datasets[1].data = labelPoints(key, atmosphereMode.value);
+                chart.update();
+            };
+
+            samplePreset.addEventListener('change', updateChart);
+            atmosphereMode.addEventListener('change', updateChart);
+            updateChart();
+        });
+    </script>
+</body>
+</html>

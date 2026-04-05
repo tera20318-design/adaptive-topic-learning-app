@@ -1,0 +1,3279 @@
+(function () {
+    const content = window.NanoLearnContent || {};
+    const meta = content.meta || {};
+    const TOPICS = content.topics || {};
+    const TOPIC_LIST = Object.values(TOPICS);
+    const topicId = content.defaultTopicId || "nanoin";
+    const topic = (content.topics && content.topics[topicId]) || content.topic || {};
+    const topicName = topic.name || "適応型学習アプリ";
+    const APP_SECTIONS = content.sections || content.APP_SECTIONS || [];
+    const HERO = topic.hero || {};
+    const PRINCIPLE = topic.principle || {};
+    const INTRO_OVERVIEW_CARDS = topic.introCards || [];
+    const INTRO_SUMMARY_STATES = topic.introSummaryStates || {};
+    const INTRO_SELF_CHECK = topic.selfCheck || content.INTRO_SELF_CHECK || [];
+    const FIGURE_CARDS = topic.figureCards || content.FIGURE_CARDS || [];
+    const CONCEPTS = topic.concepts || content.CONCEPTS || [];
+    const CONCEPT_SUPPLEMENTS = topic.conceptSupplements || content.CONCEPT_SUPPLEMENTS || {};
+    const CONCEPT_SCENES = topic.conceptScenes || {};
+    const VISUAL_MODELS = topic.visualModels || content.VISUAL_MODELS || {};
+    const VISUAL_LEARNING = topic.visualLearning || {};
+    const DIAGNOSIS_QUESTIONS = topic.diagnosisQuestions || content.DIAGNOSIS_QUESTIONS || {};
+    const DIAGNOSIS_UI = topic.diagnosisUi || {};
+    const AI_SUGGESTED_PATHS = (topic.ai && topic.ai.suggestedPaths) || content.AI_SUGGESTED_PATHS || [];
+    const EXPLANATION_RUBRIC = (topic.ai && topic.ai.explanationRubric) || content.EXPLANATION_RUBRIC || [];
+    const AI_UI = (topic.ai && topic.ai.ui) || {};
+    const MASTERY_QUIZ = topic.masteryQuiz || content.MASTERY_QUIZ || [];
+    const MEDIA = topic.media || { featuredVideo: null, resources: [] };
+    const ROLE_TRACKS = topic.roles || [];
+    const COMPETENCIES = topic.competencies || [];
+    const SIMULATION_MISSIONS = topic.simulationMissions || [];
+    const { loadState, saveState, resetState, defaultState: storageDefaultState } = window.NanoLearnStorage;
+    const { AIService } = window.NanoLearnAI;
+    const nanoinUi = window.NanoLearnNanoinUi || {};
+    const xrfUi = window.NanoLearnXrfUi || {};
+    const taverUi = window.NanoLearnTaverUi || {};
+    const epmaUi = window.NanoLearnEpmaUi || {};
+    const irUi = window.NanoLearnIrUi || {};
+
+    const root = document.getElementById("app");
+    const aiService = new AIService();
+    let state;
+    let chart = null;
+    let currentChartConfig = null;
+    const runtimeStatus = {
+        chartIssue: !window.Chart
+            ? "グラフ描画ライブラリの読み込みに失敗したため、図解は文章ガイドのみで表示しています。"
+            : ""
+    };
+    const visualModelKeys = Object.keys(VISUAL_MODELS);
+    const defaultMaterial = (storageDefaultState.visual && storageDefaultState.visual.material && VISUAL_MODELS[storageDefaultState.visual.material])
+        ? storageDefaultState.visual.material
+        : (visualModelKeys[0] || "default");
+    const defaultConceptId = (storageDefaultState && storageDefaultState.activeConceptId && conceptMapHas(storageDefaultState.activeConceptId))
+        ? storageDefaultState.activeConceptId
+        : ((CONCEPTS[0] && CONCEPTS[0].id) || "");
+    const diagnosisQuestionIds = Object.keys(DIAGNOSIS_QUESTIONS);
+    const diagnosisStartQuestionId = (storageDefaultState.diagnosis && storageDefaultState.diagnosis.currentQuestionId && DIAGNOSIS_QUESTIONS[storageDefaultState.diagnosis.currentQuestionId])
+        ? storageDefaultState.diagnosis.currentQuestionId
+        : (diagnosisQuestionIds[0] || "");
+
+    const conceptMap = Object.fromEntries(CONCEPTS.map((concept) => [concept.id, concept]));
+    const introQuestionMap = Object.fromEntries(INTRO_SELF_CHECK.map((question) => [question.id, question]));
+    const masteryQuestionMap = Object.fromEntries(MASTERY_QUIZ.map((question) => [question.id, question]));
+    const roleMap = Object.fromEntries(ROLE_TRACKS.map((role) => [role.id, role]));
+    const competencyMap = Object.fromEntries(COMPETENCIES.map((competency) => [competency.id, competency]));
+    const missionMap = Object.fromEntries(SIMULATION_MISSIONS.map((mission) => [mission.id, mission]));
+    const sectionIndex = Object.fromEntries(APP_SECTIONS.map((section, index) => [section.id, index]));
+    state = sanitizeState(loadState());
+
+    document.title = topic.pageTitle || meta.pageTitle || `${topicName} 適応型学習アプリ`;
+
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
+
+    function asArray(value) {
+        return Array.isArray(value) ? value : [];
+    }
+
+    function conceptMapHas(conceptId) {
+        return CONCEPTS.some((concept) => concept.id === conceptId);
+    }
+
+    function sanitizeState(rawState) {
+        const next = rawState && typeof rawState === "object" ? rawState : {};
+        const safeState = Object.assign({}, next);
+        if (!sectionIndex[safeState.currentSection]) {
+            safeState.currentSection = storageDefaultState.currentSection || "intro";
+        }
+
+        if (!roleMap[safeState.roleId]) {
+            safeState.roleId = storageDefaultState.roleId || (ROLE_TRACKS[0] && ROLE_TRACKS[0].id) || "beginner";
+        }
+
+        if (!conceptMap[safeState.activeConceptId]) {
+            safeState.activeConceptId = defaultConceptId;
+        }
+
+        safeState.visual = Object.assign({}, storageDefaultState.visual, safeState.visual || {});
+        if (!VISUAL_MODELS[safeState.visual.material]) {
+            safeState.visual.material = defaultMaterial;
+        }
+        if (safeState.visual.currentMissionId && !missionMap[safeState.visual.currentMissionId]) {
+            safeState.visual.currentMissionId = "";
+        }
+        safeState.visual.completedMissions = asArray(safeState.visual.completedMissions)
+            .filter((missionId) => Boolean(missionMap[missionId]));
+        if (safeState.visual.compareSnapshot && typeof safeState.visual.compareSnapshot === "object") {
+            safeState.visual.compareSnapshot = extractComparableVisualState(safeState.visual.compareSnapshot);
+        } else {
+            safeState.visual.compareSnapshot = null;
+        }
+
+        safeState.diagnosis = Object.assign({}, storageDefaultState.diagnosis, safeState.diagnosis || {});
+        if (!DIAGNOSIS_QUESTIONS[safeState.diagnosis.currentQuestionId]) {
+            safeState.diagnosis.currentQuestionId = diagnosisStartQuestionId;
+        }
+        safeState.diagnosis.history = asArray(safeState.diagnosis.history)
+            .filter((entry) => entry && DIAGNOSIS_QUESTIONS[entry.questionId]);
+
+        safeState.mastery = Object.assign({}, storageDefaultState.mastery, safeState.mastery || {});
+        const validAnswers = {};
+        Object.entries(safeState.mastery.answers || {}).forEach(([questionId, choiceId]) => {
+            const question = masteryQuestionMap[questionId];
+            if (question && question.choices.some((choice) => choice.id === choiceId)) {
+                validAnswers[questionId] = choiceId;
+            }
+        });
+        safeState.mastery.answers = validAnswers;
+
+        safeState.visitedSections = asArray(safeState.visitedSections)
+            .filter((sectionId) => Boolean(sectionIndex[sectionId]));
+        if (!safeState.visitedSections.length) {
+            safeState.visitedSections = [safeState.currentSection];
+        }
+
+        return safeState;
+    }
+
+    function formatTextBlock(text) {
+        return escapeHtml(text)
+            .split(/\n{2,}/)
+            .map((paragraph) => `<p class="leading-7">${paragraph.replace(/\n/g, "<br>")}</p>`)
+            .join("");
+    }
+
+    function metricToneClass(tone) {
+        if (tone === "高") {
+            return "text-amber-700";
+        }
+        if (tone === "中") {
+            return "text-sky-700";
+        }
+        return "text-emerald-700";
+    }
+
+    function renderChartFallback(message) {
+        return `
+            <div class="chart-fallback rounded-[24px] border border-dashed border-slate-300 bg-slate-50 p-5">
+                <div class="text-sm font-bold text-slate-900">図解グラフを表示できませんでした</div>
+                <p class="mt-2 text-sm leading-7 text-slate-600">${escapeHtml(message)}</p>
+            </div>
+        `;
+    }
+
+    function persist() {
+        saveState(state);
+    }
+
+    function visitSection(sectionId) {
+        state.currentSection = sectionId;
+        if (!state.visitedSections.includes(sectionId)) {
+            state.visitedSections.push(sectionId);
+        }
+        persist();
+    }
+
+    function getActiveRole() {
+        return roleMap[state.roleId] || ROLE_TRACKS[0] || null;
+    }
+
+    function introAnsweredCount() {
+        return Object.keys(state.introCheck).length;
+    }
+
+    function selfCheckComplete() {
+        return Boolean(INTRO_SELF_CHECK.length) && introAnsweredCount() === INTRO_SELF_CHECK.length;
+    }
+
+    function nextIntroQuestion() {
+        return INTRO_SELF_CHECK.find((question) => state.introCheck[question.id] === undefined) || INTRO_SELF_CHECK[INTRO_SELF_CHECK.length - 1] || null;
+    }
+
+    function hasMeaningfulProgress() {
+        return selfCheckComplete() ||
+            state.visitedSections.length > 1 ||
+            state.diagnosis.history.length > 0 ||
+            Object.keys(state.mastery.answers || {}).length > 0 ||
+            (state.visual.completedMissions || []).length > 0;
+    }
+
+    function getDiagnosisHistoryEntry(questionId) {
+        return state.diagnosis.history.find((entry) => entry.questionId === questionId) || null;
+    }
+
+    function introQuestionMax(questionId) {
+        const question = introQuestionMap[questionId];
+        if (!question || !question.options || !question.options.length) {
+            return 1;
+        }
+        return Math.max(...question.options.map((option) => Number(option.value) || 0), 1);
+    }
+
+    function sourceWeight(source) {
+        if (source.weight !== undefined) {
+            return source.weight;
+        }
+        return source.type === "intro" ? 0.7 : 1;
+    }
+
+    function sourceProgress(source) {
+        if (source.type === "intro") {
+            const value = state.introCheck[source.id];
+            if (value === undefined) {
+                return 0;
+            }
+            return Math.max(0, Math.min(1, Number(value) / introQuestionMax(source.id)));
+        }
+        if (source.type === "diagnosis") {
+            const entry = getDiagnosisHistoryEntry(source.id);
+            if (!entry) {
+                return 0;
+            }
+            return entry.correct ? 1 : 0;
+        }
+        if (source.type === "mastery") {
+            const question = masteryQuestionMap[source.id];
+            const selected = state.mastery.answers[source.id];
+            if (!question || !selected) {
+                return 0;
+            }
+            const choice = question.choices.find((item) => item.id === selected);
+            return choice && choice.correct ? 1 : 0;
+        }
+        if (source.type === "mission") {
+            return (state.visual.completedMissions || []).includes(source.id) ? 1 : 0;
+        }
+        return 0;
+    }
+
+    function evaluateCompetency(competency) {
+        const sources = competency.sources || [];
+        if (!sources.length) {
+            return {
+                id: competency.id,
+                definition: competency,
+                progress: 0,
+                percent: 0,
+                status: "not-started"
+            };
+        }
+
+        let weightedTotal = 0;
+        let weightSum = 0;
+        sources.forEach((source) => {
+            const weight = sourceWeight(source);
+            weightedTotal += sourceProgress(source) * weight;
+            weightSum += weight;
+        });
+
+        const progress = weightSum ? weightedTotal / weightSum : 0;
+        let status = "not-started";
+        if (progress >= 0.85) {
+            status = "mastered";
+        } else if (progress > 0) {
+            status = "in-progress";
+        }
+
+        return {
+            id: competency.id,
+            definition: competency,
+            progress,
+            percent: Math.round(progress * 100),
+            status
+        };
+    }
+
+    function competencyStates() {
+        return COMPETENCIES.map(evaluateCompetency);
+    }
+
+    function sortedCompetencyStates() {
+        const activeRole = getActiveRole();
+        return competencyStates().sort((left, right) => {
+            const leftFocus = activeRole && (left.definition.roleIds || []).includes(activeRole.id) ? 1 : 0;
+            const rightFocus = activeRole && (right.definition.roleIds || []).includes(activeRole.id) ? 1 : 0;
+            if (leftFocus !== rightFocus) {
+                return rightFocus - leftFocus;
+            }
+            return left.progress - right.progress;
+        });
+    }
+
+    function progressPercent() {
+        const items = competencyStates();
+        if (!items.length) {
+            return 0;
+        }
+        const total = items.reduce((sum, item) => sum + item.progress, 0);
+        return Math.round((total / items.length) * 100);
+    }
+
+    function competencyStatusLabel(status) {
+        if (status === "mastered") {
+            return "理解済み";
+        }
+        if (status === "in-progress") {
+            return "進行中";
+        }
+        return "未着手";
+    }
+
+    function competencyStatusClass(status) {
+        if (status === "mastered") {
+            return "tag-good";
+        }
+        if (status === "in-progress") {
+            return "tag-neutral";
+        }
+        return "tag-weak";
+    }
+
+    function topCompetencies(limit) {
+        return sortedCompetencyStates().slice(0, limit);
+    }
+
+    function buildQuestionQueue() {
+        const queue = [];
+        const seen = new Set();
+
+        function pushItem(item) {
+            if (!item || seen.has(item.id)) {
+                return;
+            }
+            seen.add(item.id);
+            queue.push(item);
+        }
+
+        sortedCompetencyStates().forEach((competencyState) => {
+            (competencyState.definition.sources || []).forEach((source) => {
+                if (queue.length >= 5) {
+                    return;
+                }
+                if (source.type === "diagnosis") {
+                    const question = DIAGNOSIS_QUESTIONS[source.id];
+                    const entry = getDiagnosisHistoryEntry(source.id);
+                    if (!question || (entry && entry.correct)) {
+                        return;
+                    }
+                    pushItem({
+                        id: `diagnosis-${source.id}`,
+                        title: question.prompt,
+                        detail: competencyState.definition.title,
+                        section: "diagnosis",
+                        buttonLabel: "理解診断へ"
+                    });
+                }
+                if (source.type === "mastery") {
+                    const question = masteryQuestionMap[source.id];
+                    const selected = state.mastery.answers[source.id];
+                    const selectedChoice = question && question.choices.find((item) => item.id === selected);
+                    if (!question || (selectedChoice && selectedChoice.correct)) {
+                        return;
+                    }
+                    pushItem({
+                        id: `mastery-${source.id}`,
+                        title: question.prompt,
+                        detail: competencyState.definition.title,
+                        section: "mastery",
+                        buttonLabel: "習熟確認へ"
+                    });
+                }
+            });
+        });
+
+        sortedCompetencyStates().forEach((competencyState) => {
+            if (queue.length >= 5) {
+                return;
+            }
+            const conceptId = (competencyState.definition.conceptIds || [])[0];
+            const concept = conceptMap[conceptId];
+            if (!concept) {
+                return;
+            }
+            pushItem({
+                id: `concept-${competencyState.id}`,
+                title: `${competencyState.definition.title} を 1 つ見直す`,
+                detail: concept.title,
+                section: "concepts",
+                conceptId,
+                buttonLabel: "概念を見る"
+            });
+        });
+
+        return queue.slice(0, 5);
+    }
+
+    function getPrimaryMediaLink() {
+        const featured = MEDIA.featuredVideo;
+        if (featured && (featured.url || featured.link || featured.src)) {
+            return {
+                url: featured.url || featured.link || featured.src,
+                title: featured.title || MEDIA.title || "参考メディア"
+            };
+        }
+        const resource = (MEDIA.resources || [])[0];
+        if (!resource) {
+            return null;
+        }
+        return {
+            url: resource.url,
+            title: resource.title
+        };
+    }
+
+    function getRecommendedVisualMission() {
+        const competencyState = sortedCompetencyStates().find(
+            (item) => item.definition.nextStep && item.definition.nextStep.missionId
+        );
+        if (competencyState) {
+            return missionMap[competencyState.definition.nextStep.missionId] || null;
+        }
+        return SIMULATION_MISSIONS[0] || null;
+    }
+
+    function renderSmartAction(action, label, className) {
+        if (!action) {
+            return "";
+        }
+        const text = escapeHtml(label || action.label || "開く");
+        if (action.missionId) {
+            return `<button class="${className}" data-action="apply-sim-mission" data-mission="${action.missionId}">${text}</button>`;
+        }
+        if (action.section === "concepts" && action.conceptId) {
+            return `<button class="${className}" data-action="open-concept" data-concept="${action.conceptId}">${text}</button>`;
+        }
+        if (action.url) {
+            return `<button class="${className}" data-action="open-url" data-url="${action.url}">${text}</button>`;
+        }
+        if (action.section) {
+            return `<button class="${className}" data-action="goto-section" data-section="${action.section}">${text}</button>`;
+        }
+        return "";
+    }
+
+    function introSummary() {
+        const answers = Object.values(state.introCheck);
+        if (!answers.length) {
+            return INTRO_SUMMARY_STATES.empty || {
+                label: "説明待ち",
+                text: "最初の 3 問に答えると、どこから始めるかの目安を出します。",
+            };
+        }
+
+        const total = answers.reduce((sum, value) => sum + Number(value), 0);
+        if (total <= 1) {
+            return INTRO_SUMMARY_STATES.low || {
+                label: "あと一歩",
+                text: "まずは用語と観察の関係を確認し、次に条件差を見る流れが合います。",
+            };
+        }
+        if (total <= 4) {
+            return INTRO_SUMMARY_STATES.medium || {
+                label: "理解の切り分けが順調",
+                text: "次は図解で条件差を見ながら、どの変化が読みやすいかを確かめます。",
+            };
+        }
+        return INTRO_SUMMARY_STATES.high || {
+                label: "説明をつなげられる",
+                text: "基礎は入っています。AI 対話や理解診断で、言葉にして説明できるかを詰める段階です。",
+        };
+    }
+
+    function getActiveConcept() {
+        return conceptMap[state.activeConceptId] || CONCEPTS[0];
+    }
+
+    function isRelatedConcept(targetId) {
+        const active = getActiveConcept();
+        return asArray(active && active.relations).some((item) => item.target === targetId);
+    }
+
+    function getVisualScenario() {
+        if (typeof VISUAL_LEARNING.buildScenario === "function") {
+            const scenario = VISUAL_LEARNING.buildScenario(state.visual, VISUAL_MODELS);
+            if (topicId === "taver") {
+                return enhanceTaverVisualScenario(scenario);
+            }
+            if (topicId === "epma") {
+                return enhanceEpmaVisualScenario(scenario);
+            }
+            return scenario;
+        }
+        return {
+            metrics: [],
+            insights: [],
+            chart: {
+                type: "scatter",
+                datasets: []
+            }
+        };
+    }
+
+    function getVisualComparableFields() {
+        return [
+            "material",
+            ...asArray(VISUAL_LEARNING.controls).map((control) => control.field)
+        ];
+    }
+
+    function extractComparableVisualState(sourceVisual) {
+        const source = sourceVisual || {};
+        const next = {};
+        getVisualComparableFields().forEach((field) => {
+            if (source[field] !== undefined) {
+                next[field] = source[field];
+            }
+        });
+        return next;
+    }
+
+    function buildScenarioFromVisualState(visualState) {
+        if (typeof VISUAL_LEARNING.buildScenario !== "function") {
+            return null;
+        }
+        return VISUAL_LEARNING.buildScenario(visualState, VISUAL_MODELS);
+    }
+
+    function formatCompareSnapshotLabel(snapshot) {
+        if (!snapshot) {
+            return "";
+        }
+        const values = [];
+        const material = VISUAL_MODELS[snapshot.material];
+        if (material && material.label) {
+            values.push(material.label);
+        }
+        asArray(VISUAL_LEARNING.controls).forEach((control) => {
+            const raw = snapshot[control.field];
+            if (raw === undefined) {
+                return;
+            }
+            const value = typeof control.formatValue === "function"
+                ? control.formatValue(raw, null)
+                : String(raw);
+            values.push(value);
+        });
+        return values.join(" / ");
+    }
+
+    function enhanceTaverVisualScenario(baseScenario) {
+        const snapshot = state.visual.compareSnapshot;
+        if (!snapshot) {
+            return baseScenario;
+        }
+
+        const compareState = extractComparableVisualState(snapshot);
+        const compareScenario = buildScenarioFromVisualState(compareState);
+        if (!compareScenario || !compareScenario.chart || !asArray(compareScenario.chart.datasets).length) {
+            return baseScenario;
+        }
+
+        const compareDataset = Object.assign({}, compareScenario.chart.datasets[0], {
+            label: "固定した比較条件",
+            borderColor: "#f59e0b",
+            backgroundColor: "#f59e0b",
+            borderWidth: 2.4,
+            borderDash: [10, 6],
+            pointRadius: 0,
+            tension: 0.18
+        });
+
+        const finalCurrent = Number(baseScenario.finalWear || 0);
+        const finalCompare = Number(compareScenario.finalWear || 0);
+        const delta = Number((finalCurrent - finalCompare).toFixed(1));
+        const deltaLabel = delta > 0 ? `+${delta.toFixed(1)} mg` : `${delta.toFixed(1)} mg`;
+
+        return Object.assign({}, baseScenario, {
+            compareSnapshotLabel: formatCompareSnapshotLabel(compareState),
+            compareSummary: {
+                finalWear: `${finalCompare.toFixed(1)} mg`,
+                delta: deltaLabel
+            },
+            chart: Object.assign({}, baseScenario.chart, {
+                datasets: [
+                    ...asArray(baseScenario.chart && baseScenario.chart.datasets),
+                    compareDataset
+                ]
+            })
+        });
+    }
+
+    function enhanceEpmaVisualScenario(baseScenario) {
+        const snapshot = state.visual.compareSnapshot;
+        if (!snapshot) {
+            return baseScenario;
+        }
+
+        const compareState = extractComparableVisualState(snapshot);
+        const compareScenario = buildScenarioFromVisualState(compareState);
+        if (!compareScenario || !compareScenario.chart || !asArray(compareScenario.chart.datasets).length) {
+            return baseScenario;
+        }
+
+        const compareDataset = Object.assign({}, compareScenario.chart.datasets[0], {
+            label: "固定した比較条件",
+            borderColor: "#f59e0b",
+            backgroundColor: "#f59e0b",
+            borderWidth: 2.4,
+            borderDash: [10, 6],
+            pointRadius: 0,
+            tension: 0.18
+        });
+
+        const currentDepth = Number(baseScenario.interactionDepth || 0);
+        const compareDepth = Number(compareScenario.interactionDepth || 0);
+        const depthDelta = Number((currentDepth - compareDepth).toFixed(2));
+        const depthDeltaLabel = depthDelta > 0 ? `+${depthDelta.toFixed(2)} um` : `${depthDelta.toFixed(2)} um`;
+
+        return Object.assign({}, baseScenario, {
+            compareSnapshotLabel: formatCompareSnapshotLabel(compareState),
+            compareSummary: {
+                interactionDepth: `${compareDepth.toFixed(2)} um`,
+                depthDelta: depthDeltaLabel,
+                chargingRisk: compareScenario.chargingRisk || "-",
+                peakSeparation: compareScenario.peakSeparation || "-"
+            },
+            chart: Object.assign({}, baseScenario.chart, {
+                datasets: [
+                    ...asArray(baseScenario.chart && baseScenario.chart.datasets),
+                    compareDataset
+                ]
+            })
+        });
+    }
+
+    function diagnosisWeakPoints() {
+        const counts = {};
+        state.diagnosis.history.forEach((entry) => {
+            (entry.weakness || []).forEach((tag) => {
+                counts[tag] = (counts[tag] || 0) + 1;
+            });
+        });
+        return Object.entries(counts)
+            .sort((a, b) => b[1] - a[1])
+            .map(([tag]) => conceptMap[tag] ? conceptMap[tag].title : tag);
+    }
+
+    function diagnosisSummaryText() {
+        const mistakes = state.diagnosis.history.filter((entry) => entry.misconception);
+        if (!mistakes.length) {
+            return DIAGNOSIS_UI.noMistakesText || "今のところ大きな誤解は見えていません。";
+        }
+        return `誤解しやすい点は ${mistakes.map((item) => item.label).slice(0, 2).join(" / ")} です。理由まで確認しておくと次が読みやすくなります。`;
+    }
+
+    function diagnosisAccuracy() {
+        if (!state.diagnosis.history.length) {
+            return 0;
+        }
+        return Math.round((state.diagnosis.correctCount / state.diagnosis.history.length) * 100);
+    }
+
+    function masteryAccuracy() {
+        const answered = Object.keys(state.mastery.answers || {}).length;
+        if (!answered) {
+            return 0;
+        }
+        const correct = MASTERY_QUIZ.filter((question) => {
+            const selected = state.mastery.answers[question.id];
+            const choice = question.choices.find((item) => item.id === selected);
+            return choice && choice.correct;
+        }).length;
+        return Math.round((correct / answered) * 100);
+    }
+
+    function computeMasteryResult() {
+        const answered = Object.keys(state.mastery.answers || {}).length;
+        const correct = MASTERY_QUIZ.filter((question) => {
+            const selected = state.mastery.answers[question.id];
+            const choice = question.choices.find((item) => item.id === selected);
+            return choice && choice.correct;
+        }).length;
+        const missing = MASTERY_QUIZ
+            .filter((question) => !state.mastery.answers[question.id])
+            .map((question) => question.prompt);
+        const weakQuestions = MASTERY_QUIZ
+            .filter((question) => {
+                const selected = state.mastery.answers[question.id];
+                const choice = question.choices.find((item) => item.id === selected);
+                return selected && choice && !choice.correct;
+            })
+            .map((question) => question.prompt);
+
+        let level = "未回答";
+        if (answered === MASTERY_QUIZ.length && correct === MASTERY_QUIZ.length) {
+            level = "完全理解";
+        } else if (correct >= 3) {
+            level = "概ね理解";
+        } else if (answered > 0) {
+            level = "要復習";
+        }
+
+        return {
+            answered,
+            correct,
+            accuracy: answered ? Math.round((correct / answered) * 100) : 0,
+            missing,
+            weakQuestions,
+            level
+        };
+    }
+
+    function renderFigureCards() {
+        return `
+            <div class="grid gap-4 lg:grid-cols-3">
+                ${FIGURE_CARDS.map((card) => `
+                    <div class="panel-card figure-card p-5">
+                        <div class="text-xs font-bold tracking-[0.18em] text-slate-500">${escapeHtml(card.label || "")}</div>
+                        <div class="figure-stage mt-3 rounded-3xl p-4">
+                            ${card.illustration || ""}
+                        </div>
+                        <div class="mt-3 rounded-2xl bg-slate-50 p-4 text-sm leading-7 text-slate-600">
+                            ${(card.bullets || []).map((item) => `
+                                <div class="figure-bullet"><span class="font-bold text-slate-900">${escapeHtml(item.label)}:</span> ${escapeHtml(item.body)}</div>
+                            `).join("")}
+                        </div>
+                    </div>
+                `).join("")}
+            </div>
+        `;
+    }
+
+    function orderedDiagnosisQuestions() {
+        return Object.values(DIAGNOSIS_QUESTIONS);
+    }
+
+    function diagnosisEntry(questionId) {
+        return state.diagnosis.history.find((entry) => entry.questionId === questionId) || null;
+    }
+
+    function renderFeaturedMedia() {
+        const featured = MEDIA.featuredVideo;
+        if (!featured) {
+            return `
+                <div class="media-frame rounded-[28px] border border-dashed border-slate-300 bg-slate-50 p-5">
+                    <div class="text-sm font-bold text-slate-900">${escapeHtml(AI_UI.mediaEmptyTitle || "参考メディアはまだありません")}</div>
+                    <p class="mt-2 text-sm leading-7 text-slate-600">
+                        ${escapeHtml(AI_UI.mediaEmptyBody || "この topic では外部メディアをまだ紐づけていません。必要なら後で追加できます。")}
+                    </p>
+                </div>
+            `;
+        }
+
+        if (featured.type === "youtube") {
+            return `
+                <div class="media-frame overflow-hidden rounded-[28px] border border-slate-200 bg-slate-50">
+                    <div class="aspect-video bg-slate-100">
+                        <iframe
+                            class="h-full w-full"
+                            src="${featured.src}"
+                            title="${escapeHtml(featured.title)}"
+                            loading="lazy"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (featured.type === "file") {
+            return `
+                <div class="media-frame overflow-hidden rounded-[28px] border border-slate-200 bg-slate-50 p-3">
+                    <video class="aspect-video w-full rounded-[22px] bg-slate-100" controls preload="metadata" ${featured.poster ? `poster="${featured.poster}"` : ""}>
+                        <source src="${featured.src}">
+                    </video>
+                </div>
+            `;
+        }
+
+        return "";
+    }
+
+    function renderMediaSection() {
+        return `
+            <div class="panel-card p-6 sm:p-8">
+                <div class="flex items-center justify-between gap-4">
+                    <div>
+                        <div class="text-xs font-bold tracking-[0.18em] text-slate-500">OPTIONAL MEDIA</div>
+                        <h3 class="mt-2 text-2xl font-black">${escapeHtml(MEDIA.title || "参考メディア")}</h3>
+                    </div>
+                    <div class="tag tag-neutral">理解を補助する外部資料</div>
+                </div>
+                <p class="mt-3 text-sm leading-7 text-slate-600">
+                    ${escapeHtml(MEDIA.description || "動画や参考資料は補助用です。まずはこのアプリ内の原理・概念・図解を優先してください。")}
+                </p>
+                <div class="mt-5">
+                    ${renderFeaturedMedia()}
+                </div>
+                <div class="media-resource-grid mt-5 grid gap-5 lg:grid-cols-3">
+                    ${(MEDIA.resources || []).map((resource) => `
+                        <div class="media-resource-card rounded-[30px] border border-slate-200 bg-white p-4">
+                            <div class="rounded-3xl bg-slate-50 p-5">
+                                <div class="text-xs font-bold tracking-[0.18em] text-slate-500">${escapeHtml(resource.source)}</div>
+                                <div class="mt-2 text-lg font-black text-slate-900">${escapeHtml(resource.title)}</div>
+                                <p class="mt-3 text-sm leading-7 text-slate-600">${escapeHtml(resource.note)}</p>
+                            </div>
+                            <a class="mt-4 inline-flex text-sm font-bold text-blue-700" href="${resource.url}" target="_blank" rel="noreferrer">ページを開く</a>
+                        </div>
+                    `).join("")}
+                </div>
+            </div>
+        `;
+    }
+
+    function renderConceptSupplement(concept) {
+        return CONCEPT_SUPPLEMENTS[concept.id] || "";
+    }
+
+    function getConceptScene(active) {
+        if (!active) {
+            return null;
+        }
+        return CONCEPT_SCENES[active.id] || null;
+    }
+
+    function renderNanoIndentScene(options) {
+        if (typeof nanoinUi !== "undefined" && typeof nanoinUi.renderScene === "function") {
+            return nanoinUi.renderScene(options, { escapeHtml, asArray });
+        }
+        return "";
+    }
+
+    function renderXrfScene(options) {
+        if (typeof xrfUi !== "undefined" && typeof xrfUi.renderScene === "function") {
+            return xrfUi.renderScene(options, { escapeHtml, asArray });
+        }
+        return "";
+    }
+
+    function renderTaverScene(options) {
+        if (typeof taverUi !== "undefined" && typeof taverUi.renderScene === "function") {
+            return taverUi.renderScene(options, { escapeHtml, asArray });
+        }
+        return "";
+    }
+
+    function renderEpmaScene(options) {
+        if (typeof epmaUi.renderScene === "function") {
+            return epmaUi.renderScene(options, { escapeHtml, asArray });
+        }
+        const labels = asArray(options.labels).slice(0, 3);
+        const variant = options.variant || "column";
+        let stage = "";
+
+        if (variant === "detectors") {
+            stage = `
+                <div class="scene-epma-stage scene-epma-stage-detectors">
+                    <div class="scene-epma-sample-block"></div>
+                    <div class="scene-epma-beam-column"></div>
+                    <div class="scene-epma-beam-line"></div>
+                    <div class="scene-epma-ray scene-epma-ray-a"></div>
+                    <div class="scene-epma-ray scene-epma-ray-b"></div>
+                    <div class="scene-epma-eds-box">EDS</div>
+                    <div class="scene-epma-wds-crystal"></div>
+                    <div class="scene-epma-wds-counter">WDS</div>
+                    <div class="scene-epma-detector-rail"></div>
+                </div>
+            `;
+        } else if (variant === "prep") {
+            stage = `
+                <div class="scene-epma-stage scene-epma-stage-prep">
+                    <div class="scene-epma-sample-tile"></div>
+                    <div class="scene-epma-polish-head"></div>
+                    <div class="scene-epma-polish-trail"></div>
+                    <div class="scene-epma-rinse-drop scene-epma-rinse-drop-a"></div>
+                    <div class="scene-epma-rinse-drop scene-epma-rinse-drop-b"></div>
+                    <div class="scene-epma-carbon-film"></div>
+                    <div class="scene-epma-prep-chip scene-epma-prep-chip-a"></div>
+                    <div class="scene-epma-prep-chip scene-epma-prep-chip-b"></div>
+                </div>
+            `;
+        } else if (variant === "matrix") {
+            stage = `
+                <div class="scene-epma-stage scene-epma-stage-matrix">
+                    <div class="scene-epma-matrix-sample"></div>
+                    <div class="scene-epma-beam-column"></div>
+                    <div class="scene-epma-beam-line"></div>
+                    <div class="scene-epma-volume-shell scene-epma-volume-shell-a"></div>
+                    <div class="scene-epma-volume-shell scene-epma-volume-shell-b"></div>
+                    <div class="scene-epma-matrix-arrow scene-epma-matrix-arrow-z">Z</div>
+                    <div class="scene-epma-matrix-arrow scene-epma-matrix-arrow-a">A</div>
+                    <div class="scene-epma-matrix-arrow scene-epma-matrix-arrow-f">F</div>
+                </div>
+            `;
+        } else if (variant === "charging") {
+            stage = `
+                <div class="scene-epma-stage scene-epma-stage-charging">
+                    <div class="scene-epma-sample-block scene-epma-sample-block-insulator"></div>
+                    <div class="scene-epma-carbon-film scene-epma-carbon-film-thin"></div>
+                    <div class="scene-epma-beam-column"></div>
+                    <div class="scene-epma-beam-line scene-epma-beam-line-jitter"></div>
+                    <div class="scene-epma-charge-ring scene-epma-charge-ring-a"></div>
+                    <div class="scene-epma-charge-ring scene-epma-charge-ring-b"></div>
+                    <div class="scene-epma-charge-dot scene-epma-charge-dot-a"></div>
+                    <div class="scene-epma-charge-dot scene-epma-charge-dot-b"></div>
+                    <div class="scene-epma-charge-dot scene-epma-charge-dot-c"></div>
+                </div>
+            `;
+        } else {
+            stage = `
+                <div class="scene-epma-stage scene-epma-stage-column">
+                    <div class="scene-epma-column"></div>
+                    <div class="scene-epma-gun"></div>
+                    <div class="scene-epma-lens scene-epma-lens-a"></div>
+                    <div class="scene-epma-lens scene-epma-lens-b"></div>
+                    <div class="scene-epma-beam-line"></div>
+                    <div class="scene-epma-sample-block"></div>
+                    <div class="scene-epma-volume"></div>
+                    <div class="scene-epma-ray scene-epma-ray-a"></div>
+                    <div class="scene-epma-ray scene-epma-ray-b"></div>
+                    <div class="scene-epma-detector-box">${escapeHtml(options.detectorLabel || "EDS / WDS")}</div>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="concept-scene ${options.sceneClass || ""}">
+                <div class="scene-frame scene-frame-epma">
+                    <div class="scene-frame-grid"></div>
+                    <div class="scene-frame-glow"></div>
+                    <div class="scene-frame-label scene-frame-label-left">${escapeHtml(options.frameLabelLeft || "COLUMN")}</div>
+                    <div class="scene-frame-label scene-frame-label-right">${escapeHtml(options.frameLabelRight || "XRAY")}</div>
+                    ${stage}
+                </div>
+                <div class="scene-legend">
+                    ${labels.map((label) => `<span class="scene-legend-chip">${escapeHtml(label)}</span>`).join("")}
+                </div>
+                <p class="scene-caption">${escapeHtml(options.caption || "")}</p>
+            </div>
+        `;
+    }
+
+    function renderIrScene(options) {
+        if (typeof irUi !== "undefined" && typeof irUi.renderScene === "function") {
+            return irUi.renderScene(options, { escapeHtml, asArray });
+        }
+        return renderXrfScene(options);
+    }
+
+    function renderPrincipleScene(scene) {
+        if (!scene) {
+            return "";
+        }
+        const visual = Object.assign({}, scene.visual || {});
+        if (scene.type === "nano") {
+            return renderNanoIndentScene(visual);
+        }
+        if (scene.type === "xrf") {
+            return renderXrfScene(visual);
+        }
+        if (scene.type === "taver") {
+            return renderTaverScene(visual);
+        }
+        if (scene.type === "epma") {
+            return renderEpmaScene(visual);
+        }
+        if (scene.type === "ir") {
+            return renderIrScene(visual);
+        }
+        return "";
+    }
+
+    function renderConceptMotionScene(active) {
+        const scene = getConceptScene(active);
+        if (!scene) {
+            return `
+                <div class="concept-scene concept-scene-generic">
+                    <div class="scene-generic-orb"></div>
+                    <div class="scene-generic-line"></div>
+                    <div class="scene-generic-card">${escapeHtml(active.title)}</div>
+                    <p class="scene-caption">${escapeHtml(active.short || "")}</p>
+                </div>
+            `;
+        }
+        const visual = Object.assign({}, scene.visual || {});
+        if (scene.type === "nano") {
+            return renderNanoIndentScene(visual);
+        }
+        if (scene.type === "xrf") {
+            return renderXrfScene(visual);
+        }
+        if (scene.type === "taver") {
+            return renderTaverScene(visual);
+        }
+        if (scene.type === "epma") {
+            return renderEpmaScene(visual);
+        }
+        if (scene.type === "ir") {
+            return renderIrScene(visual);
+        }
+        return `
+            <div class="concept-scene concept-scene-generic">
+                <div class="scene-generic-orb"></div>
+                <div class="scene-generic-line"></div>
+                <div class="scene-generic-card">${escapeHtml(active.title)}</div>
+                <p class="scene-caption">${escapeHtml(active.short || "")}</p>
+            </div>
+        `;
+    }
+
+    function renderConceptHero(active) {
+        return renderConceptMotionScene(active);
+    }
+
+    function renderConceptExplainer(active) {
+        const scene = getConceptScene(active);
+        const checks = asArray(scene && scene.checks).slice(0, 3);
+        const beats = asArray(scene && scene.beats).slice(0, 3);
+        return `
+            <div class="concept-explainer-card">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div>
+                        <div class="text-xs font-black tracking-[0.2em] text-blue-700">${escapeHtml(scene && scene.eyebrow ? scene.eyebrow : "EXPLAINABLE ANIMATION")}</div>
+                        <div class="mt-2 text-2xl font-black text-slate-950">${escapeHtml(scene && scene.title ? scene.title : active.title)}</div>
+                        <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-600">${escapeHtml(scene && scene.summary ? scene.summary : active.short || "")}</p>
+                    </div>
+                    ${checks.length ? `
+                        <div class="concept-checks">
+                            ${checks.map((item) => `<span class="concept-check-chip">${escapeHtml(item)}</span>`).join("")}
+                        </div>
+                    ` : ""}
+                </div>
+                <div class="mt-5">
+                    ${renderConceptMotionScene(active)}
+                </div>
+                ${beats.length ? `
+                    <div class="mt-5 grid gap-3 md:grid-cols-3">
+                        ${beats.map((beat) => `
+                            <article class="concept-beat-card">
+                                <div class="concept-beat-step">${escapeHtml(beat.step || "")}</div>
+                                <div class="mt-3 text-sm font-black text-slate-900">${escapeHtml(beat.title || "")}</div>
+                                <p class="mt-2 text-sm leading-6 text-slate-600">${escapeHtml(beat.body || "")}</p>
+                            </article>
+                        `).join("")}
+                    </div>
+                ` : ""}
+            </div>
+        `;
+    }
+
+    function renderConceptConstellation(active) {
+        const relations = asArray(active && active.relations).slice(0, 3);
+        if (!relations.length) {
+            return "";
+        }
+        const orbitPositions = [
+            "concept-orbit-node-a",
+            "concept-orbit-node-b",
+            "concept-orbit-node-c"
+        ];
+        return `
+            <div class="concept-orbit-card">
+                <div class="flex items-center justify-between gap-4">
+                    <div>
+                        <div class="text-xs font-black tracking-[0.18em] text-slate-500">RELATION MAP</div>
+                        <div class="mt-2 text-xl font-black text-slate-950">${escapeHtml(active.title)} を軸に見る</div>
+                    </div>
+                    <div class="tag tag-neutral">${relations.length} links</div>
+                </div>
+                <div class="concept-orbit-stage">
+                    <div class="concept-orbit-ring"></div>
+                    <div class="concept-orbit-center">
+                        <div class="text-[11px] font-black tracking-[0.2em] text-blue-700">CORE NODE</div>
+                        <div class="mt-2 text-lg font-black text-slate-950">${escapeHtml(active.title)}</div>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">${escapeHtml(active.short || "")}</p>
+                    </div>
+                    ${relations.map((relation, index) => {
+                        const target = conceptMap[relation.target];
+                        const targetTitle = target ? target.title : relation.target;
+                        return `
+                            <span class="concept-orbit-line concept-orbit-line-${index + 1}"></span>
+                            <button class="concept-orbit-node ${orbitPositions[index] || ""}" data-action="open-concept" data-concept="${escapeHtml(relation.target)}">
+                                <div class="concept-orbit-step">0${index + 1}</div>
+                                <div class="mt-2 text-sm font-black text-slate-900">${escapeHtml(targetTitle)}</div>
+                                <p class="mt-2 text-xs leading-5 text-slate-600">${escapeHtml(relation.label)}</p>
+                            </button>
+                        `;
+                    }).join("")}
+                </div>
+                <div class="mt-5 grid gap-3">
+                    ${relations.map((relation, index) => {
+                        const target = conceptMap[relation.target];
+                        const targetTitle = target ? target.title : relation.target;
+                        const targetShort = target ? target.short : "";
+                        return `
+                            <article class="concept-relation-card">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div>
+                                        <div class="text-xs font-black tracking-[0.18em] text-slate-500">FLOW 0${index + 1}</div>
+                                        <div class="mt-2 text-sm font-black text-slate-900">${escapeHtml(active.title)} 竊・${escapeHtml(targetTitle)}</div>
+                                    </div>
+                                    <button class="relation-pill" data-action="open-concept" data-concept="${escapeHtml(relation.target)}">${escapeHtml(targetTitle)}</button>
+                                </div>
+                                <p class="mt-3 text-sm leading-6 text-slate-600">${escapeHtml(relation.label)}</p>
+                                ${targetShort ? `<p class="mt-2 text-xs leading-5 text-slate-500">${escapeHtml(targetShort)}</p>` : ""}
+                            </article>
+                        `;
+                    }).join("")}
+                </div>
+            </div>
+        `;
+    }
+
+    function renderConceptConstellationClean(active) {
+        const relations = asArray(active && active.relations).slice(0, 3);
+        if (!relations.length) {
+            return "";
+        }
+        return `
+            <div class="concept-orbit-card">
+                <div class="flex items-center justify-between gap-4">
+                    <div>
+                        <div class="text-xs font-black tracking-[0.18em] text-slate-500">RELATION MAP</div>
+                        <div class="mt-2 text-xl font-black text-slate-950">${escapeHtml(active.title)} ${"\u304b\u3089\u3069\u3053\u3078\u3064\u306a\u304c\u308b\u304b"}</div>
+                    </div>
+                    <div class="tag tag-neutral">${relations.length}${"\u3064\u306a\u304c\u308a"}</div>
+                </div>
+                <div class="concept-flow-summary mt-4 rounded-[22px] border border-slate-200 bg-white p-4">
+                    <div class="text-[11px] font-black tracking-[0.2em] text-blue-700">${"\u30b3\u30a2\u30ce\u30fc\u30c9"}</div>
+                    <div class="mt-2 text-lg font-black text-slate-950">${escapeHtml(active.title)}</div>
+                    <p class="mt-2 text-sm leading-6 text-slate-600">${escapeHtml(active.short || "")}</p>
+                </div>
+                <div class="concept-flow-grid mt-5 grid gap-3">
+                    ${relations.map((relation, index) => {
+                        const target = conceptMap[relation.target];
+                        const targetTitle = target ? target.title : relation.target;
+                        const targetShort = target ? target.short : "";
+                        return `
+                            <article class="concept-relation-card">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div>
+                                        <div class="text-xs font-black tracking-[0.18em] text-slate-500">FLOW 0${index + 1}</div>
+                                        <div class="mt-2 text-sm font-black text-slate-900">${escapeHtml(active.title)} ${"\u2192"} ${escapeHtml(targetTitle)}</div>
+                                    </div>
+                                    <button class="relation-pill" data-action="open-concept" data-concept="${escapeHtml(relation.target)}">${escapeHtml(targetTitle)}</button>
+                                </div>
+                                <p class="mt-3 text-sm leading-6 text-slate-600">${escapeHtml(relation.label)}</p>
+                                ${targetShort ? `<p class="mt-2 text-xs leading-5 text-slate-500">${escapeHtml(targetShort)}</p>` : ""}
+                            </article>
+                        `;
+                    }).join("")}
+                </div>
+            </div>
+        `;
+    }
+
+    function renderConceptCompareTabs(active) {
+        const relatedItems = [
+            active,
+            ...asArray(active && active.relations)
+                .map((relation) => conceptMap[relation.target])
+                .filter(Boolean)
+        ].filter((item, index, items) => item && items.findIndex((candidate) => candidate.id === item.id) === index);
+
+        if (relatedItems.length <= 1) {
+            return "";
+        }
+
+        return `
+            <div class="concept-compare-card rounded-[24px] border border-slate-200 bg-white p-4">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <div class="text-[11px] font-black tracking-[0.18em] text-slate-500">QUICK COMPARE</div>
+                        <div class="mt-2 text-base font-black text-slate-900">近い概念だけを並べて比べる</div>
+                    </div>
+                    <div class="tag tag-neutral">${relatedItems.length} tabs</div>
+                </div>
+                <div class="concept-compare-tabs mt-4 flex flex-wrap gap-2">
+                    ${relatedItems.map((concept) => `
+                        <button
+                            class="concept-compare-tab ${concept.id === active.id ? "concept-compare-tab-active" : ""}"
+                            data-action="set-active-concept"
+                            data-concept="${concept.id}">
+                            ${escapeHtml(concept.title)}
+                        </button>
+                    `).join("")}
+                </div>
+                <p class="mt-4 text-sm leading-6 text-slate-600">
+                    ${escapeHtml(active.short || "")}
+                </p>
+            </div>
+        `;
+    }
+
+    function renderRoleTrackSelector() {
+        const activeRole = getActiveRole();
+        if (!ROLE_TRACKS.length || !activeRole) {
+            return "";
+        }
+        return `
+            <div class="mt-6 space-y-3">
+                <div class="text-xs font-bold tracking-[0.18em] text-slate-500">ROLE PATH</div>
+                <div class="grid gap-3 lg:grid-cols-3">
+                    ${ROLE_TRACKS.map((role) => `
+                        <button class="role-card text-left ${role.id === activeRole.id ? "role-card-active" : ""}" data-action="switch-role" data-role="${role.id}">
+                            <div class="flex items-center justify-between gap-3">
+                                <div class="text-base font-black text-slate-900">${escapeHtml(role.label)}</div>
+                                <div class="tag ${role.id === activeRole.id ? "tag-good" : "tag-neutral"}">${role.id === activeRole.id ? "選択中" : "切替可"}</div>
+                            </div>
+                            <p class="mt-3 text-sm leading-6 text-slate-600">${escapeHtml(role.summary)}</p>
+                            <div class="mt-4 flex flex-wrap gap-2">
+                                ${(role.focusCompetencies || []).map((competencyId) => {
+                                    const competency = competencyMap[competencyId];
+                                    return competency ? `<span class="tag tag-neutral">${escapeHtml(competency.title)}</span>` : "";
+                                }).join("")}
+                            </div>
+                        </button>
+                    `).join("")}
+                </div>
+            </div>
+        `;
+    }
+
+    function renderCompetencySnapshot(limit) {
+        const items = topCompetencies(limit);
+        if (!items.length) {
+            return "";
+        }
+        return items.map((item) => `
+            <div class="skill-card">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <div class="text-sm font-bold text-slate-900">${escapeHtml(item.definition.title)}</div>
+                        <p class="mt-1 text-xs leading-6 text-slate-600">${escapeHtml(item.definition.summary)}</p>
+                    </div>
+                    <div class="tag ${competencyStatusClass(item.status)}">${escapeHtml(competencyStatusLabel(item.status))}</div>
+                </div>
+                <div class="mt-4 flex items-center justify-between text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+                    <span>Skill</span>
+                    <span>${item.percent}%</span>
+                </div>
+                <div class="skill-meter mt-2">
+                    <div class="skill-meter-fill" style="width:${item.percent}%"></div>
+                </div>
+            </div>
+        `).join("");
+    }
+
+    function renderSimulationMissionPanel() {
+        if (!SIMULATION_MISSIONS.length) {
+            return "";
+        }
+        const activeMission = missionMap[state.visual.currentMissionId] || null;
+        return `
+            <div class="grid gap-4 xl:grid-cols-[1.08fr_0.92fr]">
+                <div class="rounded-[28px] border border-slate-200 bg-slate-50 p-5">
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <div class="text-xs font-bold tracking-[0.18em] text-slate-500">SIMULATION MISSIONS</div>
+                            <div class="mt-2 text-xl font-black text-slate-900">課題ミッションで図解を見る</div>
+                        </div>
+                        <div class="tag tag-neutral">${(state.visual.completedMissions || []).length}/${SIMULATION_MISSIONS.length}</div>
+                    </div>
+                    <div class="mt-5 grid gap-3">
+                        ${SIMULATION_MISSIONS.map((mission) => {
+                            const competency = competencyMap[mission.competencyId];
+                            const completed = (state.visual.completedMissions || []).includes(mission.id);
+                            const isActive = state.visual.currentMissionId === mission.id;
+                            return `
+                                <button class="mission-card text-left ${isActive ? "mission-card-active" : ""}" data-action="apply-sim-mission" data-mission="${mission.id}">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div>
+                                            <div class="text-sm font-black text-slate-900">${escapeHtml(mission.title)}</div>
+                                            <p class="mt-2 text-sm leading-6 text-slate-600">${escapeHtml(mission.summary)}</p>
+                                        </div>
+                                        <div class="tag ${completed ? "tag-good" : "tag-neutral"}">${completed ? "完了" : "未着手"}</div>
+                                    </div>
+                                    <div class="mt-4 flex flex-wrap gap-2">
+                                        ${competency ? `<span class="tag tag-neutral">${escapeHtml(competency.title)}</span>` : ""}
+                                        ${mission.conceptId && conceptMap[mission.conceptId] ? `<span class="tag tag-neutral">${escapeHtml(conceptMap[mission.conceptId].title)}</span>` : ""}
+                                    </div>
+                                </button>
+                            `;
+                        }).join("")}
+                    </div>
+                </div>
+                <div class="rounded-[28px] border border-slate-200 bg-white p-5">
+                    <div class="text-xs font-bold tracking-[0.18em] text-slate-500">CURRENT MISSION</div>
+                    ${activeMission ? `
+                        <div class="mt-2 text-xl font-black text-slate-900">${escapeHtml(activeMission.title)}</div>
+                        <p class="mt-3 text-sm leading-7 text-slate-600">${escapeHtml(activeMission.summary)}</p>
+                        <ul class="mt-5 space-y-3 text-sm leading-7 text-slate-700">
+                            ${(activeMission.checks || []).map((item) => `<li class="mission-check">${escapeHtml(item)}</li>`).join("")}
+                        </ul>
+                        <div class="mt-5 rounded-2xl bg-blue-50 p-4 text-sm leading-7 text-blue-900">${escapeHtml(activeMission.completionText || "")}</div>
+                        <div class="mt-5">
+                            <button class="rounded-full bg-slate-900 px-5 py-3 text-sm font-bold text-white" data-action="complete-sim-mission" data-mission="${activeMission.id}">
+                                ${(state.visual.completedMissions || []).includes(activeMission.id) ? "完了として保持" : "理解できた / 完了として保持"}
+                            </button>
+                        </div>
+                    ` : `
+                        <div class="mt-3 rounded-2xl bg-slate-50 p-4 text-sm leading-7 text-slate-600">
+                            上のミッションを 1 つ選ぶと、重点的に見るべき図解ポイントが展開されます。
+                        </div>
+                    `}
+                </div>
+            </div>
+        `;
+    }
+
+    function renderSimulationMissionFlowPanel() {
+        if (!SIMULATION_MISSIONS.length) {
+            return "";
+        }
+        const activeMission = missionMap[state.visual.currentMissionId] || null;
+        return `
+            <div class="rounded-[28px] border border-slate-200 bg-slate-50 p-5">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <div class="text-xs font-bold tracking-[0.18em] text-slate-500">SIMULATION MISSIONS</div>
+                        <div class="mt-2 text-xl font-black text-slate-900">選んだ条件で何が変わるかを順に追う</div>
+                        <p class="mt-3 text-sm leading-6 text-slate-600">
+                            ${activeMission
+                                ? "選択中のミッションの要点をカード内で確認できます。"
+                                : "まず 1 つ選ぶと、そのカードの中に current mission の要点が展開されます。"}
+                        </p>
+                    </div>
+                    <div class="tag tag-neutral">${(state.visual.completedMissions || []).length}/${SIMULATION_MISSIONS.length}</div>
+                </div>
+                <div class="mission-stack mt-5 grid gap-3">
+                    ${SIMULATION_MISSIONS.map((mission) => {
+                        const competency = competencyMap[mission.competencyId];
+                        const completed = (state.visual.completedMissions || []).includes(mission.id);
+                        const isActive = state.visual.currentMissionId === mission.id;
+                        return `
+                            <article class="mission-card mission-card-shell ${isActive ? "mission-card-active" : ""}">
+                                <button class="mission-card-trigger text-left" data-action="apply-sim-mission" data-mission="${mission.id}">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div>
+                                            <div class="text-sm font-black text-slate-900">${escapeHtml(mission.title)}</div>
+                                            <p class="mt-2 text-sm leading-6 text-slate-600">${escapeHtml(mission.summary)}</p>
+                                        </div>
+                                        <div class="flex flex-wrap items-center justify-end gap-2">
+                                            ${isActive ? '<span class="tag tag-good">CURRENT</span>' : ""}
+                                            <span class="tag ${completed ? "tag-good" : "tag-neutral"}">${completed ? "完了" : "未着手"}</span>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4 flex flex-wrap gap-2">
+                                        ${competency ? `<span class="tag tag-neutral">${escapeHtml(competency.title)}</span>` : ""}
+                                        ${mission.conceptId && conceptMap[mission.conceptId] ? `<span class="tag tag-neutral">${escapeHtml(conceptMap[mission.conceptId].title)}</span>` : ""}
+                                    </div>
+                                </button>
+                                ${isActive ? `
+                                    <div class="mission-card-detail mt-4 border-t border-slate-200 pt-4">
+                                        <div class="text-xs font-bold tracking-[0.18em] text-slate-500">CURRENT MISSION</div>
+                                        <ul class="mt-4 space-y-3 text-sm leading-7 text-slate-700">
+                                            ${(mission.checks || []).map((item) => `<li class="mission-check">${escapeHtml(item)}</li>`).join("")}
+                                        </ul>
+                                        <div class="mt-4 rounded-2xl bg-blue-50 p-4 text-sm leading-7 text-blue-900">${escapeHtml(mission.completionText || "")}</div>
+                                        <div class="mt-4 flex flex-wrap items-center gap-3">
+                                            <button class="rounded-full bg-slate-900 px-5 py-3 text-sm font-bold text-white" data-action="complete-sim-mission" data-mission="${mission.id}">
+                                                ${completed ? "完了として保持" : "理解できた / 完了として保持"}
+                                            </button>
+                                        </div>
+                                    </div>
+                                ` : ""}
+                            </article>
+                        `;
+                    }).join("")}
+                </div>
+            </div>
+        `;
+    }
+
+    function renderSimulationMissionFlowPanelClean() {
+        if (!SIMULATION_MISSIONS.length) {
+            return "";
+        }
+        const activeMission = missionMap[state.visual.currentMissionId] || null;
+        return `
+            <div class="rounded-[28px] border border-slate-200 bg-slate-50 p-5">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <div class="text-xs font-bold tracking-[0.18em] text-slate-500">SIMULATION MISSIONS</div>
+                        <div class="mt-2 text-xl font-black text-slate-900">${"\u30df\u30c3\u30b7\u30e7\u30f3\u3092\u9078\u3093\u3067\u632f\u308b\u821e\u3044\u3092\u6bd4\u8f03\u3059\u308b"}</div>
+                        <p class="mt-3 text-sm leading-6 text-slate-600">
+                            ${activeMission
+                                ? "選択中のミッションの要点をカード内で確認できます。"
+                                : "\u307e\u305a1\u3064\u9078\u3076\u3068\u3001\u305d\u306e\u30ab\u30fc\u30c9\u306e\u4e2d\u306b\u73fe\u5728\u306e\u30df\u30c3\u30b7\u30e7\u30f3\u8981\u70b9\u304c\u5c55\u958b\u3055\u308c\u307e\u3059\u3002"}
+                        </p>
+                    </div>
+                    <div class="tag tag-neutral">${(state.visual.completedMissions || []).length}/${SIMULATION_MISSIONS.length}</div>
+                </div>
+                <div class="mission-stack mt-5 grid gap-3">
+                    ${SIMULATION_MISSIONS.map((mission) => {
+                        const competency = competencyMap[mission.competencyId];
+                        const completed = (state.visual.completedMissions || []).includes(mission.id);
+                        const isActive = state.visual.currentMissionId === mission.id;
+                        return `
+                            <article class="mission-card mission-card-shell ${isActive ? "mission-card-active" : ""}">
+                                <button class="mission-card-trigger text-left" data-action="apply-sim-mission" data-mission="${mission.id}">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div>
+                                            <div class="text-sm font-black text-slate-900">${escapeHtml(mission.title)}</div>
+                                            <p class="mt-2 text-sm leading-6 text-slate-600">${escapeHtml(mission.summary)}</p>
+                                        </div>
+                                        <div class="flex flex-wrap items-center justify-end gap-2">
+                                            ${isActive ? `<span class="tag tag-good">${"\u9078\u629e\u4e2d"}</span>` : ""}
+                                            <span class="tag ${completed ? "tag-good" : "tag-neutral"}">${completed ? "\u5b8c\u4e86" : "\u672a\u7740\u624b"}</span>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4 flex flex-wrap gap-2">
+                                        ${competency ? `<span class="tag tag-neutral">${escapeHtml(competency.title)}</span>` : ""}
+                                        ${mission.conceptId && conceptMap[mission.conceptId] ? `<span class="tag tag-neutral">${escapeHtml(conceptMap[mission.conceptId].title)}</span>` : ""}
+                                    </div>
+                                </button>
+                                ${isActive ? `
+                                    <div class="mission-card-detail mt-4 border-t border-slate-200 pt-4">
+                                        <div class="text-xs font-bold tracking-[0.18em] text-slate-500">${"\u73fe\u5728\u306e\u30df\u30c3\u30b7\u30e7\u30f3"}</div>
+                                        <ul class="mt-4 space-y-3 text-sm leading-7 text-slate-700">
+                                            ${(mission.checks || []).map((item) => `<li class="mission-check">${escapeHtml(item)}</li>`).join("")}
+                                        </ul>
+                                        <div class="mt-4 rounded-2xl bg-blue-50 p-4 text-sm leading-7 text-blue-900">${escapeHtml(mission.completionText || "")}</div>
+                                        <div class="mt-4 flex flex-wrap items-center gap-3">
+                                            <button class="rounded-full bg-slate-900 px-5 py-3 text-sm font-bold text-white" data-action="complete-sim-mission" data-mission="${mission.id}">
+                                                ${completed ? "\u5b8c\u4e86\u3068\u3057\u3066\u4fdd\u6301" : "\u7406\u89e3\u3067\u304d\u305f"}
+                                            </button>
+                                        </div>
+                                    </div>
+                                ` : ""}
+                            </article>
+                        `;
+                    }).join("")}
+                </div>
+            </div>
+        `;
+    }
+
+    function getVisualChartDatasets(chartConfig) {
+        const datasets = asArray(chartConfig && chartConfig.datasets);
+        if (topicId === "nanoin") {
+            return datasets.filter((dataset) => dataset.showLine !== false);
+        }
+        return datasets;
+    }
+
+    function getVisualChartCaption() {
+        if (topicId === "nanoin") {
+            return "\u8d64\u306f\u8ca0\u8377\u3001\u9752\u306f\u9664\u8377\u3002\u70b9\u3067\u306f\u306a\u304f\u3001\u66f2\u7dda\u306e\u5f62\u3068\u623b\u308a\u65b9\u306e\u9055\u3044\u3092\u898b\u308b\u305f\u3081\u306e\u6982\u5ff5\u56f3\u3067\u3059\u3002";
+        }
+        return VISUAL_LEARNING.chartCaption || "";
+    }
+
+    function refreshVisualCaption() {
+        const caption = root.querySelector("[data-visual-caption]");
+        if (caption) {
+            caption.textContent = getVisualChartCaption();
+        }
+    }
+
+    function getVisualControlGuide(field) {
+        if (topicId === "ir" && typeof irUi !== "undefined" && typeof irUi.getControlGuide === "function") {
+            return irUi.getControlGuide(field);
+        }
+        if (topicId === "epma" && typeof epmaUi !== "undefined" && typeof epmaUi.getControlGuide === "function") {
+            return epmaUi.getControlGuide(field);
+        }
+        if (topicId === "taver" && typeof taverUi !== "undefined" && typeof taverUi.getControlGuide === "function") {
+            return taverUi.getControlGuide(field);
+        }
+        if (topicId === "nanoin" && typeof nanoinUi !== "undefined" && typeof nanoinUi.getControlGuide === "function") {
+            return nanoinUi.getControlGuide(field);
+        }
+        if (topicId === "xrf" && typeof xrfUi !== "undefined" && typeof xrfUi.getControlGuide === "function") {
+            return xrfUi.getControlGuide(field);
+        }
+        return { focus: [], note: "" };
+    }
+
+    function getVisualGuideItems() {
+        return [
+            {
+                field: "material",
+                label: VISUAL_LEARNING.materialLabel || "材料モデル"
+            },
+            ...asArray(VISUAL_LEARNING.controls).map((control) => ({
+                field: control.field,
+                label: control.label
+            }))
+        ];
+    }
+
+    function getVisualGuideField() {
+        const items = getVisualGuideItems();
+        const current = state.visual.guideField;
+        return items.some((item) => item.field === current) ? current : (items[0] && items[0].field) || "material";
+    }
+
+    function getVisualGuideNarration(field, scenario, activeVisualModel) {
+        if (topicId === "ir" && typeof irUi !== "undefined" && typeof irUi.getGuideNarration === "function") {
+            return irUi.getGuideNarration(field, { stateVisual: state.visual, scenario, activeVisualModel });
+        }
+        if (topicId === "epma" && typeof epmaUi !== "undefined" && typeof epmaUi.getGuideNarration === "function") {
+            return epmaUi.getGuideNarration(field, { stateVisual: state.visual, scenario, activeVisualModel });
+        }
+        if (topicId === "taver" && typeof taverUi !== "undefined" && typeof taverUi.getGuideNarration === "function") {
+            return taverUi.getGuideNarration(field, { stateVisual: state.visual, scenario, activeVisualModel });
+        }
+        if (topicId === "nanoin" && typeof nanoinUi !== "undefined" && typeof nanoinUi.getGuideNarration === "function") {
+            return nanoinUi.getGuideNarration(field, { stateVisual: state.visual, scenario, activeVisualModel });
+        }
+        if (topicId === "xrf" && typeof xrfUi !== "undefined" && typeof xrfUi.getGuideNarration === "function") {
+            return xrfUi.getGuideNarration(field, { stateVisual: state.visual, scenario, activeVisualModel });
+        }
+        return {
+            title: "条件を比較する",
+            body: "条件を変えてグラフを観察します。"
+        };
+    }
+
+    function renderVisualGuideDeck(scenario, activeVisualModel) {
+        const guideField = getVisualGuideField();
+        const guide = getVisualControlGuide(guideField);
+        const narration = getVisualGuideNarration(guideField, scenario, activeVisualModel);
+
+        return `
+            <div class="visual-guide-card rounded-[24px] border border-slate-200 bg-white p-4">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <div class="text-[11px] font-black tracking-[0.18em] text-slate-500">READING GUIDE</div>
+                        <div class="mt-2 text-base font-black text-slate-900">どこを見れば違いが分かるか</div>
+                    </div>
+                    <div class="tag tag-neutral">${escapeHtml(getVisualGuideItems().find((item) => item.field === guideField)?.label || "")}</div>
+                </div>
+                <div class="visual-guide-tabs mt-4 flex flex-wrap gap-2">
+                    ${getVisualGuideItems().map((item) => `
+                        <button
+                            class="visual-guide-tab ${item.field === guideField ? "visual-guide-tab-active" : ""}"
+                            data-action="set-visual-guide"
+                            data-field="${item.field}">
+                            ${escapeHtml(item.label)}
+                        </button>
+                    `).join("")}
+                </div>
+                <div class="mt-4">
+                    <div class="text-sm font-black text-slate-900" data-visual-guide-title>${escapeHtml(narration.title)}</div>
+                    <p class="mt-2 text-sm leading-6 text-slate-600" data-visual-guide-body>${escapeHtml(narration.body)}</p>
+                    <div class="mt-4 text-[11px] font-black tracking-[0.16em] text-slate-500">WATCH HERE</div>
+                    <div class="mt-2 flex flex-wrap gap-2" data-visual-guide-focus>
+                        ${renderVisualFocusChips(guide.focus)}
+                    </div>
+                    ${guide.note ? `<p class="mt-2 text-xs leading-5 text-slate-500" data-visual-guide-note>${escapeHtml(guide.note)}</p>` : `<p class="mt-2 text-xs leading-5 text-slate-500" data-visual-guide-note></p>`}
+                </div>
+            </div>
+        `;
+    }
+
+    function renderTaverIntroJourneyCard() {
+        if (topicId !== "taver") {
+            return "";
+        }
+        return `
+            <div class="intro-journey-card rounded-[28px] p-6 sm:p-8">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <div class="text-xs font-bold tracking-[0.18em] text-blue-700">FIRST ROUTE</div>
+                        <h3 class="mt-2 text-2xl font-black text-slate-900">最初に見る順番を決めておく</h3>
+                        <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
+                            テーバーは、いきなり摩耗量だけを見るよりも、装置の動きと摩耗メカニズムを先に押さえると結果が読みやすくなります。
+                        </p>
+                    </div>
+                    <div class="tag tag-good">taver 導線</div>
+                </div>
+                <div class="intro-journey-grid mt-6 grid gap-3">
+                    <div class="intro-journey-step">
+                        <div class="intro-journey-badge">01</div>
+                        <div class="mt-3 text-base font-black text-slate-900">測定原理</div>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">offset 配置と rub-wear action を先に見て、装置が何をしているかを押さえます。</p>
+                    </div>
+                    <div class="intro-journey-step">
+                        <div class="intro-journey-badge">02</div>
+                        <div class="mt-3 text-base font-black text-slate-900">概念地図</div>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">abrasive / adhesive / fatigue の違いを並べて、何が効くかを整理します。</p>
+                    </div>
+                    <div class="intro-journey-step">
+                        <div class="intro-journey-badge">03</div>
+                        <div class="mt-3 text-base font-black text-slate-900">図解</div>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">摩耗輪と荷重を変えて、摩耗量がどう増えるかを条件付きで比較します。</p>
+                    </div>
+                </div>
+                <div class="mt-6 flex flex-wrap gap-3">
+                    <button class="rounded-full bg-slate-900 px-5 py-3 text-sm font-bold text-white" data-action="goto-section" data-section="principle">測定原理から見る</button>
+                    <button class="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700" data-action="goto-section" data-section="concepts">概念地図へ進む</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderVisualComparePanel(scenario) {
+        if (topicId !== "taver" && topicId !== "epma") {
+            return "";
+        }
+
+        const snapshot = state.visual.compareSnapshot;
+        const compareSummary = scenario.compareSummary;
+        const isEpma = topicId === "epma";
+        const bodyText = isEpma
+            ? "今の条件を固定して、加速電圧や検出モードを変えた時の見え方を重ねて比較します。"
+            : "今の条件を固定して、摩耗輪や荷重を変えた時の差を同じ目盛で比較します。";
+        const emptyText = "比較したい条件を一度固定してから、他の条件を動かしてください。";
+        const compareMetricTitle = isEpma ? "相互作用深さの差" : "1000 回後との差";
+        const compareMetricValue = isEpma
+            ? escapeHtml(compareSummary && compareSummary.depthDelta ? compareSummary.depthDelta : "0.00 um")
+            : escapeHtml(compareSummary && compareSummary.delta ? compareSummary.delta : "0.0 mg");
+        const compareMetricNote = isEpma
+            ? `固定条件の深さ: ${escapeHtml(compareSummary && compareSummary.interactionDepth ? compareSummary.interactionDepth : "-")} / チャージ: ${escapeHtml(compareSummary && compareSummary.chargingRisk ? compareSummary.chargingRisk : "-")} / 分離しやすさ: ${escapeHtml(compareSummary && compareSummary.peakSeparation ? compareSummary.peakSeparation : "-")}`
+            : `固定条件の wear index: ${escapeHtml(compareSummary && compareSummary.finalWear ? compareSummary.finalWear : "-")}`;
+
+        return `
+            <div class="visual-compare-card rounded-[24px] border border-slate-200 bg-white p-4">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                        <div class="text-[11px] font-black tracking-[0.18em] text-slate-500">COMPARE HOLD</div>
+                        <div class="mt-2 text-base font-black text-slate-900">固定条件を残して比較する</div>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">
+                            ${bodyText}
+                        </p>
+                    </div>
+                    <div class="tag tag-neutral">${snapshot ? "固定済み" : "未固定"}</div>
+                </div>
+                ${snapshot && compareSummary ? `
+                    <div class="visual-compare-grid mt-4 grid gap-3 sm:grid-cols-2">
+                        <div class="visual-compare-metric">
+                            <div class="text-[11px] font-black tracking-[0.16em] text-slate-500">固定した条件</div>
+                            <div class="mt-2 text-sm font-bold leading-6 text-slate-800">${escapeHtml(scenario.compareSnapshotLabel || "固定条件")}</div>
+                        </div>
+                        <div class="visual-compare-metric">
+                            <div class="text-[11px] font-black tracking-[0.16em] text-slate-500">${compareMetricTitle}</div>
+                            <div class="mt-2 text-lg font-black text-amber-600">${compareMetricValue}</div>
+                            <p class="mt-1 text-xs leading-5 text-slate-500">${compareMetricNote}</p>
+                        </div>
+                    </div>
+                ` : `
+                    <div class="mt-4 rounded-2xl bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-600">
+                        ${emptyText}
+                    </div>
+                `}
+                <div class="mt-4 flex flex-wrap gap-3">
+                    <button class="rounded-full bg-slate-900 px-4 py-3 text-sm font-bold text-white" data-action="capture-visual-compare">
+                        ${snapshot ? "固定条件を更新" : "今の条件を固定"}
+                    </button>
+                    ${snapshot ? `<button class="rounded-full border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700" data-action="clear-visual-compare">固定比較を解除</button>` : ""}
+                </div>
+            </div>
+        `;
+    }
+
+    function renderVisualPeakOverlay(scenario) {
+        const markers = asArray(scenario && scenario.peakMarkers);
+        if (!markers.length) {
+            return "";
+        }
+        const xAxisRange = VISUAL_LEARNING.xAxisRange || {};
+        const min = Number.isFinite(xAxisRange.min) ? xAxisRange.min : 0;
+        const max = Number.isFinite(xAxisRange.max) ? xAxisRange.max : 1;
+        const span = Math.max(max - min, 0.001);
+        const reverse = Boolean(VISUAL_LEARNING.reverseXAxis);
+        const peakUnit = scenario && scenario.peakMarkerUnit ? scenario.peakMarkerUnit : "";
+        return `
+            <div class="visual-peak-overlay" aria-hidden="true">
+                ${markers.map((peak, index) => {
+                    const position = Number(peak.position !== undefined ? peak.position : peak.energy);
+                    const ratio = reverse ? (max - position) / span : (position - min) / span;
+                    const left = Math.min(Math.max(ratio * 100, 4), 96);
+                    return `
+                        <div class="visual-peak-marker visual-peak-marker-lane-${index % 2}" style="left:${left}%">
+                            <div class="visual-peak-stem"></div>
+                            <div class="visual-peak-badge">
+                                <div class="visual-peak-label">${escapeHtml(peak.label)}</div>
+                                <div class="visual-peak-energy">${escapeHtml(position.toFixed(0))}${peakUnit ? ` ${escapeHtml(peakUnit)}` : ""}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join("")}
+            </div>
+        `;
+    }
+
+    function refreshVisualGuide() {
+        const scenario = getVisualScenario();
+        const activeVisualModel = VISUAL_MODELS[state.visual.material] || {};
+        const guideField = getVisualGuideField();
+        const guide = getVisualControlGuide(guideField);
+        const narration = getVisualGuideNarration(guideField, scenario, activeVisualModel);
+        const title = root.querySelector("[data-visual-guide-title]");
+        const body = root.querySelector("[data-visual-guide-body]");
+        const focus = root.querySelector("[data-visual-guide-focus]");
+        const note = root.querySelector("[data-visual-guide-note]");
+        const tag = root.querySelector(".visual-guide-card .tag");
+        if (!title || !body || !focus || !note || !tag) {
+            return;
+        }
+        title.textContent = narration.title;
+        body.textContent = narration.body;
+        focus.innerHTML = renderVisualFocusChips(guide.focus);
+        note.textContent = guide.note || "";
+        tag.textContent = (getVisualGuideItems().find((item) => item.field === guideField)?.label) || "";
+        root.querySelectorAll("[data-action=\"set-visual-guide\"]").forEach((button) => {
+            button.classList.toggle("visual-guide-tab-active", button.dataset.field === guideField);
+        });
+    }
+
+    function renderVisualFocusChips(items) {
+        return asArray(items).map((item) => `<span class="visual-focus-chip">${escapeHtml(item)}</span>`).join("");
+    }
+
+    function renderHeader() {
+        const intro = introSummary();
+        const activeRole = getActiveRole();
+        const currentSection = APP_SECTIONS[sectionIndex[state.currentSection]] || APP_SECTIONS[0] || { label: "セクション" };
+        const started = hasMeaningfulProgress();
+        return `
+            <header class="mx-auto max-w-6xl px-4 pb-6 pt-5 sm:px-6 sm:pt-8">
+                ${TOPIC_LIST.length > 1 ? `
+                    <div class="mb-4 flex flex-wrap gap-2">
+                        ${TOPIC_LIST.map((item) => `
+                            <button class="rounded-full px-4 py-2 text-sm font-bold ${item.id === topicId ? "bg-slate-900 text-white" : "border border-slate-300 bg-white text-slate-700"}" data-action="switch-topic" data-topic="${item.id}">
+                                ${escapeHtml(item.name)}
+                            </button>
+                        `).join("")}
+                    </div>
+                ` : ""}
+                <div class="hero-grid">
+                    <section class="hero-panel panel-card glass-card panel-card-soft overflow-hidden p-6 sm:p-8">
+                        <div class="mb-5 inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-bold tracking-[0.18em] text-blue-700">${escapeHtml(HERO.eyebrow || "ADAPTIVE LEARNING")}</div>
+                        <h1 class="max-w-3xl text-2xl font-black leading-snug text-slate-900 sm:text-4xl">
+                            ${escapeHtml(HERO.titleLead || `${topicName}?`)}
+                            <span class="text-blue-700">${escapeHtml(HERO.titleAccent || "説明できる状態")}</span>
+                            ${escapeHtml(HERO.titleTrail || "まで持っていく")}
+                        </h1>
+                        <p class="mt-2 text-lg font-bold text-slate-800">${escapeHtml(HERO.subtitle || "未知領域理解のための学習アプリ")}</p>
+                        <p class="mt-4 max-w-3xl text-sm leading-7 text-slate-600">
+                            ${escapeHtml(HERO.description || "")}
+                        </p>
+                        <div class="hero-actions mt-6 flex flex-wrap gap-3">
+                            <button class="rounded-full bg-blue-700 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800" data-action="goto-section" data-section="intro">学習を始める</button>
+                            <button class="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-blue-300 hover:text-blue-700" data-action="goto-section" data-section="diagnosis">誤解診断から入る</button>
+                            <button class="rounded-full border border-rose-300 bg-rose-50 px-5 py-3 text-sm font-bold text-rose-700 transition hover:bg-rose-100" data-action="reset-progress">初期状態に戻す</button>
+                        </div>
+                    </section>
+                    <aside class="hero-progress-card panel-card glass-card p-6">
+                        ${started ? `
+                            <div class="flex items-start justify-between gap-4">
+                                <div>
+                                    <div class="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">学習進捗</div>
+                                    <div class="mt-2 text-3xl font-black text-slate-900">${progressPercent()}%</div>
+                                </div>
+                                <div class="rounded-2xl bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700">${escapeHtml(intro.label)}</div>
+                            </div>
+                            <div class="progress-track mt-5">
+                                <div class="progress-fill" style="width:${progressPercent()}%"></div>
+                            </div>
+                            <p class="mt-4 text-sm leading-7 text-slate-600">${escapeHtml(intro.text)}</p>
+                            <dl class="mt-5 space-y-3 text-sm">
+                                <div class="metric-card p-4">
+                                    <dt class="font-bold text-slate-700">現在の役割</dt>
+                                    <dd class="mt-1 text-slate-600">${escapeHtml(activeRole ? activeRole.label : "未設定")}</dd>
+                                </div>
+                                <div class="metric-card p-4">
+                                    <dt class="font-bold text-slate-700">現在地</dt>
+                                    <dd class="mt-1 text-slate-600">${escapeHtml(currentSection.label)}</dd>
+                                </div>
+                            </dl>
+                        ` : `
+                            <div class="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">最初はシンプルに開始</div>
+                            <h2 class="mt-2 text-2xl font-black text-slate-900">まずは 3 問だけ答える</h2>
+                            <p class="mt-4 text-sm leading-7 text-slate-600">
+                                最初のセルフチェックが終わるまでは、進捗や詳細スキルは出しません。今はどこから始めるかだけ決めれば十分です。
+                            <div class="mt-5 rounded-2xl bg-slate-50 p-4 text-sm leading-7 text-slate-700">
+                                セルフチェック後に、おすすめ導線と役割別の進み方を出します。
+                        `}
+                    </aside>
+                </div>
+            </header>
+        `;
+    }
+
+    function renderSectionNav() {
+        return `
+            <nav class="mx-auto max-w-6xl px-4 sm:px-6">
+                <div class="section-nav-shell panel-card glass-card overflow-x-auto px-3 py-3">
+                    <div class="section-nav-row flex min-w-max gap-2">
+                        ${APP_SECTIONS.map((section) => `
+                            <button
+                                class="section-chip ${section.id === state.currentSection ? "section-chip-active" : ""} rounded-full px-4 py-2 text-sm font-bold"
+                                data-action="goto-section"
+                                data-section="${section.id}">
+                                ${escapeHtml(section.label)}
+                            </button>
+                        `).join("")}
+                    </div>
+                </div>
+            </nav>
+        `;
+    }
+
+    function renderIntroSection() {
+        const summary = introSummary();
+        const answeredCount = introAnsweredCount();
+        const currentQuestion = nextIntroQuestion();
+        const activeRole = getActiveRole();
+        const introPrimaryAction = topicId === "taver"
+            ? `
+                <button class="rounded-full bg-slate-900 px-4 py-3 text-sm font-bold text-white" data-action="goto-section" data-section="principle">測定原理から始める</button>
+                <button class="rounded-full border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700" data-action="goto-section" data-section="concepts">概念地図を整理する</button>
+            `
+            : renderSmartAction(
+                topCompetencies(1)[0] && topCompetencies(1)[0].definition.nextStep,
+                topCompetencies(1)[0] && topCompetencies(1)[0].definition.nextStep && topCompetencies(1)[0].definition.nextStep.label,
+                "rounded-full bg-slate-900 px-4 py-3 text-sm font-bold text-white"
+            );
+        return `
+            <section class="space-y-6">
+                <div class="panel-card p-6 sm:p-8">
+                    <div class="text-xs font-bold tracking-[0.18em] text-slate-500">START HERE</div>
+                    <h2 class="mt-2 text-2xl font-black">${escapeHtml(INTRO_OVERVIEW_CARDS[0] ? INTRO_OVERVIEW_CARDS[0].title : `${topicName} の導入`)}</h2>
+                    <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
+                        ${escapeHtml(HERO.description || (INTRO_OVERVIEW_CARDS[0] && INTRO_OVERVIEW_CARDS[0].body) || "")}
+                    </p>
+                    <div class="mt-5 flex flex-wrap gap-2">
+                        ${INTRO_OVERVIEW_CARDS.slice(0, 3).map((card) => `<span class="tag tag-neutral">${escapeHtml(card.title)}</span>`).join("")}
+                    </div>
+                </div>
+
+                <div class="panel-card p-6 sm:p-8">
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                            <div class="text-xs font-bold tracking-[0.18em] text-slate-500">SELF CHECK</div>
+                            <h3 class="mt-2 text-2xl font-black">最初に 3 問だけ答える</h3>
+                        </div>
+                        <div class="rounded-2xl bg-blue-50 px-4 py-3 text-sm font-bold text-blue-700">${answeredCount} / ${INTRO_SELF_CHECK.length}</div>
+                    </div>
+                    <div class="mt-6 space-y-6">
+                        ${currentQuestion && !selfCheckComplete() ? `
+                            <div class="rounded-3xl border border-slate-200 p-5">
+                                <div class="text-xs font-bold tracking-[0.18em] text-slate-500">QUESTION ${Math.min(answeredCount + 1, INTRO_SELF_CHECK.length)}</div>
+                                <p class="mt-3 text-base font-bold leading-8 text-slate-800">${escapeHtml(currentQuestion.prompt)}</p>
+                                <div class="mt-5 grid gap-3 sm:grid-cols-3">
+                                    ${currentQuestion.options.map((option) => `
+                                        <label class="diagnosis-choice ${Number(state.introCheck[currentQuestion.id]) === option.value ? "border-blue-400 bg-blue-50" : ""}">
+                                            <input class="sr-only" type="radio" name="intro-${currentQuestion.id}" value="${option.value}" data-action="set-intro-answer" data-question="${currentQuestion.id}">
+                                            <span class="text-sm font-bold text-slate-800">${escapeHtml(option.label)}</span>
+                                        </label>
+                                    `).join("")}
+                                </div>
+                                <p class="mt-4 text-xs leading-6 text-slate-500">
+                                    保存すると自動で反映されます。残り ${Math.max(INTRO_SELF_CHECK.length - answeredCount - 1, 0)} 問です。
+                            </div>
+                        ` : ""}
+                    </div>
+                    ${renderTaverIntroJourneyCard()}
+                    ${selfCheckComplete() ? `
+                        <div class="mt-6 rounded-3xl bg-slate-50 p-5">
+                            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                <div>
+                                    <div class="text-xs font-bold tracking-[0.18em] text-slate-500">現在のおすすめ導線</div>
+                                    <p class="mt-3 text-sm leading-7 text-slate-700">${escapeHtml(summary.text)}</p>
+                                </div>
+                                <div class="tag tag-good">${escapeHtml(summary.label)}</div>
+                            </div>
+                            <div class="mt-4 flex flex-wrap gap-3">
+                                ${renderSmartAction(topCompetencies(1)[0] && topCompetencies(1)[0].definition.nextStep, topCompetencies(1)[0] && topCompetencies(1)[0].definition.nextStep && topCompetencies(1)[0].definition.nextStep.label, "rounded-full bg-slate-900 px-4 py-3 text-sm font-bold text-white")}
+                                <button class="rounded-full border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700" data-action="goto-section" data-section="diagnosis">理解診断へ進む</button>
+                                <button class="rounded-full border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700" data-action="reset-intro-check">セルフチェックをやり直す</button>
+                            </div>
+                        </div>
+                    ` : ""}
+                </div>
+
+                ${selfCheckComplete() && activeRole ? `
+                    <div class="panel-card p-6 sm:p-8">
+                        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                            <div>
+                                <div class="text-xs font-bold tracking-[0.18em] text-slate-500">ROLE BLUEPRINT</div>
+                                <h2 class="mt-2 text-2xl font-black">${escapeHtml(activeRole.label)} 向けの進み方</h2>
+                                <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-600">${escapeHtml(activeRole.summary)}</p>
+                            </div>
+                            <div class="tag tag-good">${escapeHtml(activeRole.label)}</div>
+                        </div>
+                        ${renderRoleTrackSelector()}
+                        <div class="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                            <div class="text-sm font-bold text-slate-900">続けるときの導線</div>
+                            <div class="mt-4 grid gap-4 md:grid-cols-2">
+                                ${topCompetencies(2).map((item) => `
+                                    <div class="skill-card">
+                                        <div class="text-sm font-black text-slate-900">${escapeHtml(item.definition.title)}</div>
+                                        <p class="mt-2 text-sm leading-6 text-slate-600">${escapeHtml(item.definition.summary)}</p>
+                                        <div class="mt-4">${renderSmartAction(item.definition.nextStep, item.definition.nextStep && item.definition.nextStep.label, "rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700")}</div>
+                                    </div>
+                                `).join("")}
+                            </div>
+                        </div>
+                    </div>
+                ` : ""}
+
+                ${selfCheckComplete() ? `
+                    <div class="panel-card p-6 sm:p-8">
+                        <div>
+                            <div class="text-xs font-bold tracking-[0.18em] text-slate-500">VISUAL EXPLAINERS</div>
+                            <h3 class="mt-2 text-2xl font-black">図解でつかむ</h3>
+                            <p class="mt-3 text-sm leading-7 text-slate-600">セルフチェック後は、そのまま主要な図解を見られるようにしています。</p>
+                        </div>
+                        <div class="mt-6">
+                            ${renderFigureCards()}
+                        </div>
+                    </div>
+                ` : ""}
+            </section>
+        `;
+    }
+
+    function renderPrincipleSection() {
+        const quickFacts = asArray(PRINCIPLE.quickFacts).slice(0, 4);
+        const steps = asArray(PRINCIPLE.steps).slice(0, 4);
+        const details = asArray(PRINCIPLE.details).slice(0, 3);
+
+        return `
+            <section class="space-y-6">
+                <div class="panel-card p-6 sm:p-8">
+                    <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                        <div>
+                            <div class="text-xs font-bold tracking-[0.18em] text-blue-700">${escapeHtml(PRINCIPLE.eyebrow || "MEASUREMENT PRINCIPLE")}</div>
+                            <h2 class="mt-2 text-2xl font-black">${escapeHtml(PRINCIPLE.title || "測定原理をつかむ")}</h2>
+                            <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
+                                ${escapeHtml(PRINCIPLE.description || "装置が何を入力し、どこで信号が生まれ、何を読み取るのかを先に整理します。")}
+                            </p>
+                        </div>
+                        <div class="tag tag-neutral">${escapeHtml(topicName)}</div>
+                    </div>
+
+                    <div class="principle-grid mt-6">
+                        <div class="principle-scene-card">
+                            ${renderPrincipleScene(PRINCIPLE.scene)}
+                        </div>
+                        <div class="principle-side-stack">
+                            ${quickFacts.length ? `
+                                <div class="principle-side-card">
+                                    <div class="text-[11px] font-black tracking-[0.18em] text-slate-500">WHAT TO WATCH</div>
+                                    <div class="mt-4 grid gap-3">
+                                        ${quickFacts.map((item) => `
+                                            <article class="principle-fact-card">
+                                                <div class="text-sm font-black text-slate-900">${escapeHtml(item.label || "")}</div>
+                                                <p class="mt-2 text-sm leading-6 text-slate-600">${escapeHtml(item.body || "")}</p>
+                                            </article>
+                                        `).join("")}
+                                    </div>
+                                </div>
+                            ` : ""}
+                            ${PRINCIPLE.callout ? `
+                                <div class="principle-callout">
+                                    <div class="text-[11px] font-black tracking-[0.18em] text-blue-700">WHY IT MATTERS</div>
+                                    <div class="mt-2 text-lg font-black text-slate-950">${escapeHtml(PRINCIPLE.callout.title || "")}</div>
+                                    <p class="mt-3 text-sm leading-7 text-slate-700">${escapeHtml(PRINCIPLE.callout.body || "")}</p>
+                                </div>
+                            ` : ""}
+                        </div>
+                    </div>
+
+                    ${steps.length ? `
+                        <div class="principle-step-grid mt-6">
+                            ${steps.map((step) => `
+                                <article class="principle-step-card">
+                                    <div class="principle-step-badge">${escapeHtml(step.step || "")}</div>
+                                    <div class="mt-3 text-base font-black text-slate-900">${escapeHtml(step.title || "")}</div>
+                                    <p class="mt-2 text-sm leading-6 text-slate-600">${escapeHtml(step.body || "")}</p>
+                                </article>
+                            `).join("")}
+                        </div>
+                    ` : ""}
+
+                    ${details.length ? `
+                        <div class="principle-detail-grid mt-6">
+                            ${details.map((item) => `
+                                <article class="principle-detail-card">
+                                    <div class="text-sm font-black text-slate-900">${escapeHtml(item.title || "")}</div>
+                                    <p class="mt-2 text-sm leading-6 text-slate-600">${escapeHtml(item.body || "")}</p>
+                                </article>
+                            `).join("")}
+                        </div>
+                    ` : ""}
+
+                    <div class="mt-6 flex flex-wrap gap-3">
+                        <button class="rounded-full bg-slate-900 px-4 py-3 text-sm font-bold text-white" data-action="goto-section" data-section="concepts">概念地図へ進む</button>
+                        <button class="rounded-full border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700" data-action="goto-section" data-section="visual">図解を見る</button>
+                    </div>
+                </div>
+            </section>
+        `;
+    }
+
+    function renderConceptSection() {
+        const active = getActiveConcept();
+        const relations = asArray(active && active.relations);
+        return `
+            <section class="space-y-6">
+                <div class="panel-card p-6 sm:p-8">
+                    <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                        <div>
+                            <div class="text-xs font-bold tracking-[0.18em] text-blue-700">CONCEPT MAP</div>
+                            <h2 class="mt-2 text-2xl font-black">主要概念を短くつないで見る</h2>
+                            <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
+                                ノードをたどるより、まず一番大事な概念を見てから関連概念へ広げられる構成にしています。
+                            </p>
+                        </div>
+                        <div class="inline-flex rounded-full bg-slate-100 p-1">
+                            <button class="rounded-full px-4 py-2 text-sm font-bold ${state.conceptLevel === "basic" ? "bg-white text-blue-700 shadow-sm" : "text-slate-600"}" data-action="set-concept-level" data-level="basic">基礎で読む</button>
+                            <button class="rounded-full px-4 py-2 text-sm font-bold ${state.conceptLevel === "advanced" ? "bg-white text-blue-700 shadow-sm" : "text-slate-600"}" data-action="set-concept-level" data-level="advanced">少し踏み込む</button>
+                        </div>
+                    </div>
+                    <div class="concept-layout-stack mt-6 space-y-4">
+                        <div class="concept-node-rail rounded-[28px] border border-slate-200 bg-slate-50 p-4">
+                            <div class="text-xs font-bold tracking-[0.18em] text-slate-500">NODE RAIL</div>
+                            <div class="mt-3 concept-node-grid flex gap-3">
+                            ${CONCEPTS.map((concept) => `
+                                <button class="concept-node p-5 text-left ${concept.id === active.id ? "concept-node-active" : ""} ${isRelatedConcept(concept.id) ? "concept-node-related" : ""}" data-action="set-active-concept" data-concept="${concept.id}">
+                                    <div class="text-xs font-bold tracking-[0.18em] text-slate-500">NODE</div>
+                                    <div class="mt-2 text-lg font-black text-slate-900">${escapeHtml(concept.title)}</div>
+                                    <p class="mt-2 text-sm leading-6 text-slate-600">${escapeHtml(concept.short)}</p>
+                                </button>
+                            `).join("")}
+                            </div>
+                        </div>
+                        <aside class="panel-card-soft concept-focus-panel rounded-[28px] border border-blue-100 p-6">
+                            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                                <div>
+                                    <div class="text-xs font-bold tracking-[0.18em] text-blue-700">ACTIVE NODE</div>
+                                    <h3 class="mt-2 text-2xl font-black text-slate-900">${escapeHtml(active.title)}</h3>
+                                    <p class="mt-4 text-sm leading-7 text-slate-700">${escapeHtml(state.conceptLevel === "basic" ? active.beginner : active.advanced)}</p>
+                                </div>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="tag tag-neutral">${relations.length} relations</span>
+                                </div>
+                            </div>
+                            <div class="mt-6">
+                                ${renderConceptExplainer(active)}
+                            </div>
+                            <div class="mt-4">
+                                ${renderConceptCompareTabs(active)}
+                            </div>
+                            <div class="concept-detail-grid mt-6 grid gap-4">
+                                <div class="concept-reference-card">
+                                    <div class="text-xs font-bold tracking-[0.18em] text-slate-500">REFERENCE SNAPSHOT</div>
+                                    <div class="mt-3">
+                                        ${renderConceptSupplement(active)}
+                                    </div>
+                                </div>
+                                <div>
+                                    ${renderConceptConstellationClean(active)}
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            </section>
+        `;
+    }
+
+    function renderVisualSection() {
+        const scenario = getVisualScenario();
+        const controls = asArray(VISUAL_LEARNING.controls);
+        const insights = asArray(scenario && scenario.insights);
+        const activeVisualModel = VISUAL_MODELS[state.visual.material] || {};
+        return `
+            <section class="space-y-6">
+                <div class="panel-card p-6 sm:p-8">
+                    <div class="text-xs font-bold tracking-[0.18em] text-emerald-700">VISUAL LEARNING</div>
+                    <h2 class="mt-2 text-2xl font-black">${escapeHtml(VISUAL_LEARNING.title || "条件を動かして、どこを読むべきかを見る")}</h2>
+                    <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
+                        ${escapeHtml(VISUAL_LEARNING.description || "ここでは精密な実測再現ではなく、解釈の軸をつかむための概念モデルを使います。条件を変えた時に、どこがどう動くかを見てください。")}
+                    </p>
+                    <div class="visual-workbench mt-6">
+                        <div class="visual-cockpit-card rounded-[28px] border border-slate-200 bg-white p-5">
+                            <div class="flex items-start justify-between gap-4">
+                                <div>
+                                    <div class="text-xs font-bold tracking-[0.18em] text-slate-500">VISUAL COCKPIT</div>
+                                    <div class="mt-2 text-xl font-black text-slate-900">グラフの横で選択肢を変える</div>
+                                </div>
+                                <div class="tag tag-good">${escapeHtml(activeVisualModel.label || "")}</div>
+                            </div>
+                            <div class="visual-cockpit-grid mt-5 grid gap-5">
+                                <div class="visual-figure-column space-y-4">
+                                    <div class="visual-card visual-chart-panel rounded-[24px] bg-slate-50 p-4">
+                                        <div class="chart-wrap" data-chart-shell>
+                                            ${runtimeStatus.chartIssue
+                                                ? renderChartFallback(runtimeStatus.chartIssue)
+                                                : `
+                                                    <canvas id="visualChart"></canvas>
+                                                    ${renderVisualPeakOverlay(scenario)}
+                                                `}
+                                        </div>
+                                    </div>
+                                    <div class="visual-metrics-grid visual-metrics-grid-compact grid gap-3 sm:grid-cols-2">
+                                        ${(scenario.metrics || []).map((metric, index) => `
+                                            <div class="metric-card visual-metric-card p-4">
+                                                <div class="text-xs font-bold tracking-[0.18em] text-slate-500" data-visual-metric-label="${index}">${escapeHtml(metric.label)}</div>
+                                                <div class="mt-2 text-2xl font-black ${metric.tone ? metricToneClass(metric.tone) : "text-slate-900"}" data-visual-metric-value="${index}">${escapeHtml(String(metric.value))}</div>
+                                            </div>
+                                        `).join("")}
+                                    </div>
+                                    ${renderVisualComparePanel(scenario)}
+                                    <div class="visual-inline-controls grid gap-3">
+                                        ${controls.map((control) => `
+                                            <div class="visual-control-item">
+                                                <div class="flex items-center justify-between gap-3 text-sm font-bold text-slate-800">
+                                                    <span>${escapeHtml(control.label)}</span>
+                                                    <span class="visual-control-value" data-visual-control-value="${control.field}">${escapeHtml(typeof control.formatValue === "function" ? control.formatValue(state.visual[control.field], scenario) : String(state.visual[control.field]))}</span>
+                                                </div>
+                                                ${control.type === "select"
+                                                    ? `
+                                                        <select class="mt-3 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm" data-action="set-visual-field" data-field="${control.field}">
+                                                            ${(control.options || []).map((option) => `
+                                                                <option value="${option.value}" ${String(state.visual[control.field]) === String(option.value) ? "selected" : ""}>${escapeHtml(option.label)}</option>
+                                                            `).join("")}
+                                                        </select>
+                                                    `
+                                                    : `<input class="slider mt-3" type="range" min="${control.min}" max="${control.max}" step="${control.step}" value="${state.visual[control.field]}" data-action="set-visual-slider" data-field="${control.field}">`
+                                                }
+                                                <div class="mt-3">
+                                                    <div class="text-[11px] font-black tracking-[0.16em] text-slate-500">WATCH HERE</div>
+                                                    <div class="mt-2 flex flex-wrap gap-2">
+                                                        ${renderVisualFocusChips(getVisualControlGuide(control.field).focus)}
+                                                    </div>
+                                                    ${getVisualControlGuide(control.field).note
+                                                        ? `<p class="mt-2 text-xs leading-5 text-slate-500">${escapeHtml(getVisualControlGuide(control.field).note)}</p>`
+                                                        : ""}
+                                                </div>
+                                            </div>
+                                        `).join("")}
+                                    </div>
+                                    <p class="text-xs leading-6 text-slate-500" data-visual-caption>
+                                        ${escapeHtml(VISUAL_LEARNING.chartCaption || "数値の絶対値よりも、曲線やピークがどこでどう変わるかを見るための概念図です。")}
+                                    </p>
+                                </div>
+                                <aside class="visual-side-rail space-y-4">
+                                    <div class="visual-controls-card rounded-[24px] bg-slate-50 p-4">
+                                        <div class="text-xs font-bold tracking-[0.18em] text-slate-500">CONTROL DECK</div>
+                                        <div class="mt-2 text-lg font-black text-slate-900">どの選択肢がどこを変えるか</div>
+                                        <div class="mt-4">
+                                            <div class="text-sm font-bold text-slate-800">${escapeHtml(VISUAL_LEARNING.materialLabel || "材料モデル")}</div>
+                                            <div class="visual-material-grid mt-3 grid gap-2">
+                                                ${Object.entries(VISUAL_MODELS).map(([key, model]) => `
+                                                    <button class="diagnosis-choice visual-material-choice ${state.visual.material === key ? "border-blue-400 bg-blue-50" : ""}" data-action="set-material" data-material="${key}">
+                                                        <div class="text-sm font-bold text-slate-900">${escapeHtml(model.label)}</div>
+                                                    </button>
+                                                `).join("")}
+                                            </div>
+                                            <div class="visual-active-note mt-3 rounded-2xl bg-white p-4">
+                                                <div class="text-sm font-bold text-slate-900">${escapeHtml(activeVisualModel.label || "")}</div>
+                                                <p class="mt-1 text-sm leading-6 text-slate-600">${escapeHtml(activeVisualModel.note || "")}</p>
+                                                <div class="mt-3">
+                                                    <div class="text-[11px] font-black tracking-[0.16em] text-slate-500">WATCH HERE</div>
+                                                    <div class="mt-2 flex flex-wrap gap-2">
+                                                        ${renderVisualFocusChips(getVisualControlGuide("material").focus)}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mt-3">
+                                                ${renderVisualGuideDeck(scenario, activeVisualModel)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </aside>
+                            </div>
+                        </div>
+                        <div class="mt-5 grid gap-4 sm:grid-cols-3">
+                            ${insights.map((insight, index) => `
+                                <div class="visual-insight-card rounded-3xl bg-slate-50 p-5">
+                                    <div class="text-sm font-bold text-slate-900" data-visual-insight-title="${index}">${escapeHtml(insight.title)}</div>
+                                    <p class="mt-2 text-sm leading-7 text-slate-600" data-visual-insight-body="${index}">${escapeHtml(insight.body)}</p>
+                                </div>
+                            `).join("")}
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        ${renderSimulationMissionFlowPanelClean()}
+                    </div>
+                </div>
+            </section>
+        `;
+    }
+
+    function renderDiagnosisSection() {
+        const questions = asArray(orderedDiagnosisQuestions());
+        return `
+            <section class="space-y-6">
+                <div class="panel-card p-6 sm:p-8">
+                    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                        <div>
+                            <div class="text-xs font-bold tracking-[0.18em] text-amber-700">MISCONCEPTION DIAGNOSIS</div>
+                            <h2 class="mt-2 text-2xl font-black">よくある誤解を先に見つける</h2>
+                            <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
+                                先に誤解しやすい点を見つけておくと、その後の図解や概念地図が読みやすくなります。推測で答えず、理由まで確認してください。
+                            </p>
+                        </div>
+                        <button class="rounded-full border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700" data-action="reset-diagnosis">診断をやり直す</button>
+                    </div>
+
+                    <div class="mt-6 grid gap-4 md:grid-cols-3">
+                        <div class="metric-card p-4">
+                            <div class="text-xs font-bold tracking-[0.18em] text-slate-500">回答数</div>
+                            <div class="mt-2 text-2xl font-black text-slate-900">${state.diagnosis.history.length}</div>
+                        </div>
+                        <div class="metric-card p-4">
+                            <div class="text-xs font-bold tracking-[0.18em] text-slate-500">正解数</div>
+                            <div class="mt-2 text-2xl font-black text-slate-900">${state.diagnosis.correctCount}</div>
+                        </div>
+                        <div class="metric-card p-4">
+                            <div class="text-xs font-bold tracking-[0.18em] text-slate-500">正解率</div>
+                            <div class="mt-2 text-2xl font-black text-slate-900">${diagnosisAccuracy()}%</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 space-y-5">
+                        ${questions.map((question) => {
+                            const entry = diagnosisEntry(question.id);
+                            return `
+                                <div class="rounded-[30px] border border-slate-200 bg-white p-6">
+                                    <div class="text-xs font-bold tracking-[0.18em] text-slate-500">QUESTION</div>
+                                    <h3 class="mt-2 text-xl font-black leading-tight text-slate-900">${escapeHtml(question.prompt)}</h3>
+                                    <p class="mt-3 text-sm leading-7 text-slate-600">
+                                        ひっかけポイント:
+                                        ${escapeHtml(question.whyEasy)}
+                                    </p>
+                                    <div class="mt-5 space-y-3">
+                                        ${question.options.map((option) => `
+                                            <button class="diagnosis-choice ${entry && entry.optionId === option.id ? (entry.correct ? "border-emerald-400 bg-emerald-50" : "border-amber-400 bg-amber-50") : ""}" data-action="answer-diagnosis" data-question="${question.id}" data-option="${option.id}">
+                                                <span class="text-sm font-bold text-slate-900">${escapeHtml(option.label)}</span>
+                                            </button>
+                                        `).join("")}
+                                    </div>
+                                    ${entry ? `
+                                        <div class="mt-5 rounded-3xl ${entry.correct ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-900"} p-5">
+                                            <div class="text-sm font-black">${entry.correct ? "正解" : "要復習"}</div>
+                                            <div class="mt-1 text-xs font-bold tracking-[0.16em]">${entry.correct ? "理解できています" : "理由まで確認する"}</div>
+                                            <p class="mt-2 text-sm leading-7">${escapeHtml(entry.explanation)}</p>
+                                        </div>
+                                    ` : ""}
+                                </div>
+                            `;
+                        }).join("")}
+                    </div>
+
+                    ${state.diagnosis.complete ? `
+                        <div class="mt-6 grid gap-4 lg:grid-cols-[1fr_0.9fr]">
+                            <div class="rounded-3xl border border-slate-200 p-6">
+                                <div class="text-xs font-bold tracking-[0.18em] text-slate-500">診断サマリー</div>
+                                <h3 class="mt-2 text-2xl font-black text-slate-900">理解の要点</h3>
+                                <p class="mt-3 text-sm leading-7 text-slate-600">${escapeHtml(diagnosisSummaryText())}</p>
+                                <div class="mt-5 flex flex-wrap gap-2">
+                                    ${(state.diagnosis.revisit || []).length
+                                        ? state.diagnosis.revisit.map((item) => `<span class="tag tag-weak">${escapeHtml(item)}</span>`).join("")
+                                        : `<span class="tag tag-good">${escapeHtml(DIAGNOSIS_UI.noRevisitTagText || "今のところ大きな弱点は見えていません")}</span>`
+                                    }
+                                </div>
+                            </div>
+                            <div class="rounded-3xl bg-blue-50 p-6">
+                                <div class="text-sm font-bold text-blue-900">次のおすすめ</div>
+                                <div class="mt-4 space-y-3">
+                                    ${(DIAGNOSIS_UI.nextActions || [
+                                        { section: "visual", label: "図解で見直す" },
+                                        { section: "ai", label: "AI 対話で要点を整理する" },
+                                        { section: "mastery", label: "理解確認へ進む" }
+                                    ]).map((item) => `
+                                        <button class="w-full rounded-2xl bg-white px-4 py-4 text-left text-sm font-bold text-slate-800" data-action="goto-section" data-section="${item.section}">${escapeHtml(item.label)}</button>
+                                    `).join("")}
+                                </div>
+                            </div>
+                        </div>
+                    ` : ""}
+                </div>
+            </section>
+        `;
+    }
+
+    function renderAiSection() {
+        const queue = buildQuestionQueue();
+        const mediaTarget = getPrimaryMediaLink();
+        const visualMission = getRecommendedVisualMission();
+        const aiMessages = asArray(state.ai && state.ai.messages);
+        return `
+            <section class="space-y-6">
+                <div class="panel-card p-6 sm:p-8">
+                    <div class="grid gap-6 lg:grid-cols-[1.08fr_0.92fr]">
+                        <div class="space-y-5">
+                            <div>
+                                <div class="text-xs font-bold tracking-[0.18em] text-blue-700">LEARNING COACH</div>
+                                <h2 class="mt-2 text-2xl font-black">対話しながら次の理解へ進む</h2>
+                                <p class="mt-3 text-sm leading-7 text-slate-600">
+                                    まだ曖昧な用語や条件を対話で整理します。次の 5 手はそのまま学習導線として使えますし、自由入力での相談もできます。
+                                </p>
+                            </div>
+
+                            <div class="grid gap-3 md:grid-cols-3">
+                                <button class="coach-action ${state.ai.actionPanel === "questions" ? "coach-action-active" : ""} text-left" data-action="set-ai-action-panel" data-panel="questions">
+                                    <div class="text-sm font-black text-slate-900">次の 5 手</div>
+                                    <p class="mt-2 text-sm leading-6 text-slate-600">未回答や弱点から、次に見ると良い項目を並べます。</p>
+                                </button>
+                                <button class="coach-action text-left" data-action="launch-visual-review">
+                                    <div class="text-sm font-black text-slate-900">この図解を見る</div>
+                                    <p class="mt-2 text-sm leading-6 text-slate-600">${escapeHtml(visualMission ? visualMission.title : "おすすめの図解へ移動します")}</p>
+                                </button>
+                                <button class="coach-action text-left" data-action="open-primary-media">
+                                    <div class="text-sm font-black text-slate-900">この資料を見る</div>
+                                    <p class="mt-2 text-sm leading-6 text-slate-600">${escapeHtml(mediaTarget ? mediaTarget.title : "参考資料を開きます")}</p>
+                                </button>
+                            </div>
+
+                            <div class="rounded-[30px] border border-slate-200 bg-slate-50 p-5">
+                                <div class="flex items-center justify-between gap-4">
+                                    <div>
+                                        <div class="text-xs font-bold tracking-[0.18em] text-slate-500">ACTION QUEUE</div>
+                                        <div class="mt-2 text-xl font-black text-slate-900">次の 5 手</div>
+                                    </div>
+                                    <div class="tag tag-neutral">${queue.length} items</div>
+                                </div>
+                                <div class="mt-5 space-y-3">
+                                    ${queue.map((item, index) => `
+                                        <div class="rounded-2xl border border-slate-200 bg-white p-4">
+                                            <div class="flex items-start justify-between gap-3">
+                                                <div>
+                                                    <div class="text-xs font-bold tracking-[0.16em] text-slate-500">STEP ${index + 1}</div>
+                                                    <div class="mt-2 text-sm font-black leading-7 text-slate-900">${escapeHtml(item.title)}</div>
+                                                    <p class="mt-2 text-sm leading-6 text-slate-600">${escapeHtml(item.detail)}</p>
+                                                </div>
+                                                ${item.section === "concepts" && item.conceptId
+                                                    ? `<button class="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700" data-action="open-concept" data-concept="${item.conceptId}">${escapeHtml(item.buttonLabel)}</button>`
+                                                    : `<button class="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700" data-action="goto-section" data-section="${item.section}">${escapeHtml(item.buttonLabel)}</button>`
+                                                }
+                                            </div>
+                                        </div>
+                                    `).join("")}
+                                </div>
+                            </div>
+
+                            <div class="rounded-3xl border border-slate-200 p-5">
+                                <div class="text-sm font-bold text-slate-900">自分で質問を作るときの例</div>
+                                <div class="mt-4 flex flex-wrap gap-3">
+                                    ${AI_SUGGESTED_PATHS.map((prompt) => `
+                                        <button class="rounded-full border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700" data-action="send-ai-suggestion" data-prompt="${escapeHtml(prompt)}">${escapeHtml(prompt)}</button>
+                                    `).join("")}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="rounded-3xl bg-slate-50 p-5">
+                                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <div>
+                                        <div class="text-sm font-bold text-slate-900">対話モード</div>
+                                        <div class="mt-1 text-sm text-slate-600">${state.settings.geminiApiKey ? "Gemini adapter を使用可能" : "ローカルモードで応答中"}</div>
+                                    </div>
+                                    <div class="tag ${state.settings.geminiApiKey ? "tag-good" : "tag-neutral"}">${escapeHtml(state.ai.lastMode === "gemini" ? "現在: Gemini" : "現在: Local")}</div>
+                                </div>
+                                <div class="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
+                                    <input id="apiKeyInput" type="password" class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm" placeholder="Gemini API key" value="${escapeHtml(state.settings.geminiApiKey)}">
+                                    <button class="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-bold text-white" data-action="clear-api-key">クリア</button>
+                                </div>
+                                <p class="mt-2 text-xs leading-6 text-slate-500">
+                                    キーはこのブラウザの localStorage にのみ保存します。共有端末では保存しない運用を推奨します。
+                                </p>
+                            </div>
+
+                            <div class="rounded-[30px] border border-slate-200 bg-slate-50 p-4 sm:p-5">
+                                <div class="max-h-[420px] space-y-3 overflow-y-auto pr-1">
+                                    ${aiMessages.map((message) => `
+                                        <div class="chat-bubble ${message.role === "user" ? "chat-user ml-auto" : "chat-assistant"}">
+                                            <div class="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">${message.role === "user" ? "YOU" : message.mode === "gemini" ? "AI" : "LOCAL COACH"}</div>
+                                            <div class="space-y-3 text-sm leading-7 text-slate-700">${formatTextBlock(message.content)}</div>
+                                            ${asArray(message.followUps).length ? `
+                                                <div class="mt-4 flex flex-wrap gap-2">
+                                                    ${asArray(message.followUps).map((follow) => `
+                                                        <button class="rounded-full border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700" data-action="send-ai-suggestion" data-prompt="${escapeHtml(follow)}">${escapeHtml(follow)}</button>
+                                                    `).join("")}
+                                                </div>
+                                            ` : ""}
+                                        </div>
+                                    `).join("")}
+                                    ${state.ai.pending ? `
+                                        <div class="chat-bubble chat-assistant">
+                                            <div class="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">THINKING</div>
+                                            <div class="flex items-center gap-2">
+                                                <span class="loader-dot"></span>
+                                                <span class="loader-dot"></span>
+                                                <span class="loader-dot"></span>
+                                            </div>
+                                        </div>
+                                    ` : ""}
+                                </div>
+                            </div>
+
+                            <div class="rounded-[28px] border border-slate-200 bg-white p-4">
+                                <label class="text-sm font-bold text-slate-900" for="aiPrompt">質問を入力</label>
+                                <textarea id="aiPrompt" class="mt-3 min-h-[140px] w-full rounded-3xl border border-slate-300 px-4 py-4 text-sm leading-7" placeholder="例: この条件で何を見ればよい？">${escapeHtml(state.ai.input)}</textarea>
+                                <div class="mt-4 flex items-center justify-between gap-4">
+                                    <p class="text-xs leading-6 text-slate-500">具体的な条件や見えている違和感を書くと、返答が整理しやすくなります。</p>
+                                    <button class="rounded-full bg-blue-700 px-5 py-3 text-sm font-bold text-white ${state.ai.pending ? "opacity-50" : ""}" data-action="submit-ai">送信する</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        `;
+    }
+
+    function renderMasterySection() {
+        const result = state.mastery.result || computeMasteryResult();
+        return `
+            <section class="space-y-6">
+                <div class="panel-card p-6 sm:p-8">
+                    <div class="grid gap-6 lg:grid-cols-[0.92fr_1.08fr]">
+                        <div class="space-y-5">
+                            <div>
+                                <div class="text-xs font-bold tracking-[0.18em] text-emerald-700">MASTERY CHECK</div>
+                                <h2 class="mt-2 text-2xl font-black">最後に理解確認テストで仕上げる</h2>
+                                <p class="mt-3 text-sm leading-7 text-slate-600">
+                                    ここまで見てきた要点を短いテストで確認します。答えた後に理由まで読み、説明できる状態まで持っていきます。
+                                </p>
+                            </div>
+                            <div class="rounded-3xl bg-slate-50 p-5">
+                                <div class="text-sm font-bold text-slate-900">説明ルーブリックの視点</div>
+                                <div class="mt-4 space-y-3">
+                                    ${EXPLANATION_RUBRIC.map((item) => `
+                                        <div class="rounded-2xl bg-white p-4 text-sm leading-7 text-slate-700">
+                                            <span class="font-bold text-slate-900">${escapeHtml(item.title)}</span>
+                                        </div>
+                                    `).join("")}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="grid gap-4 md:grid-cols-3">
+                                <div class="metric-card p-4">
+                                    <div class="text-xs font-bold tracking-[0.18em] text-slate-500">回答数</div>
+                                    <div class="mt-2 text-2xl font-black text-slate-900">${result.answered}</div>
+                                </div>
+                                <div class="metric-card p-4">
+                                    <div class="text-xs font-bold tracking-[0.18em] text-slate-500">正解数</div>
+                                    <div class="mt-2 text-2xl font-black text-slate-900">${result.correct}</div>
+                                </div>
+                                <div class="metric-card p-4">
+                                    <div class="text-xs font-bold tracking-[0.18em] text-slate-500">正解率</div>
+                                    <div class="mt-2 text-2xl font-black text-slate-900">${result.accuracy}%</div>
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                ${MASTERY_QUIZ.map((question) => {
+                                    const selected = state.mastery.answers[question.id];
+                                    const selectedChoice = question.choices.find((item) => item.id === selected);
+                                    return `
+                                        <div class="rounded-[30px] border border-slate-200 bg-white p-5">
+                                            <div class="text-sm font-black leading-7 text-slate-900">${escapeHtml(question.prompt)}</div>
+                                            <div class="mt-4 space-y-3">
+                                                ${question.choices.map((choice) => `
+                                                    <button class="diagnosis-choice ${selected === choice.id ? (choice.correct ? "border-emerald-400 bg-emerald-50" : "border-amber-400 bg-amber-50") : ""}" data-action="answer-mastery" data-question="${question.id}" data-choice="${choice.id}">
+                                                        <span class="text-sm font-bold text-slate-900">${escapeHtml(choice.label)}</span>
+                                                    </button>
+                                                `).join("")}
+                                            </div>
+                                            ${selectedChoice ? `
+                                                <div class="mt-4 rounded-3xl ${selectedChoice.correct ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-900"} p-4">
+                                                    <div class="text-sm font-black">${selectedChoice.correct ? "正解" : "要復習"}</div>
+                                                    <p class="mt-2 text-sm leading-7">${escapeHtml(selectedChoice.explanation)}</p>
+                                                </div>
+                                            ` : ""}
+                                        </div>
+                                    `;
+                                }).join("")}
+                            </div>
+                            ${result.answered ? `
+                                <div class="rounded-[30px] border border-slate-200 bg-slate-50 p-5">
+                                    <div class="flex items-center justify-between gap-4">
+                                        <div class="text-sm font-bold text-slate-900">サマリー</div>
+                                        <div class="tag ${result.accuracy >= 75 ? "tag-good" : "tag-weak"}">${escapeHtml(result.level)}</div>
+                                    </div>
+                                    <div class="mt-4 grid gap-4 md:grid-cols-2">
+                                        <div class="rounded-2xl bg-white p-4">
+                                            <div class="text-xs font-bold tracking-[0.18em] text-slate-500">まだ弱い項目</div>
+                                            <ul class="mt-3 space-y-2 text-sm leading-7 text-slate-700">
+                                                ${(result.weakQuestions.length
+                                                    ? result.weakQuestions
+                                                    : ["今のところ大きな弱点はありません"]
+                                                ).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+                                            </ul>
+                                        </div>
+                                        <div class="rounded-2xl bg-white p-4">
+                                            <div class="text-xs font-bold tracking-[0.18em] text-slate-500">未回答</div>
+                                            <ul class="mt-3 space-y-2 text-sm leading-7 text-slate-700">
+                                                ${(result.missing.length
+                                                    ? result.missing
+                                                    : ["未回答はありません"]
+                                                ).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4 rounded-2xl bg-blue-50 p-4 text-sm leading-7 text-blue-900">
+                                        ${result.accuracy >= 75
+                                            ? "説明に自信があれば、AI 対話で言語化の練習まで進めます。"
+                                            : "正答だけで終わらせず、概念地図や図解に戻って理由まで確認してください。"}
+                                    </div>
+                                </div>
+                            ` : ""}
+                        </div>
+                    </div>
+                </div>
+            </section>
+        `;
+    }
+
+    function renderRecordSection() {
+        const revisit = diagnosisWeakPoints();
+        const activeRole = getActiveRole();
+        const competencyItems = sortedCompetencyStates();
+        return `
+            <section class="space-y-6">
+                <div class="panel-card p-6 sm:p-8">
+                    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                        <div>
+                            <div class="text-xs font-bold tracking-[0.18em] text-slate-500">LEARNING RECORD</div>
+                            <h2 class="mt-2 text-2xl font-black">学習記録を保存して振り返る</h2>
+                            <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
+                                どこまで進んだか、どこでつまずいたかを見返します。必要ならここから弱点セクションへ戻れます。
+                            </p>
+                        </div>
+                        <button class="rounded-full border border-red-300 bg-white px-4 py-3 text-sm font-bold text-red-700" data-action="reset-progress">保存データを初期化する</button>
+                    </div>
+
+                    <div class="record-summary-grid mt-6 grid gap-4 lg:grid-cols-3">
+                        <div class="metric-card record-summary-card p-5">
+                            <div class="text-xs font-bold tracking-[0.18em] text-slate-500">現在の役割</div>
+                            <div class="mt-3 text-sm leading-7 text-slate-700">
+                                ${escapeHtml(activeRole ? `${activeRole.label}: ${activeRole.summary}` : "役割はまだ設定されていません")}
+                            </div>
+                        </div>
+                        <div class="metric-card record-summary-card p-5">
+                            <div class="text-xs font-bold tracking-[0.18em] text-slate-500">理解が弱いままの点</div>
+                            <div class="mt-3 flex flex-wrap gap-2">
+                                ${revisit.length ? revisit.map((item) => `<span class="tag tag-weak">${escapeHtml(item)}</span>`).join("") : '<span class="tag tag-good">今のところ大きな弱点はありません</span>'}
+                            </div>
+                        </div>
+                        <div class="metric-card record-summary-card p-5">
+                            <div class="text-xs font-bold tracking-[0.18em] text-slate-500">課題ミッション</div>
+                            <div class="mt-3 text-sm leading-7 text-slate-700">
+                                ${(state.visual.completedMissions || []).length
+                                    ? `${(state.visual.completedMissions || []).length} / ${SIMULATION_MISSIONS.length} 件の mission を完了`
+                                    : "まだ完了した mission はありません"}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 rounded-[30px] border border-slate-200 bg-slate-50 p-6">
+                        <div class="flex items-center justify-between gap-4">
+                            <div>
+                                <div class="text-xs font-bold tracking-[0.18em] text-slate-500">SKILL PROGRESS</div>
+                                <div class="mt-2 text-2xl font-black text-slate-900">competency ごとの進捗</div>
+                            </div>
+                            <div class="tag tag-neutral">${progressPercent()}%</div>
+                        </div>
+                        <div class="mt-5 grid gap-4 lg:grid-cols-2">
+                            ${competencyItems.map((item) => `
+                                <div class="skill-card">
+                                    <div class="flex items-start justify-between gap-4">
+                                        <div>
+                                            <div class="text-sm font-black text-slate-900">${escapeHtml(item.definition.title)}</div>
+                                            <p class="mt-2 text-sm leading-6 text-slate-600">${escapeHtml(item.definition.summary)}</p>
+                                        </div>
+                                        <div class="tag ${competencyStatusClass(item.status)}">${escapeHtml(competencyStatusLabel(item.status))}</div>
+                                    </div>
+                                    <div class="mt-4 flex items-center justify-between text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+                                        <span>progress</span>
+                                        <span>${item.percent}%</span>
+                                    </div>
+                                    <div class="skill-meter mt-2">
+                                        <div class="skill-meter-fill" style="width:${item.percent}%"></div>
+                                    </div>
+                                    <div class="mt-4 flex flex-wrap gap-2">
+                                        ${(item.definition.conceptIds || []).map((conceptId) => conceptMap[conceptId] ? `<span class="tag tag-neutral">${escapeHtml(conceptMap[conceptId].title)}</span>` : "").join("")}
+                                    </div>
+                                    <div class="mt-4">
+                                        ${renderSmartAction(item.definition.nextStep, item.definition.nextStep && item.definition.nextStep.label, "rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700")}
+                                    </div>
+                                </div>
+                            `).join("")}
+                        </div>
+                    </div>
+
+                    <div class="mt-6 rounded-[30px] bg-slate-50 p-6">
+                        <div class="text-sm font-bold text-slate-900">次にやるとよいこと</div>
+                        <div class="mt-4 grid gap-3 md:grid-cols-3">
+                            ${topCompetencies(3).map((item) => renderSmartAction(item.definition.nextStep, item.definition.nextStep && item.definition.nextStep.label, "rounded-2xl bg-white px-4 py-4 text-left text-sm font-bold text-slate-800")).join("")}
+                        </div>
+                    </div>
+
+                    <div class="mt-6 rounded-[30px] border border-slate-200 bg-white p-6">
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <div class="text-sm font-bold text-slate-900">参考メディア</div>
+                                <p class="mt-2 text-sm leading-6 text-slate-600">補助的に動画や外部資料を開きたいときだけ表示します。</p>
+                            </div>
+                            <button class="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700" data-action="toggle-ui-panel" data-panel="showResources">
+                                ${state.ui && state.ui.showResources ? "閉じる" : "表示する"}
+                            </button>
+                        </div>
+                        ${state.ui && state.ui.showResources ? `
+                            <div class="mt-5">
+                                ${renderMediaSection()}
+                            </div>
+                        ` : ""}
+                    </div>
+                </div>
+            </section>
+        `;
+    }
+
+    function renderSection() {
+        switch (state.currentSection) {
+            case "intro":
+                return renderIntroSection();
+            case "principle":
+                return renderPrincipleSection();
+            case "concepts":
+                return renderConceptSection();
+            case "visual":
+                return renderVisualSection();
+            case "diagnosis":
+                return renderDiagnosisSection();
+            case "ai":
+                return renderAiSection();
+            case "mastery":
+                return renderMasterySection();
+            case "record":
+                return renderRecordSection();
+            default:
+                return renderIntroSection();
+        }
+    }
+
+    function renderFooterNav() {
+        const currentIdx = sectionIndex[state.currentSection];
+        const prev = APP_SECTIONS[currentIdx - 1];
+        const next = APP_SECTIONS[currentIdx + 1];
+        return `
+            <div class="sticky-footer-nav mt-8 border-t border-slate-200/70 bg-white/90">
+                <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
+                    <button class="rounded-full border border-slate-300 px-4 py-3 text-sm font-bold text-slate-700 ${prev ? "" : "opacity-40"}" ${prev ? `data-action="goto-section" data-section="${prev.id}"` : "disabled"}>前へ</button>
+                    <div class="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">${currentIdx + 1} / ${APP_SECTIONS.length}</div>
+                    <button class="rounded-full bg-slate-900 px-4 py-3 text-sm font-bold text-white ${next ? "" : "opacity-40"}" ${next ? `data-action="goto-section" data-section="${next.id}"` : "disabled"}>次へ</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderFatalError(error) {
+        const message = error && error.message ? error.message : "unknown error";
+        root.innerHTML = `
+            <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+                <div class="panel-card p-6 sm:p-8">
+                    <div class="text-xs font-bold tracking-[0.18em] text-rose-700">RENDER ERROR</div>
+                    <h1 class="mt-2 text-2xl font-black text-slate-900">表示に失敗しました</h1>
+                    <p class="mt-4 text-sm leading-7 text-slate-600">
+                        保存済みの状態やブラウザキャッシュが、現在の UI 構造と合わずに壊れている可能性があります。
+                    <div class="mt-5 rounded-2xl bg-slate-50 p-4 text-sm leading-7 text-slate-700">
+                        ${escapeHtml(message)}
+                    </div>
+                    <div class="mt-6 flex flex-wrap gap-3">
+                        <button class="rounded-full bg-slate-900 px-5 py-3 text-sm font-bold text-white" data-action="force-reset-state">保存状態を初期化して再読み込み</button>
+                        <button class="rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700" data-action="reload-page">そのまま再読み込み</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderApp() {
+        try {
+            root.innerHTML = `
+                <div class="learning-shell pb-24">
+                    ${renderHeader()}
+                    ${renderSectionNav()}
+                    <main class="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+                        ${renderSection()}
+                    </main>
+                    ${renderFooterNav()}
+                </div>
+            `;
+            renderChartIfNeeded();
+            syncInputs();
+            refreshVisualCaption();
+            refreshVisualGuide();
+        } catch (error) {
+            console.error("renderApp failed", error);
+            renderFatalError(error);
+        }
+    }
+
+    function syncInputs() {
+        INTRO_SELF_CHECK.forEach((question) => {
+            const selected = state.introCheck[question.id];
+            if (selected === undefined) {
+                return;
+            }
+            const input = root.querySelector(`input[name="intro-${question.id}"][value="${selected}"]`);
+            if (input) {
+                input.checked = true;
+            }
+        });
+    }
+
+    function destroyChart() {
+        if (chart) {
+            chart.destroy();
+            chart = null;
+        }
+        currentChartConfig = null;
+    }
+
+    function chartTooltipLabel(context) {
+        const raw = context.raw;
+        if (currentChartConfig && typeof currentChartConfig.tooltipLabel === "function") {
+            return currentChartConfig.tooltipLabel(raw, context);
+        }
+        if (raw && raw.label) {
+            return `${raw.label}: ${raw.x}, ${raw.y}`;
+        }
+        return `${raw.x}, ${raw.y}`;
+    }
+
+    function applyChartConfig(chartConfig) {
+        currentChartConfig = chartConfig;
+        if (!chart) {
+            return;
+        }
+        const xAxisRange = VISUAL_LEARNING.xAxisRange || {};
+        const yAxisRange = VISUAL_LEARNING.yAxisRange || {};
+        chart.data.datasets = getVisualChartDatasets(chartConfig);
+        chart.options.plugins.tooltip.callbacks.label = chartTooltipLabel;
+        chart.options.scales.x.title.text = (VISUAL_LEARNING.axisLabels && VISUAL_LEARNING.axisLabels.x) || "X";
+        chart.options.scales.x.min = xAxisRange.min;
+        chart.options.scales.x.max = xAxisRange.max;
+        chart.options.scales.x.reverse = Boolean(VISUAL_LEARNING.reverseXAxis);
+        chart.options.scales.y.title.text = (VISUAL_LEARNING.axisLabels && VISUAL_LEARNING.axisLabels.y) || "Y";
+        chart.options.scales.y.min = yAxisRange.min;
+        chart.options.scales.y.max = yAxisRange.max;
+        chart.update("none");
+    }
+
+    function refreshVisualLiveState() {
+        if (state.currentSection !== "visual") {
+            return;
+        }
+
+        const scenario = getVisualScenario();
+        const metrics = asArray(scenario && scenario.metrics);
+        const metricNodes = metrics.map((_, index) => ({
+            label: root.querySelector(`[data-visual-metric-label="${index}"]`),
+            value: root.querySelector(`[data-visual-metric-value="${index}"]`)
+        }));
+        if (metricNodes.some((entry) => !entry.label || !entry.value)) {
+            renderApp();
+            return;
+        }
+
+        metrics.forEach((metric, index) => {
+            metricNodes[index].label.textContent = metric.label;
+            metricNodes[index].value.textContent = String(metric.value);
+            metricNodes[index].value.className = `mt-2 text-2xl font-black ${metric.tone ? metricToneClass(metric.tone) : "text-slate-900"}`;
+        });
+
+        asArray(VISUAL_LEARNING.controls).forEach((control) => {
+            const valueNode = root.querySelector(`[data-visual-control-value="${control.field}"]`);
+            if (!valueNode) {
+                return;
+            }
+            valueNode.textContent = typeof control.formatValue === "function"
+                ? control.formatValue(state.visual[control.field], scenario)
+                : String(state.visual[control.field]);
+        });
+
+        const insights = asArray(scenario && scenario.insights);
+        const insightNodes = insights.map((_, index) => ({
+            title: root.querySelector(`[data-visual-insight-title="${index}"]`),
+            body: root.querySelector(`[data-visual-insight-body="${index}"]`)
+        }));
+        if (insightNodes.some((entry) => !entry.title || !entry.body)) {
+            renderApp();
+            return;
+        }
+
+        insights.forEach((insight, index) => {
+            insightNodes[index].title.textContent = insight.title;
+            insightNodes[index].body.textContent = insight.body;
+        });
+
+        renderChartIfNeeded();
+        refreshVisualCaption();
+        refreshVisualGuide();
+    }
+
+    function renderChartIfNeeded() {
+        const canvas = document.getElementById("visualChart");
+        if (!canvas || !window.Chart) {
+            destroyChart();
+            return;
+        }
+
+        const scenario = getVisualScenario();
+        const chartConfig = scenario.chart || { type: "scatter", datasets: [] };
+        if (chart && chart.canvas !== canvas) {
+            destroyChart();
+        }
+
+        if (chart && chart.config.type === (chartConfig.type || "scatter")) {
+            applyChartConfig(chartConfig);
+            return;
+        }
+
+        destroyChart();
+        currentChartConfig = chartConfig;
+
+        try {
+            runtimeStatus.chartIssue = "";
+            chart = new window.Chart(canvas.getContext("2d"), {
+                type: chartConfig.type || "scatter",
+                data: {
+                    datasets: getVisualChartDatasets(chartConfig)
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: "top"
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: chartTooltipLabel
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: "linear",
+                            min: VISUAL_LEARNING.xAxisRange && VISUAL_LEARNING.xAxisRange.min,
+                            max: VISUAL_LEARNING.xAxisRange && VISUAL_LEARNING.xAxisRange.max,
+                            reverse: Boolean(VISUAL_LEARNING.reverseXAxis),
+                            title: {
+                                display: true,
+                                text: (VISUAL_LEARNING.axisLabels && VISUAL_LEARNING.axisLabels.x) || "X"
+                            },
+                            grid: {
+                                color: "#e5e7eb"
+                            }
+                        },
+                        y: {
+                            min: VISUAL_LEARNING.yAxisRange && VISUAL_LEARNING.yAxisRange.min,
+                            max: VISUAL_LEARNING.yAxisRange && VISUAL_LEARNING.yAxisRange.max,
+                            title: {
+                                display: true,
+                                text: (VISUAL_LEARNING.axisLabels && VISUAL_LEARNING.axisLabels.y) || "Y"
+                            },
+                            grid: {
+                                color: "#e5e7eb"
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (error) {
+            console.warn("failed to render chart", error);
+            destroyChart();
+            runtimeStatus.chartIssue = "グラフの描画に失敗したため、下の指標と解説を先に確認してください。";
+            const chartShell = root.querySelector("[data-chart-shell]");
+            if (chartShell) {
+                chartShell.innerHTML = renderChartFallback(runtimeStatus.chartIssue);
+            }
+        }
+    }
+
+    function setDiagnosisComplete() {
+        state.diagnosis.complete = state.diagnosis.history.length === orderedDiagnosisQuestions().length;
+        state.diagnosis.misconceptions = state.diagnosis.history
+            .filter((entry) => entry.misconception)
+            .map((entry) => entry.label);
+        state.diagnosis.revisit = diagnosisWeakPoints().slice(0, 3);
+    }
+
+    function answerDiagnosis(questionId, optionId) {
+        const question = DIAGNOSIS_QUESTIONS[questionId];
+        const option = question.options.find((item) => item.id === optionId);
+        if (!option) {
+            return;
+        }
+
+        state.diagnosis.history = state.diagnosis.history.filter((entry) => entry.questionId !== questionId);
+        state.diagnosis.history.push({
+            questionId,
+            question: question.prompt,
+            optionId,
+            label: option.label,
+            explanation: option.explanation,
+            misconception: option.misconception,
+            weakness: option.weakness || [],
+            correct: Boolean(option.correct)
+        });
+        state.diagnosis.correctCount = state.diagnosis.history.filter((entry) => entry.correct).length;
+        setDiagnosisComplete();
+        persist();
+        renderApp();
+    }
+
+    async function submitAiPrompt(promptText) {
+        const prompt = promptText.trim();
+        if (!prompt || state.ai.pending) {
+            return;
+        }
+
+        state.ai.pending = true;
+        state.ai.messages.push({
+            role: "user",
+            mode: "user",
+            content: prompt
+        });
+        state.ai.input = "";
+        persist();
+        renderApp();
+
+        try {
+            const result = await aiService.respond(prompt, state);
+            state.ai.messages.push({
+                role: "assistant",
+                mode: result.mode,
+                content: result.answer,
+                followUps: result.followUps
+            });
+            state.ai.lastMode = result.mode;
+        } catch (error) {
+            state.ai.messages.push({
+                role: "assistant",
+                mode: "local",
+                content: "応答中にエラーが出ました。少し時間を置いてから、もう一度質問してください。",
+            });
+            state.ai.lastMode = "local";
+        } finally {
+            state.ai.pending = false;
+            persist();
+            renderApp();
+        }
+    }
+
+    function answerMastery(questionId, choiceId) {
+        state.mastery.answers[questionId] = choiceId;
+        state.mastery.result = computeMasteryResult();
+        persist();
+        renderApp();
+    }
+
+    function switchRole(roleId) {
+        if (!roleMap[roleId]) {
+            return;
+        }
+        state.roleId = roleId;
+        persist();
+        renderApp();
+    }
+
+    function openConcept(conceptId) {
+        if (!conceptMap[conceptId]) {
+            return;
+        }
+        state.activeConceptId = conceptId;
+        visitSection("concepts");
+        renderApp();
+    }
+
+    function applySimulationMission(missionId) {
+        const mission = missionMap[missionId];
+        if (!mission) {
+            return;
+        }
+        state.visual = Object.assign({}, state.visual, mission.values || {}, {
+            currentMissionId: mission.id,
+            completedMissions: state.visual.completedMissions || []
+        });
+        state.visual.guideField = Object.keys(mission.values || {}).find((key) => key !== "material") || "material";
+        if (mission.conceptId && conceptMap[mission.conceptId]) {
+            state.activeConceptId = mission.conceptId;
+        }
+        visitSection("visual");
+        renderApp();
+    }
+
+    function completeSimulationMission(missionId) {
+        if (!(state.visual.completedMissions || []).includes(missionId)) {
+            state.visual.completedMissions = (state.visual.completedMissions || []).concat(missionId);
+        }
+        state.visual.currentMissionId = missionId;
+        persist();
+        renderApp();
+    }
+
+    function toggleUiPanel(panelName) {
+        state.ui = state.ui || {};
+        state.ui[panelName] = !state.ui[panelName];
+        persist();
+        renderApp();
+    }
+
+    function openPrimaryMedia() {
+        const media = getPrimaryMediaLink();
+        if (media && media.url) {
+            window.open(media.url, "_blank", "noopener,noreferrer");
+            return;
+        }
+        visitSection("intro");
+        renderApp();
+    }
+
+    root.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-action]");
+        if (!button) {
+            return;
+        }
+
+        const action = button.dataset.action;
+
+        if (action === "goto-section") {
+            visitSection(button.dataset.section);
+            renderApp();
+            return;
+        }
+
+        if (action === "switch-topic") {
+            const params = new URLSearchParams(window.location.search);
+            params.set("topic", button.dataset.topic);
+            const nextSearch = params.toString();
+            window.location.search = nextSearch ? `?${nextSearch}` : "";
+            return;
+        }
+
+        if (action === "switch-role") {
+            switchRole(button.dataset.role);
+            return;
+        }
+
+        if (action === "set-concept-level") {
+            state.conceptLevel = button.dataset.level;
+            persist();
+            renderApp();
+            return;
+        }
+
+        if (action === "set-active-concept") {
+            state.activeConceptId = button.dataset.concept;
+            persist();
+            renderApp();
+            return;
+        }
+
+        if (action === "set-material") {
+            state.visual.material = button.dataset.material;
+            state.visual.guideField = "material";
+            persist();
+            renderApp();
+            return;
+        }
+
+        if (action === "set-visual-guide") {
+            state.visual.guideField = button.dataset.field || "material";
+            persist();
+            renderApp();
+            return;
+        }
+
+        if (action === "capture-visual-compare") {
+            state.visual.compareSnapshot = extractComparableVisualState(state.visual);
+            persist();
+            renderApp();
+            return;
+        }
+
+        if (action === "clear-visual-compare") {
+            state.visual.compareSnapshot = null;
+            persist();
+            renderApp();
+            return;
+        }
+
+        if (action === "open-concept") {
+            openConcept(button.dataset.concept);
+            return;
+        }
+
+        if (action === "apply-sim-mission") {
+            applySimulationMission(button.dataset.mission);
+            return;
+        }
+
+        if (action === "complete-sim-mission") {
+            completeSimulationMission(button.dataset.mission);
+            return;
+        }
+
+        if (action === "toggle-ui-panel") {
+            toggleUiPanel(button.dataset.panel);
+            return;
+        }
+
+        if (action === "answer-diagnosis") {
+            answerDiagnosis(button.dataset.question, button.dataset.option);
+            return;
+        }
+
+        if (action === "reset-diagnosis") {
+            state.diagnosis = {
+                currentQuestionId: "q1",
+                history: [],
+                complete: false,
+                misconceptions: [],
+                revisit: [],
+                correctCount: 0
+            };
+            persist();
+            renderApp();
+            return;
+        }
+
+        if (action === "submit-ai") {
+            submitAiPrompt(state.ai.input || "");
+            return;
+        }
+
+        if (action === "send-ai-suggestion") {
+            submitAiPrompt(button.dataset.prompt || "");
+            return;
+        }
+
+        if (action === "set-ai-action-panel") {
+            state.ai.actionPanel = button.dataset.panel || "questions";
+            persist();
+            renderApp();
+            return;
+        }
+
+        if (action === "reset-intro-check") {
+            state.introCheck = {};
+            persist();
+            renderApp();
+            return;
+        }
+
+        if (action === "launch-visual-review") {
+            const mission = getRecommendedVisualMission();
+            if (mission) {
+                applySimulationMission(mission.id);
+                return;
+            }
+            visitSection("visual");
+            renderApp();
+            return;
+        }
+
+        if (action === "open-primary-media") {
+            openPrimaryMedia();
+            return;
+        }
+
+        if (action === "open-url") {
+            if (button.dataset.url) {
+                window.open(button.dataset.url, "_blank", "noopener,noreferrer");
+            }
+            return;
+        }
+
+        if (action === "answer-mastery") {
+            answerMastery(button.dataset.question, button.dataset.choice);
+            return;
+        }
+
+        if (action === "clear-api-key") {
+            state.settings.geminiApiKey = "";
+            persist();
+            renderApp();
+            return;
+        }
+
+        if (action === "reset-progress") {
+            if (window.confirm("学習記録を初期化します。AI の対話履歴も消えます。よろしいですか？")) {
+                state = resetState();
+                renderApp();
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+            return;
+        }
+
+        if (action === "force-reset-state") {
+            state = resetState();
+            window.location.reload();
+            return;
+        }
+
+        if (action === "reload-page") {
+            window.location.reload();
+            return;
+        }
+    });
+
+    root.addEventListener("change", (event) => {
+        const target = event.target;
+        if (target.dataset.action === "set-intro-answer") {
+            state.introCheck[target.dataset.question] = Number(target.value);
+            persist();
+            renderApp();
+            return;
+        }
+
+        if (target.dataset.action === "set-visual-slider") {
+            state.visual[target.dataset.field] = Number(target.value);
+            state.visual.guideField = target.dataset.field;
+            persist();
+            return;
+        }
+
+        if (target.dataset.action === "set-visual-field") {
+            state.visual[target.dataset.field] = target.value;
+            state.visual.guideField = target.dataset.field;
+            persist();
+            renderApp();
+        }
+    });
+
+    root.addEventListener("input", (event) => {
+        const target = event.target;
+        if (target.id === "aiPrompt") {
+            state.ai.input = target.value;
+            persist();
+            return;
+        }
+        if (target.dataset.action === "set-visual-slider") {
+            state.visual[target.dataset.field] = Number(target.value);
+            state.visual.guideField = target.dataset.field;
+            refreshVisualLiveState();
+            return;
+        }
+        if (target.id === "apiKeyInput") {
+            state.settings.geminiApiKey = target.value.trim();
+            persist();
+        }
+    });
+
+    visitSection(state.currentSection || "intro");
+    renderApp();
+})();
