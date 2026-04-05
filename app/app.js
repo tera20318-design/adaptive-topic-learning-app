@@ -320,6 +320,13 @@ function renderQuestion() {
   document.getElementById('btn-submit').style.display = 'inline-flex';
   document.getElementById('btn-submit').disabled = true;
   document.getElementById('btn-next').style.display = 'none';
+
+  // モバイルでは前問のスクロール位置が残ると選択肢が見切れやすいので、
+  // 新しい問題を出すたびに必ず先頭へ戻す。
+  const quizContent = document.getElementById('quiz-content');
+  if (quizContent) {
+    quizContent.scrollTop = 0;
+  }
 }
 
 function numLabel(i) {

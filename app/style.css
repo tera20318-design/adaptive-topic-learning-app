@@ -333,7 +333,8 @@ body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
-  padding: 16px;
+  padding: 16px 16px calc(16px + 112px + env(safe-area-inset-bottom, 0px));
+  scroll-padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
 }
 
 .question-card {
@@ -366,6 +367,7 @@ body {
   flex-direction: column;
   gap: 10px;
   padding: 0 16px 16px;
+  margin-bottom: 0;
 }
 
 .choice-btn {
