@@ -37,8 +37,13 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
-html, body {
+html {
   height: 100%;
+}
+
+body {
+  height: 100%;
+  overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP',
     'Yu Gothic', sans-serif;
   background: var(--gray-100);
@@ -51,19 +56,24 @@ html, body {
 #app {
   max-width: 640px;
   margin: 0 auto;
-  min-height: 100%;
+  /* dvh = アドレスバーを除いた実際の高さ、未対応ブラウザは vh にフォールバック */
+  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .screen {
   display: none;
-  flex-direction: column;
-  flex: 1;
 }
 
 .screen.active {
   display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;       /* flexの縮小を許可 */
+  overflow: hidden;    /* 子のスクロールを閉じ込める */
 }
 
 /* ===== ヘッダー ===== */
@@ -250,6 +260,10 @@ html, body {
 
 /* ===== 章一覧 ===== */
 .list-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 16px;
 }
 
@@ -314,8 +328,12 @@ html, body {
 
 /* ===== 問題カード ===== */
 .quiz-content {
+  flex: 1;
+  min-height: 0;          /* flex子要素の縮小を許可 ★重要 */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
   padding: 16px;
-  padding-bottom: 24px;
 }
 
 .question-card {
@@ -459,8 +477,7 @@ html, body {
 
 /* ===== アクションフッター ===== */
 .quiz-footer {
-  position: sticky;
-  bottom: 0;
+  flex-shrink: 0;    /* 縮まない = 常に下部に表示 */
   padding: 10px 16px;
   padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
   background: white;
@@ -468,7 +485,6 @@ html, body {
   display: flex;
   gap: 10px;
   box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
-  z-index: 10;
 }
 
 .quiz-footer .btn {
@@ -527,6 +543,10 @@ html, body {
 
 /* ===== 設定 / 情報 ===== */
 .info-section {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 16px;
 }
 
