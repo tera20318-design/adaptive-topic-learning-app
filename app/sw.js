@@ -2,7 +2,7 @@
  * Service Worker - オフライン対応 & キャッシュ
  */
 
-const CACHE_NAME = 'quiz-app-v1';
+const CACHE_NAME = 'quiz-app-v2';
 const ASSETS = [
   './',
   './index.html',
