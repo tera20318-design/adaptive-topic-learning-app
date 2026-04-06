@@ -6,7 +6,7 @@
     "total_questions": 488,
     "needs_review_count": 486,
     "notes": [
-      "needs_review: true の問題はVision抽出のため手動確認推奨",
+      "現在 108問入力済み / 486問中",
       "answer は 0始まりインデックス (null = 未確認)",
       "PDF01: 第2章章末問題9問、第3章章末問題15問、第4章章末問題3問",
       "PDF02: 第1章例題40問、第2章例題37問（例題=解説付き練習問題）",
@@ -961,7 +961,7 @@
         "④120",
         "⑤180"
       ],
-      "answer": 0,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1375,7 +1375,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1447,7 +1447,7 @@
         "④BDE",
         "⑤CDF"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1734,7 +1734,7 @@
         "③(3)",
         "④(4)"
       ],
-      "answer": null,
+      "answer": 4,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1842,7 +1842,7 @@
         "④140μs",
         "⑤160μs"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1859,7 +1859,7 @@
         "③(3)",
         "④(4)"
       ],
-      "answer": null,
+      "answer": 4,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1877,7 +1877,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 1,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -1949,7 +1949,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -1967,7 +1967,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": 2,
+      "answer": 0,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -1985,7 +1985,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": 0,
+      "answer": 3,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2003,7 +2003,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 3,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2021,7 +2021,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 4,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2039,7 +2039,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 3,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2057,7 +2057,7 @@
         "④A，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 0,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2075,7 +2075,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 1,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2093,7 +2093,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 3,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2111,7 +2111,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 0,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2129,7 +2129,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 3,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2165,7 +2165,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 1,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2183,7 +2183,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2201,7 +2201,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 0,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2219,7 +2219,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 3,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2237,7 +2237,7 @@
         "④A，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 3,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2255,7 +2255,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 0,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2273,7 +2273,7 @@
         "④B，D",
         "⑤A，D"
       ],
-      "answer": null,
+      "answer": 0,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2291,7 +2291,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 4,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2309,7 +2309,7 @@
         "④生殖腺＞汗腺＞脂肪組織",
         "⑤皮膚＞造血組織＞甲状腺"
       ],
-      "answer": null,
+      "answer": 3,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2327,7 +2327,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2345,7 +2345,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 3,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2363,7 +2363,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 4,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2381,7 +2381,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2417,7 +2417,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 1,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2435,7 +2435,7 @@
         "④脱毛→紅班→水疱→潰瘍",
         "⑤脱毛→水疱→潰瘍→水疱"
       ],
-      "answer": null,
+      "answer": 3,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2453,7 +2453,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 4,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2471,7 +2471,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 3,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2489,7 +2489,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 3,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2525,7 +2525,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 1,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2543,7 +2543,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 1,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2561,7 +2561,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 4,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -2579,7 +2579,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 0,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
