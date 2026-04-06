@@ -547,7 +547,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 0,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -565,7 +565,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 4,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -583,7 +583,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -601,7 +601,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 0,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -619,7 +619,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -655,7 +655,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 1,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -673,7 +673,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 4,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -691,7 +691,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 3,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -709,7 +709,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -727,7 +727,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 4,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -763,7 +763,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 4,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -781,7 +781,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 0,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -799,7 +799,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 3,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -817,7 +817,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -835,7 +835,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 3,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -853,7 +853,7 @@
         "④3mm",
         "⑤6mm"
       ],
-      "answer": null,
+      "answer": 3,
       "explanation": "μ = 質量減弱係数 × 密度 = 0.3 × 7.6 = 2.28 cm⁻¹。半価層 = 0.693/μ = 0.693/2.28 ≒ 0.3 cm = 3mm",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -889,7 +889,7 @@
         "④1.6mm",
         "⑤1.8mm"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -907,7 +907,7 @@
         "④0.5",
         "⑤0.25"
       ],
-      "answer": null,
+      "answer": 1,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -925,7 +925,7 @@
         "④12m",
         "⑤15m"
       ],
-      "answer": null,
+      "answer": 3,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -943,7 +943,7 @@
         "④B＞C＞A",
         "⑤C＞A＞B"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -961,7 +961,7 @@
         "④120",
         "⑤180"
       ],
-      "answer": null,
+      "answer": 0,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -979,7 +979,7 @@
         "④120",
         "⑤180"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -997,7 +997,7 @@
         "④B=1+S/D",
         "⑤B=S/(D+S)"
       ],
-      "answer": null,
+      "answer": 3,
       "explanation": "ビルドアップ係数 B = (直接線D + 散乱線S) / 直接線D = 1 + S/D",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1015,7 +1015,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1033,7 +1033,7 @@
         "④B，C",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 0,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1051,7 +1051,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 3,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1069,7 +1069,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 1,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1087,7 +1087,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1105,7 +1105,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 0,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1123,7 +1123,7 @@
         "④K₃₀<K₆₀、K₁₂₀<K₁₅₀",
         "⑤K₃₀<K₆₀、K₁₂₀=K₁₅₀"
       ],
-      "answer": null,
+      "answer": 3,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1141,7 +1141,7 @@
         "④K₃₀<K₆₀、K₁₂₀<K₁₅₀",
         "⑤K₃₀<K₆₀、K₁₂₀=K₁₅₀"
       ],
-      "answer": null,
+      "answer": 1,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1159,7 +1159,7 @@
         "④A，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 1,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1177,7 +1177,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 1,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1195,7 +1195,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 0,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1213,7 +1213,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 1,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1231,7 +1231,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 3,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1249,7 +1249,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1267,7 +1267,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1285,7 +1285,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 4,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1303,7 +1303,7 @@
         "④A：34、B：800、C：36",
         "⑤A：68、B：5×10³、C：10⁴"
       ],
-      "answer": null,
+      "answer": 3,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1321,7 +1321,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 4,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1339,7 +1339,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 1,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1357,7 +1357,7 @@
         "④A：分解時間、B：回復時間、C：不感時間",
         "⑤A：回復時間、B：不感時間、C：分解時間"
       ],
-      "answer": null,
+      "answer": 0,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1393,7 +1393,7 @@
         "④BCA",
         "⑤CAB"
       ],
-      "answer": null,
+      "answer": 1,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1411,7 +1411,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1429,7 +1429,7 @@
         "④ADE",
         "⑤CEF"
       ],
-      "answer": null,
+      "answer": 1,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1465,7 +1465,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1483,7 +1483,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 0,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1501,7 +1501,7 @@
         "④A：電離箱、B：100〜150、C：平均値型",
         "⑤A：電離箱、B：1000〜1500、C：パルス状"
       ],
-      "answer": null,
+      "answer": 1,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1519,7 +1519,7 @@
         "④B，D",
         "⑤C，E"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1537,7 +1537,7 @@
         "④GM/電離箱式/シンチ",
         "⑤シンチ/電離箱式/GM"
       ],
-      "answer": null,
+      "answer": 4,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1555,7 +1555,7 @@
         "④A：GM、B：NaI(Tl)、C：電離箱式",
         "⑤A：NaI(Tl)、B：電離箱式、C：GM"
       ],
-      "answer": null,
+      "answer": 0,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1573,7 +1573,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 0,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1591,7 +1591,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 4,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1609,7 +1609,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 0,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1627,7 +1627,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 3,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1645,7 +1645,7 @@
         "④A：蛍光ガラス線量計、B：フィルムバッジ、C：直流式ポケット",
         "⑤A：フィルムバッジ、B：蛍光ガラス線量計、C：直流式ポケット"
       ],
-      "answer": null,
+      "answer": 4,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1663,7 +1663,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 0,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1681,7 +1681,7 @@
         "④BとD",
         "⑤CとD"
       ],
-      "answer": null,
+      "answer": 4,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1699,7 +1699,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1717,7 +1717,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 3,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1752,7 +1752,7 @@
         "④540μSv/h",
         "⑤5400μSv/h"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "フルスケール5μSv/h、目盛り55/100。5×(55/100)=2.75μSv/h。最も近いのは②5.4μSv/h。",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1770,7 +1770,7 @@
         "④A：50、B：校正定数、C：36",
         "⑤A：50、B：計数率、C：44"
       ],
-      "answer": null,
+      "answer": 1,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1788,7 +1788,7 @@
         "④550 cps",
         "⑤575 cps"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "真の計数率 n = m/(1-m×τ) = 500/(1-500×10⁻⁴) = 500/0.95 ≒ 526 cps",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1806,7 +1806,7 @@
         "④90±3 cpm",
         "⑤90±30 cpm"
       ],
-      "answer": null,
+      "answer": 0,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1824,7 +1824,7 @@
         "④A：小さく、B：小さく、C：早く",
         "⑤A：小さく、B：大きく、C：早く"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_08_32 AM からスキャン.pdf",
@@ -1895,7 +1895,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 1,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -1913,7 +1913,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 1,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -1931,7 +1931,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 1,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -1967,7 +1967,7 @@
         "④(4)",
         "⑤(5)"
       ],
-      "answer": null,
+      "answer": 2,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
@@ -1985,7 +1985,7 @@
         "④B，D",
         "⑤C，D"
       ],
-      "answer": null,
+      "answer": 0,
       "explanation": "",
       "needs_review": true,
       "source_pdf": "2026-04-03 12_10_48 AM からスキャン.pdf",
