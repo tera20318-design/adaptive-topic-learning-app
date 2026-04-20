@@ -1,0 +1,6 @@
+packet_index	source_id	title	disposition	stale	partial	malformed	dedupe_key	dedupe_collision_with	quality_flags	issue_codes	issue_messages
+0	HISTPOS-LAW-001	Checked rights notice	accepted	false	false	false	histpos-law-001				
+1	HISTPOS-REG-002	Checked archive access rule	accepted	false	false	false	histpos-reg-002				
+2	HISTPOS-ACA-003	Checked cultural history review	accepted	false	false	false	histpos-aca-003				
+3	HISTPOS-PRO-004	Checked interpretation note	accepted	false	false	false	histpos-pro-004				
+4	HISTPOS-GOV-005	Checked catalog update	accepted	false	false	false	histpos-gov-005				

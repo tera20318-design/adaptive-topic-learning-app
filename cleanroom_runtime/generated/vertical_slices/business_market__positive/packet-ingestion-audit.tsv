@@ -1,0 +1,6 @@
+packet_index	source_id	title	disposition	stale	partial	malformed	dedupe_key	dedupe_collision_with	quality_flags	issue_codes	issue_messages
+0	BIZPOS-GOV-001	Checked spending dashboard excerpt	accepted	false	false	false	bizpos-gov-001				
+1	BIZPOS-REG-002	Checked filing excerpt	accepted	false	false	false	bizpos-reg-002				
+2	BIZPOS-ACA-003	Checked segment review	accepted	false	false	false	bizpos-aca-003				
+3	BIZPOS-IND-004	Checked association pulse	accepted	false	false	false	bizpos-ind-004				
+4	BIZPOS-PRO-005	Checked decision note	accepted	false	false	false	bizpos-pro-005				

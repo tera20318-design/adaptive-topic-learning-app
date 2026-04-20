@@ -1,0 +1,5 @@
+reason_id	claim_id	stage	severity	blocks_release	message	required_fix
+gate-issue-001	claim-001	audit	high	true	Audit-only but still blocks release: unresolved high-risk claim (`out_of_scope`).	Use jurisdiction-matched evidence or remove the claim.
+gate-issue-002	claim-001	source_strategy	high	true	Required source roles were not satisfied for a high-risk claim.	Use jurisdiction-matched evidence or remove the claim.
+gate-issue-003	claim-001	absence_guard	high	true	claim-001 extrapolates beyond the checked user excerpt without external grounding.	Keep the statement tied to the checked excerpt text or add external role-matched support.
+gate-issue-004	claim-001	absence_guard	high	true	claim-001 evidence is tied to ca, not US.	Use jurisdiction-matched evidence or remove the claim.

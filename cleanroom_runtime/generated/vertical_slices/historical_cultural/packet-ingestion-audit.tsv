@@ -1,0 +1,6 @@
+packet_index	source_id	title	disposition	stale	partial	malformed	dedupe_key	dedupe_collision_with	quality_flags	issue_codes	issue_messages
+0	HIST-ARCH-001	National archive catalog update	accepted	false	false	false					
+1	HIST-LAW-002	Archive reuse rights notice	accepted	false	false	false					
+2	HIST-ACA-003	2019 cultural history review	accepted	false	false	false			This review predates the archive catalog update and should not overwrite the newer caption corrections.		
+3	HIST-USER-004	Uploaded exhibit label draft	accepted	false	false	false			The uploaded exhibit label draft blends oral history shorthand and archive captions, creating document grounding ambiguity.		
+4	HIST-PRO-005	Museum interpretation note	accepted	false	false	false					

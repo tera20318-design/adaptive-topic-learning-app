@@ -1,0 +1,4 @@
+reason_id	claim_id	stage	severity	blocks_release	message	required_fix
+gate-issue-001	claim-002	contradiction_guard	high	true	The checked FDA communication says the agency has not cleared a universal safety claim for this combination.	Resolve the contradiction or exclude the claim from the reader-facing report.
+gate-issue-002	claim-002	audit	high	true	Audit-only but still blocks release: unresolved high-risk claim (`contradicted`).	Remove the universal safety wording or replace it with role-matched medical evidence.
+gate-issue-003	claim-002	source_strategy	high	true	Required source roles were not satisfied for a high-risk claim.	Remove the universal safety wording or replace it with role-matched medical evidence.

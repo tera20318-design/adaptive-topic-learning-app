@@ -1,0 +1,6 @@
+packet_index	source_id	title	disposition	stale	partial	malformed	dedupe_key	dedupe_collision_with	quality_flags	issue_codes	issue_messages
+0	LAW-TXT-001	California notice rule text excerpt	accepted	false	false	false	notice-rule-text				
+1	LAW-TRD-002	2024 repeal roundup	accepted	true	false	false	repeal-roundup-article		This article predates the 2026 statutory refresh and overstates a proposed rollback as a repeal.		
+2	LAW-REG-003	Official FAQ on covered workflows	accepted	false	false	false	official-faq-covered-workflows				
+3	LAW-USER-004	Recruiter slide deck	accepted	false	false	false			The uploaded slide deck blends proposed amendments with current law, creating document grounding ambiguity.		
+4	LAW-ASSN-005	Employment compliance practice note	accepted	false	false	false					

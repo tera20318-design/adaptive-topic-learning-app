@@ -1,0 +1,6 @@
+packet_index	source_id	title	disposition	stale	partial	malformed	dedupe_key	dedupe_collision_with	quality_flags	issue_codes	issue_messages
+0	FIN-REG-001	SEC investor alert excerpt	accepted	false	false	false					
+1	FIN-VEN-002	Vendor launch memo	accepted	false	false	false			Sales memo uses guarantee language without claim-kind-matched support.		
+2	FIN-GOV-003	Agency explainer on promotional cash yields	accepted	false	false	false					
+3	FIN-SEC-004	Promotional roundup article	accepted	false	false	false			Headline extrapolates a short promotional rate into a permanent yield claim. | The roundup predates the latest fee disclosures and current promotional terms.		
+4	FIN-ACA-005	Independent review of sweep fee structures	accepted	false	false	false			Fee assumptions are older than the current promotional campaign and should be reconciled before reuse.		

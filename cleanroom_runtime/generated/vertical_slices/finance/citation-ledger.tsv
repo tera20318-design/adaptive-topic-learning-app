@@ -1,0 +1,6 @@
+citation_id	claim_id	report_section	report_span_id	claim_span_start	claim_span_end	source_id	source_role	source_title	source_finding_ids	source_excerpt	source_span_label	source_span_start	source_span_end	source_span_labels	source_span_starts	source_span_ends	grounding_marker	grounding_scope_note	trace_status	provenance_complete	support_status	included_in_report
+citation-001	claim-001	Direct answer	unit-001	0	131	FIN-REG-001	official_regulator	SEC investor alert excerpt	fin-finding-001										linked	true	supported	true
+citation-002	claim-002	Direct answer	unit-002	0	82	FIN-VEN-002	vendor_first_party	Vendor launch memo	fin-finding-003										audit_only	true	weak	false
+citation-003	claim-003	Decision-relevant analysis	unit-010	0	124	FIN-GOV-003	government_context	Agency explainer on promotional cash yields	fin-finding-004										linked	true	supported	true
+citation-004	claim-004	Decision-relevant analysis	unit-011	0	123	FIN-ACA-005	academic_review	Independent review of sweep fee structures	fin-finding-005										linked	true	supported	true
+citation-005	claim-005	Limitations and uncertainty	unit-029	0	176	FIN-REG-001	official_regulator	SEC investor alert excerpt	fin-finding-002										linked	true	scoped_absence	true

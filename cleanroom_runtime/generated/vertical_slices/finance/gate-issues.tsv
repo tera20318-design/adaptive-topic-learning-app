@@ -1,0 +1,3 @@
+reason_id	claim_id	stage	severity	blocks_release	message	required_fix
+gate-issue-001	claim-002	audit	high	true	Audit-only but still blocks release: unresolved high-risk claim (`weak`).	Remove the guarantee language or replace it with role-matched financial evidence.
+gate-issue-002	claim-002	source_strategy	high	true	Required source roles were not satisfied for a high-risk claim.	Remove the guarantee language or replace it with role-matched financial evidence.

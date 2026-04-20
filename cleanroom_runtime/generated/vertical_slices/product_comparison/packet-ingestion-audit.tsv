@@ -1,0 +1,6 @@
+packet_index	source_id	title	disposition	stale	partial	malformed	dedupe_key	dedupe_collision_with	quality_flags	issue_codes	issue_messages
+0	PROD-GOV-001	Public-sector procurement comparison note	accepted	false	false	false					
+1	PROD-PRO-002	Records management practice note	accepted	false	false	false					
+2	PROD-REG-003	Regulator guidance and vendor compliance pages	accepted	false	false	false					
+3	PROD-TRD-004	Sponsored roundup	accepted	false	false	false			Roundup compares only two sponsored demos and overstates category leadership. | The roundup reuses 2025 screenshots for a 2026 buying decision.		
+4	PROD-USER-005	Uploaded evaluation matrix	accepted	false	false	false			The uploaded matrix conflates planned integrations with shipped controls, creating document grounding ambiguity. | The matrix mixes 2025 vendor answers with 2026 screenshots.		

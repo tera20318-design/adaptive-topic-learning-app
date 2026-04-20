@@ -1,0 +1,34 @@
+column_name	required	type	traceability_role	description	current_surface
+claim_id	yes	string	stable_claim_id	Stable claim key for audit and gate issues.	tsv_and_bundle
+unit_id	yes	string	prose_unit_link	Originating report unit identifier.	tsv_and_bundle
+report_section	yes	string	reader_section	Reader-facing section title where the claim appears or is audited.	tsv_and_bundle
+report_section_key	yes	string	stable_section_key	Stable section key used for planner and draft alignment.	tsv_and_bundle
+report_span_id	yes	string	prose_to_claim_link	Identifier used to connect final prose back to this claim.	tsv_and_bundle
+report_line_start	no	integer	prose_span_hint	Optional first rendered line for the claim span.	tsv_and_bundle
+report_line_end	no	integer	prose_span_hint	Optional last rendered line for the claim span.	tsv_and_bundle
+claim_span_start	no	integer	exact_claim_offset	Optional start offset for the exact claim span within the final prose unit.	tsv_and_bundle
+claim_span_end	no	integer	exact_claim_offset	Optional end offset for the exact claim span within the final prose unit.	tsv_and_bundle
+exact_text_span	yes	string	exact_claim_span	Exact text captured from the claim-bearing prose unit.	tsv_and_bundle
+normalized_claim	yes	string	normalized_claim_key	Normalized form of `exact_text_span` used for dedupe and contract checks.	tsv_and_bundle
+claim_kind	yes	enum	claim_semantics	Claim-kind used for source-role requirements and release gating.	tsv_and_bundle
+risk_level	yes	enum	risk_semantics	Risk tier for the claim itself.	tsv_and_bundle
+support_status	yes	enum	support_state	Evaluated support state after evidence mapping and guard stages.	tsv_and_bundle
+included_in_report	yes	boolean	reader_visibility	Whether the claim remains in mainline reader-facing prose.	tsv_and_bundle
+audit_display_state	yes	enum	audit_visibility	Distinguishes report-and-audit from audit-only claims.	tsv_and_bundle
+source_ids	yes	string[]	claim_to_source_link	Source identifiers cited for this claim.	tsv_and_bundle
+source_roles	yes	string[]	claim_to_source_role_link	Observed source roles attached to the cited sources.	tsv_and_bundle
+required_source_roles	yes	string[]	source_role_contract	Required source roles for this claim kind and risk profile.	tsv_and_bundle
+matched_source_roles	yes	string[]	source_role_match	Subset of required roles that the cited evidence actually satisfies.	tsv_and_bundle
+origin_finding_ids	no	string[]	claim_to_finding_link	Original finding identifiers that fed the claim.	tsv_and_bundle
+finding_span_labels	no	string[]	finding_span_link	Human-readable labels for grounded source spans feeding the claim.	tsv_and_bundle
+finding_span_starts	no	integer[]	finding_span_offset	Start offsets for grounded source spans feeding the claim.	tsv_and_bundle
+finding_span_ends	no	integer[]	finding_span_offset	End offsets for grounded source spans feeding the claim.	tsv_and_bundle
+grounding_marker	no	string	grounding_marker	Inspectable marker showing whether the claim is grounded to a direct document span or multispan block.	tsv_and_bundle
+grounding_scope_note	no	string	grounding_scope_limit	Scope-limiting note carried from grounded findings into the claim ledger.	tsv_and_bundle
+trace_status	yes	enum	trace_integrity	Trace state for prose-to-claim lineage such as `linked`, `mismatch`, or `audit_only`.	tsv_and_bundle
+evidence_count	yes	integer	evidence_count_hint	Count of cited evidence items supporting the claim record.	bundle_required_tsv_pending
+required_fix	no	string	revision_hint	Concrete action needed to fix blocked or weak support.	tsv_and_bundle
+blocking_reasons	no	string[]	blocking_context	Inspectable reasons that keep a claim from release.	tsv_and_bundle
+exclusion_reasons	no	string[]	exclusion_context	Inspectable reasons a claim stays out of mainline prose.	tsv_and_bundle
+absence_type	no	enum	absence_semantics	Typed absence basis when the claim is an absence claim.	bundle_required_tsv_pending
+jurisdiction	no	string	scope_hint	Optional jurisdiction carried with the claim.	bundle_required_tsv_pending

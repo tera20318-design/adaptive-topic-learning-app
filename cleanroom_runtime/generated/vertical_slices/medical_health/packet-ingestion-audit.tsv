@@ -1,0 +1,6 @@
+packet_index	source_id	title	disposition	stale	partial	malformed	dedupe_key	dedupe_collision_with	quality_flags	issue_codes	issue_messages
+0	MED-REG-001	Checked FDA communication and labeling packet	accepted	false	false	false			Checked scope is a single regulator packet, not a full literature review.		
+1	MED-TRD-002	Lifestyle health headline	accepted	false	false	false			Headline overgeneralizes from a small clinician interview sample.		
+2	MED-PRO-003	Professional society pharmacy note	accepted	false	false	false					
+3	MED-ACA-004	Rapid review on supplement interactions	accepted	false	false	false					
+4	MED-ACA-005	2024 pilot study on supplement timing	accepted	false	false	false			The pilot covers twelve patients and predates the later FDA communication.		

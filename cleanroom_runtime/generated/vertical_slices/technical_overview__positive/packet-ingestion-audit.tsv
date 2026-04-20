@@ -1,0 +1,6 @@
+packet_index	source_id	title	disposition	stale	partial	malformed	dedupe_key	dedupe_collision_with	quality_flags	issue_codes	issue_messages
+0	TECHPOS-REG-001	Checked oversight notice	accepted	false	false	false	techpos-reg-001				
+1	TECHPOS-LAW-002	Checked service rule excerpt	accepted	false	false	false	techpos-law-002				
+2	TECHPOS-STD-003	Checked interoperability profile	accepted	false	false	false	techpos-std-003				
+3	TECHPOS-PRO-004	Checked operator implementation note	accepted	false	false	false	techpos-pro-004				
+4	TECHPOS-GOV-005	Checked deployment checklist	accepted	false	false	false	techpos-gov-005				

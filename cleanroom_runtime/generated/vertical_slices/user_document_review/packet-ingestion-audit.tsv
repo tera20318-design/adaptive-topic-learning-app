@@ -1,0 +1,6 @@
+packet_index	source_id	title	disposition	stale	partial	malformed	dedupe_key	dedupe_collision_with	quality_flags	issue_codes	issue_messages
+0	DOC-USER-001	Uploaded fertility travel reimbursement draft	accepted	false	false	false	uploaded-benefits-memo		Draft memo reflects a California pilot and is not itself legal authority.		
+1	DOC-LEG-002	Checked statutory text and benefits guidance excerpts	accepted	false	false	false	benefits-legal-packet				
+2	DOC-PRO-003	Benefits administration practice note	accepted	false	false	false					
+3	DOC-SEC-004	Benefits trend article	accepted	false	false	false	benefits-trend-article		Article generalizes from a single employer pilot and should not be treated as legal authority.		
+4	DOC-GOV-005	Benefits administration FAQ	accepted	false	false	false			The FAQ discusses policy administration rather than binding legal entitlement.		

@@ -1,0 +1,5 @@
+citation_id	claim_id	report_section	report_span_id	claim_span_start	claim_span_end	source_id	source_role	source_title	source_finding_ids	source_excerpt	source_span_label	source_span_start	source_span_end	source_span_labels	source_span_starts	source_span_ends	grounding_marker	grounding_scope_note	trace_status	provenance_complete	support_status	included_in_report
+citation-001	claim-001	Direct answer	unit-001	0	128	HIST-ARCH-001	government_context	National archive catalog update	hist-finding-001										linked	true	supported	true
+citation-002	claim-002	Direct answer	unit-002	0	136	HIST-LAW-002	legal_text	Archive reuse rights notice	hist-finding-002										linked	true	supported	true
+citation-003	claim-003	Decision-relevant analysis	unit-010	0	147	HIST-ACA-003	academic_review	2019 cultural history review	hist-finding-004										linked	true	supported	true
+citation-004	claim-004	Limitations and uncertainty	unit-027	0	196	HIST-LAW-002	legal_text	Archive reuse rights notice	hist-finding-003										linked	true	scoped_absence	true

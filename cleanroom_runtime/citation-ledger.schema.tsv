@@ -1,0 +1,24 @@
+column_name	required	type	traceability_role	description	current_surface
+citation_id	yes	string	stable_citation_id	Stable citation key for audit and rendering.	tsv_and_bundle
+claim_id	yes	string	citation_to_claim_link	Claim identifier that this citation supports or audits.	tsv_and_bundle
+report_section	yes	string	reader_section	Reader-facing section associated with the citation.	tsv_and_bundle
+report_span_id	yes	string	prose_to_citation_link	Rendered prose span identifier linked to the cited claim span.	tsv_and_bundle
+claim_span_start	no	integer	prose_claim_offset	Start offset for the linked claim span in final prose.	tsv_and_bundle
+claim_span_end	no	integer	prose_claim_offset	End offset for the linked claim span in final prose.	tsv_and_bundle
+source_id	yes	string	citation_to_source_link	Source packet identifier used for the citation.	tsv_and_bundle
+source_role	yes	enum	source_role_trace	Source role attributed to the cited packet.	tsv_and_bundle
+source_title	yes	string	reader_source_label	Reader-facing source title.	tsv_and_bundle
+support_status	yes	enum	support_state	Citation-level support state inherited from the mapped claim.	tsv_and_bundle
+included_in_report	yes	boolean	reader_visibility	Whether the citation belongs to included prose or audit-only material.	tsv_and_bundle
+source_finding_ids	no	string[]	citation_to_finding_link	Finding identifiers that provide citation lineage.	tsv_and_bundle
+source_excerpt	no	string	source_text_span	Checked excerpt that grounds the citation when available.	tsv_and_bundle
+source_span_label	no	string	source_span_label	Human-readable source span label such as a line marker.	tsv_and_bundle
+source_span_start	no	integer	source_span_offset	Optional start offset for the grounded source span.	tsv_and_bundle
+source_span_end	no	integer	source_span_offset	Optional end offset for the grounded source span.	tsv_and_bundle
+source_span_labels	no	string[]	source_multispan_label	Ordered labels for grounded source multispan linkage.	tsv_and_bundle
+source_span_starts	no	integer[]	source_multispan_offset	Ordered start offsets for grounded source multispan linkage.	tsv_and_bundle
+source_span_ends	no	integer[]	source_multispan_offset	Ordered end offsets for grounded source multispan linkage.	tsv_and_bundle
+grounding_marker	no	string	grounding_marker	Inspectable marker showing whether the citation points to a direct document span or multispan block.	tsv_and_bundle
+grounding_scope_note	no	string	grounding_scope_limit	Scope-limiting note carried from the grounded finding into citation lineage.	tsv_and_bundle
+trace_status	yes	enum	trace_integrity	Trace state for claim-to-citation lineage such as `linked` or `mismatch`.	tsv_and_bundle
+provenance_complete	yes	boolean	provenance_gate_hint	Whether provenance is complete enough for the citation to support release.	tsv_and_bundle

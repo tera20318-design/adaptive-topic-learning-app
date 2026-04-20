@@ -1,0 +1,11 @@
+reason_id	claim_id	stage	severity	blocks_release	message	required_fix
+gate-issue-001		validator	high	true	[evidence_ingestion:SCHEMA_VALIDATION_FAILED] finding tech-finding-001 references unknown source_ids: TECH-MISSING-999	Fix the contract violation.
+gate-issue-002		validator	high	true	[evidence_ingestion:EVIDENCE_FINDING_SOURCE_LINEAGE] evidence findings must only reference ingested source IDs.	Fix the contract violation.
+gate-issue-003		validator	high	true	[evidence_mapper:SCHEMA_VALIDATION_FAILED] citation citation-002 references unknown source_id 'TECH-MISSING-999'	Fix the contract violation.
+gate-issue-004		validator	high	true	citation `citation-002` points to unknown source `TECH-MISSING-999`	Fix the contract violation.
+gate-issue-005		audit	high	true	Citation traceability is incomplete.	Ensure cited sources exist in the evidence inventory.
+gate-issue-006		audit	high	true	Traceability is incomplete between reader-facing prose, claim rows, and citations.	Repair report span links, claim lineage, and citation/source finding links before release.
+gate-issue-007		evidence_ingestion	high	true	One or more high-risk claims rely on sources with incomplete provenance or ambiguous role inference.	Repair source provenance or remove the affected high-risk claim from release.
+gate-issue-008		audit	high	true	Metadata inconsistency coexists with unresolved high-risk claims.	Repair metadata consistency before treating any remaining high-risk claim as releasable.
+gate-issue-009	claim-001	audit	high	true	Audit-only but still blocks release: unresolved high-risk claim (`missing`).	Replace the blanket readiness claim with source-matched technical and regulatory evidence.
+gate-issue-010	claim-001	source_strategy	high	true	Required source roles were not satisfied for a high-risk claim.	Replace the blanket readiness claim with source-matched technical and regulatory evidence.

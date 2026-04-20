@@ -1,0 +1,6 @@
+packet_index	source_id	title	disposition	stale	partial	malformed	dedupe_key	dedupe_collision_with	quality_flags	issue_codes	issue_messages
+0	BIZ-GOV-001	Commerce software spending dashboard excerpt	accepted	false	false	false	commerce-dashboard-midmarket		The dashboard covers the checked segment, not the whole software market.		
+1	BIZ-IND-002	Industry association demand pulse	accepted	false	false	false					
+2	BIZ-REG-003	Checked filings and guidance excerpts	accepted	false	false	false					
+3	BIZ-SEC-004	Headline-driven market wrap	salvaged	false	true	false	headline-market-wrap		Headline extrapolates commentary from a few public vendors to the whole market. | The roundup was assembled before the most recent commerce dashboard refresh.		
+4	BIZ-ACA-005	2024 regional rollout review	accepted	true	false	false	regional-rollout-review		This review predates the 2026 rebound and should not be treated as a current market-share verdict.		

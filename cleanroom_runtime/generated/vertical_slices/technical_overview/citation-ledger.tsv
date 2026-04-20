@@ -1,0 +1,7 @@
+citation_id	claim_id	report_section	report_span_id	claim_span_start	claim_span_end	source_id	source_role	source_title	source_finding_ids	source_excerpt	source_span_label	source_span_start	source_span_end	source_span_labels	source_span_starts	source_span_ends	grounding_marker	grounding_scope_note	trace_status	provenance_complete	support_status	included_in_report
+citation-001	claim-001	Direct answer	unit-001	0	93	TECH-VEN-001	vendor_first_party	2024 rollout architecture brief	tech-finding-001										audit_only	false	missing	false
+citation-002	claim-001	Direct answer	unit-001	0	93	TECH-MISSING-999	unknown	TECH-MISSING-999	tech-finding-001										audit_only	false	missing	false
+citation-003	claim-002	Direct answer	unit-002	0	111	TECH-GOV-002	government_context	Agency migration note	tech-finding-002										linked	true	supported	true
+citation-004	claim-003	Decision-relevant analysis	unit-010	0	98	TECH-STD-003	standards_body	Grounding profile excerpt	tech-finding-003										linked	true	supported	true
+citation-005	claim-004	Limitations and uncertainty	unit-027	0	145	TECH-USER-004	user_provided_source	Uploaded architecture sketch	tech-finding-004										mismatch	false	weak	true
+citation-006	claim-005	Limitations and uncertainty	unit-028	0	225	TECH-REG-005	official_regulator	Checked compliance packet	tech-finding-005										linked	true	scoped_absence	true

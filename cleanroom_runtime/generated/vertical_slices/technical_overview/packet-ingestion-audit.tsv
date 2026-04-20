@@ -1,0 +1,7 @@
+packet_index	source_id	title	disposition	stale	partial	malformed	dedupe_key	dedupe_collision_with	quality_flags	issue_codes	issue_messages
+0	TECH-VEN-001	2024 rollout architecture brief	accepted	true	false	false	tech-vendor-brief		This 2024 architecture brief predates the current grounding pipeline and lists draft controls as shipped. | The appendix references a source identifier that is not part of the checked packet metadata.		
+1	TECH-GOV-002	Agency migration note	accepted	false	false	false	tech-migration-note-2026				
+2	TECH-GOV-002-MIRROR	Agency migration note mirror	accepted	false	false	false	tech-migration-note-2026	TECH-GOV-002	Mirror URL repeats the same note under a different locator.		
+3	TECH-STD-003	Grounding profile excerpt	accepted	false	false	false					
+4	TECH-USER-004	Uploaded architecture sketch	accepted	false	false	false	tech-user-sketch		The uploaded sketch merges draft and shipped components without version labels, creating document grounding ambiguity.		
+5	TECH-REG-005	Checked compliance packet	accepted	false	false	false					

@@ -1,0 +1,2 @@
+reason_id	claim_id	stage	severity	blocks_release	message	required_fix
+gate-issue-001		audit	high	true	Citation traceability is incomplete.	Ensure cited sources exist in the evidence inventory.

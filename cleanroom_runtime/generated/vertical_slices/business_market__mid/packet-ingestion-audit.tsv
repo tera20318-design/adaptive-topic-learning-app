@@ -1,0 +1,6 @@
+packet_index	source_id	title	disposition	stale	partial	malformed	dedupe_key	dedupe_collision_with	quality_flags	issue_codes	issue_messages
+0	BIZMID-GOV-001	Checked spending dashboard excerpt	accepted	false	false	false	bizmid-gov-001				
+1	BIZMID-IND-002	Checked association pulse	accepted	false	false	false	bizmid-ind-002				
+2	BIZMID-REG-003	Checked filing excerpt	accepted	false	false	false	bizmid-reg-003				
+3	BIZMID-SEC-004	Headline-driven market wrap	salvaged	false	true	false	bizmid-sec-004		Headline extrapolates commentary from a few vendors to the whole market.		
+4	BIZMID-ACA-005	Older rollout review	accepted	true	false	false	bizmid-aca-005		This review predates the 2026 rebound and should not be treated as a current market-share verdict.		

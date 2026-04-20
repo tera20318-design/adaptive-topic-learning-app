@@ -1,0 +1,4 @@
+reason_id	claim_id	stage	severity	blocks_release	message	required_fix
+gate-issue-001	claim-002	contradiction_guard	high	true	The 2026 statutory text and the official FAQ still show the rule in force for covered workflows.	Resolve the contradiction or exclude the claim from the reader-facing report.
+gate-issue-002	claim-002	audit	high	true	Audit-only but still blocks release: unresolved high-risk claim (`contradicted`).	Remove the repeal claim or replace it with current authoritative legal text.
+gate-issue-003	claim-002	source_strategy	high	true	Required source roles were not satisfied for a high-risk claim.	Remove the repeal claim or replace it with current authoritative legal text.
