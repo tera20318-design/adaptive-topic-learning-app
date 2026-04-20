@@ -703,6 +703,17 @@ body {
   font-weight: 600;
 }
 
+.source-page-link {
+  font-size: 0.7rem;
+  color: var(--primary);
+  text-decoration: none;
+  padding: 2px 0;
+}
+
+.source-page-link:hover {
+  text-decoration: underline;
+}
+
 /* ===== モード選択 ===== */
 .mode-grid {
   padding: 16px;

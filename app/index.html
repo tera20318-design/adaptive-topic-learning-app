@@ -29,7 +29,7 @@
 
     <div style="flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;">
     <div class="home-hero">
-      <h1>学習問題集</h1>
+      <h1 id="app-hero-title">学習問題集</h1>
       <p class="header-sub" id="app-updated-at">最終更新: -</p>
       <p>問題を解いて理解を深めましょう</p>
     </div>
@@ -223,6 +223,8 @@
       <div class="question-card">
         <div class="question-meta">
           <span id="review-badge" class="needs-review-badge" style="display:none">要確認</span>
+          <a id="source-page-link" class="source-page-link" href="#" target="_blank" rel="noopener" style="display:none">原本ページ</a>
+          <a id="answer-source-link" class="source-page-link" href="#" target="_blank" rel="noopener" style="display:none">解答参照</a>
         </div>
         <div class="question-text" id="question-text"></div>
       </div>

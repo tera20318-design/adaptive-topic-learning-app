@@ -8,8 +8,27 @@
 'use strict';
 
 // ===== 定数 =====
-const STORAGE_KEY = 'quiz_app_v1';
-const APP_UPDATED_AT = '2026/04/05';
+const DEFAULT_DATA_FILE = 'questions.json';
+const DEFAULT_APP_TITLE = '学習問題集';
+const DEFAULT_UPDATED_AT = '2026/04/05';
+
+function sanitizeDataFile(value) {
+  if (!value) return DEFAULT_DATA_FILE;
+  const trimmed = value.trim();
+  return /^[A-Za-z0-9._-]+$/.test(trimmed) ? trimmed : DEFAULT_DATA_FILE;
+}
+
+function getRuntimeConfig() {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    dataFile: sanitizeDataFile(params.get('data')),
+    title: (params.get('title') || '').trim(),
+    updatedAt: (params.get('updated_at') || params.get('updatedAt') || '').trim(),
+  };
+}
+
+const runtimeConfig = getRuntimeConfig();
+const STORAGE_KEY = `quiz_app_v1:${runtimeConfig.dataFile}`;
 let viewportHeightRaf = 0;
 
 // ===== 状態管理 =====
@@ -64,12 +83,12 @@ async function loadData() {
   // questions.json を fetch で取得
   // ローカルファイルで開いた場合は fetch が失敗するので組み込みデモデータにフォールバック
   try {
-    const res = await fetch('questions.json');
+    const res = await fetch(runtimeConfig.dataFile);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
     return json;
   } catch (e) {
-    console.warn('questions.json を読み込めませんでした。デモデータを使います:', e.message);
+    console.warn(`${runtimeConfig.dataFile} を読み込めませんでした。デモデータを使います:`, e.message);
     return getBuiltinDemoData();
   }
 }
@@ -174,6 +193,30 @@ function getStats() {
   };
 }
 
+function getResolvedTitle() {
+  return runtimeConfig.title || state.data?.meta?.title || DEFAULT_APP_TITLE;
+}
+
+function getResolvedUpdatedAt() {
+  return (
+    runtimeConfig.updatedAt ||
+    state.data?.meta?.updatedAt ||
+    state.data?.meta?.updated_at ||
+    DEFAULT_UPDATED_AT
+  );
+}
+
+function applyAppChrome() {
+  const title = getResolvedTitle();
+  document.title = title;
+
+  const headerTitle = document.getElementById('app-title');
+  if (headerTitle) headerTitle.textContent = title;
+
+  const heroTitle = document.getElementById('app-hero-title');
+  if (heroTitle) heroTitle.textContent = title;
+}
+
 // ===== 画面切り替え =====
 function showScreen(name) {
   state.screen = name;
@@ -197,7 +240,7 @@ function renderHome() {
   document.getElementById('stat-correct').textContent = stats.correct;
   const updatedAt = document.getElementById('app-updated-at');
   if (updatedAt) {
-    updatedAt.textContent = `\u6700\u7d42\u66f4\u65b0: ${APP_UPDATED_AT}`;
+    updatedAt.textContent = `\u6700\u7d42\u66f4\u65b0: ${getResolvedUpdatedAt()}`;
   }
   document.getElementById('home-progress-fill').style.width = pct + '%';
   document.getElementById('home-progress-label').textContent =
@@ -308,6 +351,28 @@ function renderQuestion() {
     badge.style.display = 'none';
   }
 
+  const sourceLink = document.getElementById('source-page-link');
+  if (sourceLink && q.source_image) {
+    sourceLink.href = q.source_image;
+    sourceLink.textContent = q.source_page ? `原本ページ p.${q.source_page}` : '原本ページ';
+    sourceLink.style.display = 'inline';
+  } else if (sourceLink) {
+    sourceLink.removeAttribute('href');
+    sourceLink.style.display = 'none';
+  }
+
+  const answerSourceLink = document.getElementById('answer-source-link');
+  if (answerSourceLink && q.answer_source_image) {
+    answerSourceLink.href = q.answer_source_image;
+    answerSourceLink.textContent = q.answer_source_page
+      ? `解答参照 p.${q.answer_source_page}`
+      : '解答参照';
+    answerSourceLink.style.display = 'inline';
+  } else if (answerSourceLink) {
+    answerSourceLink.removeAttribute('href');
+    answerSourceLink.style.display = 'none';
+  }
+
   // 選択肢
   const choicesEl = document.getElementById('choices-list');
   choicesEl.innerHTML = '';
@@ -402,7 +467,7 @@ function submitAnswer() {
     // 答え未設定
     labelText = '回答済み (正解未設定)';
     document.getElementById('correct-answer-text').textContent =
-      '※ この問題の正解はまだ設定されていません (questions.json を編集してください)';
+      `※ この問題の正解はまだ設定されていません (${runtimeConfig.dataFile} を更新してください)`;
     document.getElementById('correct-answer-text').style.display = 'block';
   }
 
@@ -487,7 +552,7 @@ function renderInfo() {
   const m = state.data.meta || {};
   const stats = getStats();
 
-  document.getElementById('info-title').textContent = m.title || '不明';
+  document.getElementById('info-title').textContent = getResolvedTitle();
   document.getElementById('info-version').textContent = m.version || '-';
   document.getElementById('info-total').textContent = stats.total;
   document.getElementById('info-done').textContent = stats.done;
@@ -627,13 +692,9 @@ async function init() {
   document.getElementById('loading').style.display = 'none';
 
   bindEvents();
+  applyAppChrome();
   renderHome();
   showScreen('home');
-
-  // タイトル設定
-  const title = state.data?.meta?.title || '学習問題集';
-  document.title = title;
-  document.getElementById('app-title').textContent = title;
 }
 
 document.addEventListener('DOMContentLoaded', init);

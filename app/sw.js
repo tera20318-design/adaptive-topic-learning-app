@@ -3,12 +3,14 @@
  * Latest pages are preferred so mobile devices do not get stuck on old UI.
  */
 
-const CACHE_NAME = 'quiz-app-v3';
+const CACHE_NAME = 'quiz-app-v5';
 const ASSETS = [
   './',
+  './first-pdf.html',
   './index.html',
   './style.css',
   './app.js',
+  './questions-first-pdf.json',
   './questions.json',
 ];
 
