@@ -1,0 +1,9 @@
+citation_id	claim_id	report_section	source_id	source_role	source_title	support_status	included_in_report	origin_finding_id
+citation-001	claim-001	Direct answer	LEGAL-SRC-001	official_regulator	Synthetic regulator bulletin	supported	true	LEGAL-F-001
+citation-002	claim-007	Core explanation	LEGAL-SRC-001	official_regulator	Synthetic regulator bulletin	supported	true	LEGAL-F-002
+citation-003	claim-008	Decision-relevant analysis	LEGAL-SRC-004	secondary_media	Synthetic secondary commentary	weak	false	LEGAL-F-008
+citation-004	claim-009	Main options/categories/mechanisms	LEGAL-SRC-003	court_or_authoritative_interpretation	Synthetic authoritative interpretation	weak	true	LEGAL-F-006
+citation-005	claim-010	Risks and failure modes	LEGAL-SRC-003	court_or_authoritative_interpretation	Synthetic authoritative interpretation	weak	false	LEGAL-F-007
+citation-006	claim-011	Evidence-backed findings	LEGAL-SRC-002	legal_text	Synthetic legal text extract	supported	true	LEGAL-F-004
+citation-007	claim-012	Reader decision layer	LEGAL-SRC-001	official_regulator	Synthetic regulator bulletin	supported	true	LEGAL-F-003
+citation-008	claim-021	Uncertainty and next research	LEGAL-SRC-002	legal_text	Synthetic legal text extract	missing	false	LEGAL-F-005

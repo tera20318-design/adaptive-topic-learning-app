@@ -1,0 +1,8 @@
+citation_id	claim_id	report_section	source_id	source_role	source_title	support_status	included_in_report	origin_finding_id
+citation-001	claim-001	Direct answer	MED-SRC-001	academic_review	Synthetic clinical review	supported	true	MED-F-001
+citation-002	claim-007	Decision-relevant analysis	MED-SRC-004	academic_paper	Synthetic mechanism paper	weak	true	MED-F-007
+citation-003	claim-008	Risks and failure modes	MED-SRC-002	professional_body	Synthetic professional practice note	supported	true	MED-F-003
+citation-004	claim-009	Evidence-backed findings	MED-SRC-002	professional_body	Synthetic professional practice note	supported	true	MED-F-004
+citation-005	claim-010	Reader decision layer	MED-SRC-001	academic_review	Synthetic clinical review	weak	true	MED-F-002
+citation-006	claim-011	Reader decision layer	MED-SRC-003	trade_media	Synthetic public explainer	weak	false	MED-F-005
+citation-007	claim-020	Uncertainty and next research	MED-SRC-003	trade_media	Synthetic public explainer	missing	false	MED-F-006

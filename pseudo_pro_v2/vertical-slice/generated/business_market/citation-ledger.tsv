@@ -1,0 +1,7 @@
+citation_id	claim_id	report_section	source_id	source_role	source_title	support_status	included_in_report	origin_finding_id
+citation-001	claim-001	Direct answer	BIZ-SRC-001	government_context	Synthetic government context note	supported	true	BIZ-F-001
+citation-002	claim-007	Risks and failure modes	BIZ-SRC-002	industry_association	Synthetic industry association outlook	weak	true	BIZ-F-003
+citation-003	claim-008	Evidence-backed findings	BIZ-SRC-003	trade_media	Synthetic trade media summary	weak	true	BIZ-F-006
+citation-004	claim-009	Reader decision layer	BIZ-SRC-001	government_context	Synthetic government context note	supported	true	BIZ-F-002
+citation-005	claim-010	Reader decision layer	BIZ-SRC-002	industry_association	Synthetic industry association outlook	weak	true	BIZ-F-004
+citation-006	claim-021	Uncertainty and next research	BIZ-SRC-003	trade_media	Synthetic trade media summary	weak	false	BIZ-F-005

@@ -1,0 +1,23 @@
+# Domain Adapter
+
+- topic: product_comparison_anchor_alpha
+- reader: Selection lead
+- use_context: Prepare a comparison for a product selection decision.
+- output_type: comparison
+- risk_tier: medium
+- temporal_sensitivity: medium
+- jurisdiction_sensitivity: high
+- source_priority: official_regulator, legal_text, court_or_authoritative_interpretation, standards_body, standard_or_code, academic_review, academic_paper, professional_body, industry_association, vendor_first_party, government_context, trade_media, secondary_media, user_provided_source, unknown
+- high_risk_claim_types: absence
+- likely_failure_modes: Overgeneralizing evidence about product_comparison_anchor_alpha., Confusing scoped findings with universal conclusions.
+- domain_specific_risks: Missing decision-critical constraints for product_comparison_anchor_alpha., Treating an overview of product_comparison_anchor_alpha as if it settled implementation or compliance detail.
+- common_misunderstandings: A scoped run is equivalent to a full investigation., A captured claim is necessarily a supported claim.
+- boundary_concepts: fact vs inference, scope vs universal claim, captured vs supported
+- decision_context.primary_decision: What the reader should decide or verify next.
+- decision_context.failure_cost: medium
+- decision_context.time_horizon: Immediate next-step decision support.
+- decision_context.reader_action: Use the report to decide what needs deeper confirmation before action.
+- required_decision_layer: What is already safe to say, What still needs verification, What decision should wait for stronger evidence
+- required_tables: Options or comparison table, Checklist or decision table
+- must_not_overgeneralize: Scoped evidence should not be presented as universal coverage., Weak or role-mismatched sources should not carry high-risk conclusions.
+- known_limits: This run is scoped and not a full Deep Research equivalent.

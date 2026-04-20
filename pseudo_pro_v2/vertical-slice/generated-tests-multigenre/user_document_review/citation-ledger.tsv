@@ -1,0 +1,7 @@
+citation_id	claim_id	report_section	source_id	source_role	source_title	support_status	included_in_report	origin_finding_id
+citation-001	claim-001	Direct answer	DOC-SRC-002	professional_body	Synthetic professional review note	supported	true	DOC-F-003
+citation-002	claim-007	Decision-relevant analysis	DOC-SRC-001	user_provided_source	Synthetic user-provided document extract	supported	true	DOC-F-001
+citation-003	claim-008	Decision-relevant analysis	DOC-SRC-001	user_provided_source	Synthetic user-provided document extract	supported	true	DOC-F-002
+citation-004	claim-009	Risks and failure modes	DOC-SRC-003	secondary_media	Synthetic secondary summary	weak	true	DOC-F-005
+citation-005	claim-010	Reader decision layer	DOC-SRC-002	professional_body	Synthetic professional review note	supported	true	DOC-F-004
+citation-006	claim-021	Uncertainty and next research	DOC-SRC-003	secondary_media	Synthetic secondary summary	weak	false	DOC-F-006

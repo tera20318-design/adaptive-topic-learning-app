@@ -1,0 +1,21 @@
+column_name	required	type	allowed_values	description
+claim_id	true	string		Stable claim identifier.
+report_section	true	string		Reader-facing report section title.
+exact_text_span	true	string		Exact text span from final_report.md after tone control.
+normalized_claim	true	string		Canonicalized claim text for deduping and audits.
+claim_kind	true	enum	definition|fact|mechanism|temporal|numeric|regulatory|legal|medical|financial|market|recommendation|inference|advice|absence|comparison|scope_boundary	Claim class used for source-role requirements and gate logic.
+risk_level	true	enum	low|medium|high	Risk severity for release handling.
+source_ids	true	list[string]		Source identifiers mapped to the claim.
+source_roles	true	list[enum]	official_regulator|legal_text|court_or_authoritative_interpretation|standards_body|standard_or_code|academic_review|academic_paper|professional_body|industry_association|vendor_first_party|government_context|trade_media|secondary_media|user_provided_source|unknown	Resolved source roles for mapped sources.
+evidence_count	true	integer		Count of mapped supporting sources.
+required_source_role	true	list[enum]	official_regulator|legal_text|court_or_authoritative_interpretation|standards_body|standard_or_code|academic_review|academic_paper|professional_body|industry_association|vendor_first_party|government_context|trade_media|secondary_media|user_provided_source|unknown	Source roles required or preferred by the claim kind.
+required_role_matched	true	boolean	true|false	Whether at least one mapped source matches the claim-kind-appropriate required roles.
+role_fit_status	true	enum	required_match|authoritative_mismatch|weak_only|no_evidence|unknown	Role-fit classification used for support and release logic.
+support_status	true	enum	supported|weak|missing|out_of_scope|not_checked	Evidentiary status after mapping and guards.
+confidence	true	number	0.0-1.0	Calibrated confidence after support and contradiction checks.
+caveat_required	true	boolean	true|false	Whether the claim must carry explicit caveat language.
+suggested_tone	true	enum	standard|tentative|unverified|explicit_inference|conditional_advice|representative_public_materials	Recommended wording mode for the report.
+required_fix	true	string		Action needed before stronger release status is allowed.
+origin_finding_id	true	string		Source finding lineage identifier for audit coverage checks.
+included_in_report	true	boolean	true|false	Whether the claim remains in the reader-facing report.
+exclusion_reason	true	string		Why the claim was removed from reader-facing prose, if applicable.

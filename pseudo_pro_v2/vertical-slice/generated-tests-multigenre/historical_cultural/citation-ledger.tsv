@@ -1,0 +1,7 @@
+citation_id	claim_id	report_section	source_id	source_role	source_title	support_status	included_in_report	origin_finding_id
+citation-001	claim-001	Direct answer	HIST-SRC-001	academic_review	Synthetic academic review	supported	true	HIST-F-001
+citation-002	claim-007	Main options/categories/mechanisms	HIST-SRC-001	academic_review	Synthetic academic review	supported	true	HIST-F-002
+citation-003	claim-008	Risks and failure modes	HIST-SRC-002	professional_body	Synthetic professional encyclopedia note	supported	true	HIST-F-004
+citation-004	claim-009	Evidence-backed findings	HIST-SRC-003	government_context	Synthetic government archive note	supported	true	HIST-F-006
+citation-005	claim-010	Reader decision layer	HIST-SRC-002	professional_body	Synthetic professional encyclopedia note	supported	true	HIST-F-003
+citation-006	claim-021	Uncertainty and next research	HIST-SRC-003	government_context	Synthetic government archive note	weak	false	HIST-F-005

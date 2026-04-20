@@ -1,0 +1,6 @@
+citation_id	claim_id	report_section	source_id	source_role	source_title	support_status	included_in_report	origin_finding_id
+citation-001	claim-006	Main options/categories/mechanisms	PROD-SRC-001	vendor_first_party	Synthetic vendor comparison sheet	weak	true	PROD-F-001
+citation-002	claim-007	Risks and failure modes	PROD-SRC-001	vendor_first_party	Synthetic vendor comparison sheet	weak	true	PROD-F-002
+citation-003	claim-008	Evidence-backed findings	PROD-SRC-003	official_regulator	Synthetic regulator boundary note	supported	true	PROD-F-005
+citation-004	claim-009	Reader decision layer	PROD-SRC-002	professional_body	Synthetic neutral guidance note	supported	true	PROD-F-003
+citation-005	claim-020	Uncertainty and next research	PROD-SRC-002	professional_body	Synthetic neutral guidance note	weak	false	PROD-F-004

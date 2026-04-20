@@ -1,0 +1,13 @@
+citation_id	claim_id	report_section	source_id	source_role	source_title	support_status	included_in_report	origin_finding_id
+citation-001	claim-001	Direct answer	TECH-SRC-001	standards_body	Synthetic standards overview	supported	true	TECH-F-001
+citation-002	claim-007	Core explanation	TECH-SRC-001	standards_body	Synthetic standards overview	supported	true	TECH-F-002
+citation-003	claim-008	Decision-relevant analysis	TECH-SRC-004	official_regulator	Synthetic regulator boundary note	supported	true	TECH-F-008
+citation-004	claim-009	Decision-relevant analysis	TECH-SRC-003	professional_body	Synthetic professional practice note	supported	true	TECH-F-007
+citation-005	claim-010	Main options/categories/mechanisms	TECH-SRC-001	standards_body	Synthetic standards overview	supported	true	TECH-F-003
+citation-006	claim-011	Risks and failure modes	TECH-SRC-003	professional_body	Synthetic professional practice note	supported	true	TECH-F-006
+citation-007	claim-012	Evidence-backed findings	TECH-SRC-002	academic_review	Synthetic review article	supported	true	TECH-F-004
+citation-008	claim-013	Evidence-backed findings	TECH-SRC-002	academic_review	Synthetic review article	supported	true	TECH-F-011
+citation-009	claim-014	Evidence-backed findings	TECH-SRC-002	academic_review	Synthetic review article	supported	true	TECH-F-012
+citation-010	claim-015	Reader decision layer	TECH-SRC-002	academic_review	Synthetic review article	supported	true	TECH-F-005
+citation-011	claim-028	Main options/categories/mechanisms	TECH-SRC-005	vendor_first_party	Synthetic vendor benchmark note	weak	false	TECH-F-009
+citation-012	claim-029	Evidence-backed findings	TECH-SRC-005	vendor_first_party	Synthetic vendor benchmark note	weak	false	TECH-F-010
