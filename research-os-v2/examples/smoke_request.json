@@ -1,0 +1,153 @@
+{
+  "topic": "Choosing documentation patterns for an internal developer platform",
+  "reader": "platform lead preparing a scoped decision memo",
+  "use_context": "A short decision memo that helps the team decide when to emphasize ADRs, runbooks, and interface contracts.",
+  "output_type": "decision memo",
+  "requested_mode": "scoped",
+  "question": "How should the team divide responsibility among ADRs, runbooks, and interface contracts without overclaiming that one format replaces the others?",
+  "jurisdiction": "Global",
+  "as_of_date": "2026-04-19",
+  "source_packets": [
+    {
+      "source_id": "SRC-001",
+      "title": "Architecture practice guide",
+      "source_role": "standards_body",
+      "citation": "Architecture practice guide",
+      "published_on": "2025-09-14",
+      "jurisdiction": "Global",
+      "quality_flags": [
+        "current"
+      ],
+      "summary": "Explains when architecture decision records add durable value.",
+      "findings": [
+        {
+          "finding_id": "F-001",
+          "statement": "ADRs are most useful when the team needs a durable record of why a technical choice was made and what alternatives were rejected.",
+          "claim_kind": "fact",
+          "risk_level": "medium",
+          "section_hint": "direct_answer",
+          "decision_note": "Use ADRs for durable architectural choices, not for volatile operating detail.",
+          "risk_tags": [
+            "overuse",
+            "scope"
+          ],
+          "failure_modes": [
+            "Using ADRs as a catch-all document type"
+          ],
+          "misunderstandings": [
+            "Assuming ADRs replace operational runbooks"
+          ],
+          "boundary_concepts": [
+            "durable decision",
+            "alternatives considered"
+          ],
+          "confidence": 0.91,
+          "support_status_hint": "supported"
+        },
+        {
+          "finding_id": "F-002",
+          "statement": "Interface contracts work best when teams need a shared, reviewable description of data shapes and behavioral expectations across boundaries.",
+          "claim_kind": "comparison",
+          "risk_level": "medium",
+          "section_hint": "options",
+          "decision_note": "Treat interface contracts as boundary documents rather than architectural history.",
+          "risk_tags": [
+            "handoff",
+            "consistency"
+          ],
+          "failure_modes": [
+            "Mixing interface obligations into narrative architecture notes"
+          ],
+          "misunderstandings": [
+            "Confusing contracts with implementation detail"
+          ],
+          "boundary_concepts": [
+            "data shape",
+            "behavioral expectation"
+          ],
+          "confidence": 0.88,
+          "support_status_hint": "supported"
+        }
+      ]
+    },
+    {
+      "source_id": "SRC-002",
+      "title": "Operations handbook excerpt",
+      "source_role": "professional_body",
+      "citation": "Operations handbook excerpt",
+      "published_on": "2025-10-02",
+      "jurisdiction": "Global",
+      "quality_flags": [
+        "current"
+      ],
+      "summary": "Shows how runbooks reduce recovery ambiguity when systems fail.",
+      "findings": [
+        {
+          "finding_id": "F-003",
+          "statement": "Runbooks are most valuable when responders need time-sensitive operating steps, escalation paths, and rollback guidance.",
+          "claim_kind": "advice",
+          "risk_level": "medium",
+          "section_hint": "decision_layer",
+          "decision_note": "Use runbooks for live operation and recovery, not as a substitute for architectural reasoning.",
+          "risk_tags": [
+            "incident response",
+            "clarity"
+          ],
+          "failure_modes": [
+            "Treating a narrative design note as an incident guide"
+          ],
+          "misunderstandings": [
+            "Assuming responders can infer recovery steps from design documents"
+          ],
+          "boundary_concepts": [
+            "rollback",
+            "escalation path"
+          ],
+          "confidence": 0.89,
+          "support_status_hint": "supported"
+        }
+      ]
+    },
+    {
+      "source_id": "SRC-003",
+      "title": "Scoped documentation inventory",
+      "source_role": "user_provided_source",
+      "citation": "Scoped documentation inventory",
+      "published_on": "2026-04-10",
+      "jurisdiction": "Global",
+      "quality_flags": [
+        "scoped",
+        "partial"
+      ],
+      "summary": "A local inventory of the current document set used in the team.",
+      "findings": [
+        {
+          "finding_id": "F-004",
+          "statement": "Within the scoped source set, no single document type appears to replace ADRs, runbooks, and interface contracts across every use case.",
+          "claim_kind": "absence",
+          "risk_level": "medium",
+          "section_hint": "uncertainty",
+          "decision_note": "Keep this framed as a scoped observation rather than a universal rule.",
+          "risk_tags": [
+            "scope",
+            "overgeneralization"
+          ],
+          "failure_modes": [
+            "Turning a scoped inventory result into a universal claim"
+          ],
+          "misunderstandings": [
+            "Assuming the inventory covers every team or future workflow"
+          ],
+          "boundary_concepts": [
+            "scoped search",
+            "universal standard"
+          ],
+          "confidence": 0.74,
+          "support_status_hint": "supported",
+          "absence_type": "not_found_in_scoped_search",
+          "caveat": "This finding is limited to the current source set."
+        }
+      ]
+    }
+  ]
+}

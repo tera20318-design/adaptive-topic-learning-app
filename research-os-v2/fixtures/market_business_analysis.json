@@ -1,0 +1,159 @@
+{
+  "topic": "Market expansion and business model analysis for a niche software category",
+  "reader": "founder deciding whether the segment is large enough to pursue",
+  "use_context": "A business analysis that separates market size, growth signals, customer pain, and strategic risk.",
+  "output_type": "market memo",
+  "requested_mode": "business_analysis",
+  "expected_domain_adapter_traits": [
+    "market sizing discipline",
+    "signal versus story separation",
+    "explicit uncertainty quantification",
+    "strategy-aware synthesis"
+  ],
+  "known_failure_modes": [
+    "treating anecdote as market proof",
+    "equating growth with profitability",
+    "ignoring channel or concentration risk"
+  ],
+  "required_source_roles": [
+    "primary",
+    "secondary"
+  ],
+  "required_claims": [
+    "demand signals and segmentation",
+    "major commercial constraints",
+    "strategic implications for entry or expansion"
+  ],
+  "prohibited_overclaims": [
+    "does not claim an exact market size without basis",
+    "does not call a trend inevitable",
+    "does not present a single source as complete"
+  ],
+  "expected_gate_behavior": "allow",
+  "source_packets": [
+    {
+      "source_id": "biz_src_001",
+      "title": "Industry benchmark report",
+      "source_role": "primary",
+      "published_on": "2025-04-19",
+      "jurisdiction": "Global",
+      "quality_flags": [
+        "benchmark",
+        "survey"
+      ],
+      "summary": "Provides segment growth, buyer pain points, and concentration signals across the category.",
+      "findings": [
+        {
+          "finding_id": "biz_src_001_f01",
+          "statement": "Buyer demand clusters around a small number of high-pain workflows.",
+          "claim_kind": "segmentation",
+          "risk_level": "moderate",
+          "section_hint": "customer pain",
+          "decision_note": "Use this to explain where the opportunity is concentrated.",
+          "risk_tags": [
+            "segmentation",
+            "pain-point"
+          ],
+          "failure_modes": [
+            "overgeneralizing a niche with heterogeneous buyers"
+          ],
+          "misunderstandings": [
+            "assuming all buyers value the same workflow"
+          ],
+          "boundary_concepts": [
+            "workflow cluster",
+            "pain concentration"
+          ],
+          "confidence": 0.83,
+          "support_status_hint": "supported"
+        },
+        {
+          "finding_id": "biz_src_001_f02",
+          "statement": "Channel concentration is a meaningful go-to-market risk.",
+          "claim_kind": "risk",
+          "risk_level": "moderate",
+          "section_hint": "distribution",
+          "decision_note": "Flag concentration risk if recommending expansion.",
+          "risk_tags": [
+            "channel",
+            "concentration"
+          ],
+          "failure_modes": [
+            "treating growth as independent of channel dependency"
+          ],
+          "misunderstandings": [
+            "assuming a strong top-line trend implies resilient distribution"
+          ],
+          "boundary_concepts": [
+            "channel concentration",
+            "go-to-market"
+          ],
+          "confidence": 0.77,
+          "support_status_hint": "partial"
+        }
+      ]
+    },
+    {
+      "source_id": "biz_src_002",
+      "title": "Competitor earnings commentary",
+      "source_role": "secondary",
+      "published_on": "2025-07-02",
+      "jurisdiction": "US",
+      "quality_flags": [
+        "public-company",
+        "management-commentary"
+      ],
+      "summary": "Adds market color on competitive dynamics, pricing pressure, and buyer sensitivity.",
+      "findings": [
+        {
+          "finding_id": "biz_src_002_f01",
+          "statement": "Pricing pressure is visible where buyers can compare offerings directly.",
+          "claim_kind": "market dynamic",
+          "risk_level": "moderate",
+          "section_hint": "competition",
+          "decision_note": "This should temper any optimistic pricing narrative.",
+          "risk_tags": [
+            "pricing-pressure",
+            "competition"
+          ],
+          "failure_modes": [
+            "assuming the segment has durable pricing power everywhere"
+          ],
+          "misunderstandings": [
+            "reading one competitor's guidance as universal market evidence"
+          ],
+          "boundary_concepts": [
+            "price comparison",
+            "buyer sensitivity"
+          ],
+          "confidence": 0.69,
+          "support_status_hint": "open"
+        },
+        {
+          "finding_id": "biz_src_002_f02",
+          "statement": "Differentiation depends more on workflow depth than on broad feature count.",
+          "claim_kind": "strategy",
+          "risk_level": "moderate",
+          "section_hint": "positioning",
+          "decision_note": "This is useful for the strategic recommendation, if the source set supports it.",
+          "risk_tags": [
+            "differentiation",
+            "positioning"
+          ],
+          "failure_modes": [
+            "treating broad feature breadth as the main competitive moat"
+          ],
+          "misunderstandings": [
+            "assuming the market rewards breadth over depth"
+          ],
+          "boundary_concepts": [
+            "workflow depth",
+            "feature breadth"
+          ],
+          "confidence": 0.72,
+          "support_status_hint": "supported"
+        }
+      ]
+    }
+  ]
+}

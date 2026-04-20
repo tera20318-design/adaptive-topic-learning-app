@@ -1,0 +1,162 @@
+{
+  "topic": "User-provided document review for an externally authored policy or contract",
+  "reader": "internal reviewer who needs a grounded summary of what the document says and where it is risky",
+  "use_context": "A document-review memo that treats the uploaded text as the primary object, cross-checks it against authoritative references, and surfaces ambiguity or missing context.",
+  "output_type": "document review",
+  "requested_mode": "document_review",
+  "expected_domain_adapter_traits": [
+    "document-centric reading",
+    "cross-check against authority",
+    "ambiguity surfacing",
+    "risk-and-boundary extraction"
+  ],
+  "known_failure_modes": [
+    "summarizing the document without checking its claims",
+    "treating user-provided assertions as verified fact",
+    "ignoring missing definitions or cross-references"
+  ],
+  "required_source_roles": [
+    "authoritative",
+    "user_provided",
+    "secondary"
+  ],
+  "required_claims": [
+    "what the document explicitly says",
+    "which statements need corroboration",
+    "what cannot be inferred safely"
+  ],
+  "prohibited_overclaims": [
+    "does not assume the document is accurate because it was provided by the user",
+    "does not rewrite the document's meaning",
+    "does not claim review completeness when references are missing"
+  ],
+  "expected_gate_behavior": "review",
+  "source_packets": [
+    {
+      "source_id": "doc_src_001",
+      "title": "User-provided source document",
+      "source_role": "user_provided",
+      "published_on": "2025-08-11",
+      "jurisdiction": "Document-scoped",
+      "quality_flags": [
+        "user-supplied",
+        "needs-verification"
+      ],
+      "summary": "The provided document contains policy language, a few defined terms, and several statements that appear to require corroboration.",
+      "findings": [
+        {
+          "finding_id": "doc_src_001_f01",
+          "statement": "The document defines a key term narrowly, which may exclude related cases from its coverage.",
+          "claim_kind": "definition",
+          "risk_level": "moderate",
+          "section_hint": "definitions",
+          "decision_note": "Call out the narrow definition so the reader sees the scope effect.",
+          "risk_tags": [
+            "definition",
+            "scope"
+          ],
+          "failure_modes": [
+            "assuming the term is broader than the text allows"
+          ],
+          "misunderstandings": [
+            "reading the defined term as if it included all adjacent cases"
+          ],
+          "boundary_concepts": [
+            "defined term",
+            "coverage scope"
+          ],
+          "confidence": 0.82,
+          "support_status_hint": "supported"
+        },
+        {
+          "finding_id": "doc_src_001_f02",
+          "statement": "One section references another document that is not attached, making the obligation hard to finalize.",
+          "claim_kind": "missing-reference",
+          "risk_level": "high",
+          "section_hint": "cross-references",
+          "decision_note": "Mark this as an unresolved review gap unless the missing document is found.",
+          "risk_tags": [
+            "missing-reference",
+            "review-gap"
+          ],
+          "failure_modes": [
+            "treating an incomplete cross-reference as fully resolved"
+          ],
+          "misunderstandings": [
+            "assuming the referenced document says the obvious thing"
+          ],
+          "boundary_concepts": [
+            "cross-reference",
+            "attachment",
+            "dependency"
+          ],
+          "confidence": 0.89,
+          "support_status_hint": "open"
+        }
+      ]
+    },
+    {
+      "source_id": "doc_src_002",
+      "title": "Authoritative cross-check source",
+      "source_role": "authoritative",
+      "published_on": "2025-09-03",
+      "jurisdiction": "US",
+      "quality_flags": [
+        "official",
+        "cross-check"
+      ],
+      "summary": "Provides a reference point for checking whether the user-provided document's claims are consistent with the applicable authoritative text.",
+      "findings": [
+        {
+          "finding_id": "doc_src_002_f01",
+          "statement": "The authoritative text uses a different threshold than the user document implies.",
+          "claim_kind": "comparison",
+          "risk_level": "high",
+          "section_hint": "threshold comparison",
+          "decision_note": "This is the main reason to avoid copying the user document's phrasing uncritically.",
+          "risk_tags": [
+            "threshold",
+            "verification"
+          ],
+          "failure_modes": [
+            "treating the user document's threshold as authoritative"
+          ],
+          "misunderstandings": [
+            "assuming the two documents use the same threshold language"
+          ],
+          "boundary_concepts": [
+            "threshold",
+            "authoritative text"
+          ],
+          "confidence": 0.85,
+          "support_status_hint": "supported"
+        },
+        {
+          "finding_id": "doc_src_002_f02",
+          "statement": "The authority leaves one edge case unstated, so review output should preserve that uncertainty.",
+          "claim_kind": "gap",
+          "risk_level": "moderate",
+          "section_hint": "open issues",
+          "decision_note": "Do not over-fill this gap in the summary.",
+          "risk_tags": [
+            "gap",
+            "uncertainty"
+          ],
+          "failure_modes": [
+            "inventing a clean answer where the source stays silent"
+          ],
+          "misunderstandings": [
+            "assuming silence equals permission"
+          ],
+          "boundary_concepts": [
+            "edge case",
+            "silence",
+            "uncertainty"
+          ],
+          "confidence": 0.7,
+          "support_status_hint": "open"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+priority	status	reason	title	url	notes_file
+high	read	定義と広義/狭義の境界を押さえるため	めっき部会｜表面技術協会	https://mekki.sfj.or.jp/	
+high	read	方式分類の説明に使うため	めっきとは ｜ 富士電機の表面処理（めっき） ｜ 富士電機	https://www.fujielectric.co.jp/products/plating/about/	
+high	read	乾式表面処理との境界を整理するため	めっきとは？｜FAQ｜表面処理｜サービス｜アルバックテクノ	https://www.ulvac-techno.co.jp/service/surface_treatment/faq/001.html	
+high	selected	電気めっきの工学的定義と目的を補強するため	Electroplated Coatings - ASM International	https://www.asminternational.org/results/-/journal_content/56/ASMHBA0003687/BOOK-ARTICLE/	
+medium	selected	溶融めっきの独立した位置づけを示すため	HOME | 一般社団法人 日本溶融亜鉛鍍金協会	https://www.aen-mekki.or.jp/	
+high	read	日本の用途整理と産業的背景を押さえるため	機材工 | 機材工 一般社団法人日本表面処理機材工業会	https://kizaikou.or.jp/basic.html	
+high	read	無電解めっきと皮膜種類の実務整理に使うため	全国鍍金工業組合連合会（ぜんとれん）	https://zentoren.or.jp/mekki/hyoumenshori.html	
+high	read	皮膜別の特性・用途を補うため	全国鍍金工業組合連合会（ぜんとれん）	https://zentoren.or.jp/mekki/shurui.html	
+high	read	電子・自動車・半導体周辺用途を具体化するため	表面処理技術から未来を創造する	https://www.jcu-i.com/wp/wp-content/uploads/2022/10/irks1_20220511.pdf	
+medium	read	公設試の観点で機能と応用を補強するため	防錆・防食のためのめっきの基礎知識	https://www2.orist.jp/dl/izumi/archive/Gijutsu_shiryo/Corr.pdf	
+high	read	排水規制とPFAS/六価クロム論点を押さえるため	Electroplating Effluent Guidelines | US EPA	https://www.epa.gov/eg/electroplating-effluent-guidelines	
+high	read	クロムめっきの大気規制とばく露リスクを押さえるため	Chromium Electroplating: National Emission Standards for Hazardous Air Pollutants | US EPA	https://www.epa.gov/stationary-sources-air-pollution/chromium-electroplating-national-emission-standards-hazardous-air	
+high	read	日本の排水基準の現行値を確認するため	一般排水基準 | 水・土壌・地盤・海洋環境の保全 | 環境省	https://www.env.go.jp/water/impure/haisui.html	
+high	read	六価クロム暫定基準の現行運用を確認するため	六価クロム化合物の排水基準と暫定排水基準が改正されました（令和6年4月1日施行）／大阪府（おおさかふ）ホームページ	https://www.pref.osaka.lg.jp/o120080/jigyoshoshido/mizu/r6-4kaisei.html	
+medium	selected	RoHSで六価クロムがどう位置づくか確認するため	RoHS Directive - Environment - European Commission	https://environment.ec.europa.eu/topics/waste-and-recycling/rohs-directive_en#law	
+medium	selected	REACH上のニッケル制限を確認するため	ANNEX XVII TO REACH – Conditions of restriction	https://echa.europa.eu/documents/10162/3bbe9024-52a6-8e63-5581-e686331eb459	
+medium	read	六価クロムの健康影響と職業ばく露を整理するため	Hexavalent Chromium | National Institute of Environmental Health Sciences	https://www.niehs.nih.gov/health/topics/agents/hex-chromium	
+medium	read	電子基板のめっき品質リスクを具体化するため	IPC Issues Electronics Industry Warning on Printed Board Microvia Reliability for High Performance Products | IPC International, Inc.	https://www.ipc.org/news-release/ipc-issues-electronics-industry-warning-printed-board-microvia-reliability-high	
+

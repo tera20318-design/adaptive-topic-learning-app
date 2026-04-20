@@ -1,0 +1,162 @@
+{
+  "topic": "Consumer-facing software compliance and regulatory exposure",
+  "reader": "product counsel preparing a short risk memo for leadership",
+  "use_context": "A legal-regulatory overview that identifies applicable obligations, likely exposure points, and practical compliance boundaries.",
+  "output_type": "regulatory memo",
+  "requested_mode": "legal_review",
+  "expected_domain_adapter_traits": [
+    "jurisdiction-aware framing",
+    "careful distinction between law and guidance",
+    "issue spotting before recommendation",
+    "authoritative-source preference"
+  ],
+  "known_failure_modes": [
+    "collapsing statutory text into generic policy advice",
+    "treating commentary as dispositive authority",
+    "ignoring jurisdiction-specific carveouts"
+  ],
+  "required_source_roles": [
+    "authoritative",
+    "primary",
+    "secondary"
+  ],
+  "required_claims": [
+    "relevant legal obligations by jurisdiction",
+    "likely compliance pressure points",
+    "what the sources do not settle"
+  ],
+  "prohibited_overclaims": [
+    "does not claim legal advice for every jurisdiction",
+    "does not overstate enforcement certainty",
+    "does not treat one regulator's view as universal"
+  ],
+  "expected_gate_behavior": "review",
+  "source_packets": [
+    {
+      "source_id": "legal_src_001",
+      "title": "Statutory text and agency guidance",
+      "source_role": "authoritative",
+      "published_on": "2025-01-15",
+      "jurisdiction": "US",
+      "quality_flags": [
+        "official",
+        "binding-text"
+      ],
+      "summary": "Captures the legal text and the regulator's current guidance on the covered conduct.",
+      "findings": [
+        {
+          "finding_id": "legal_src_001_f01",
+          "statement": "The obligation turns on how the product collects, stores, and discloses consumer data.",
+          "claim_kind": "obligation",
+          "risk_level": "high",
+          "section_hint": "trigger conditions",
+          "decision_note": "This is the central trigger for the memo's risk analysis.",
+          "risk_tags": [
+            "trigger",
+            "disclosure"
+          ],
+          "failure_modes": [
+            "treating the rule as purely procedural rather than conduct-based"
+          ],
+          "misunderstandings": [
+            "assuming internal process controls eliminate the legal trigger"
+          ],
+          "boundary_concepts": [
+            "collection",
+            "storage",
+            "disclosure"
+          ],
+          "confidence": 0.93,
+          "support_status_hint": "supported"
+        },
+        {
+          "finding_id": "legal_src_001_f02",
+          "statement": "The guidance distinguishes mandatory requirements from recommended best practices.",
+          "claim_kind": "interpretation",
+          "risk_level": "moderate",
+          "section_hint": "guidance vs rule",
+          "decision_note": "Keep the recommendation layer separate from the legal requirement layer.",
+          "risk_tags": [
+            "authority",
+            "guidance"
+          ],
+          "failure_modes": [
+            "presenting best practices as if they were mandatory"
+          ],
+          "misunderstandings": [
+            "reading all guidance language as binding"
+          ],
+          "boundary_concepts": [
+            "guidance",
+            "mandatory",
+            "best practice"
+          ],
+          "confidence": 0.88,
+          "support_status_hint": "supported"
+        }
+      ]
+    },
+    {
+      "source_id": "legal_src_002",
+      "title": "Legal commentary and enforcement summary",
+      "source_role": "secondary",
+      "published_on": "2025-03-22",
+      "jurisdiction": "US",
+      "quality_flags": [
+        "analysis",
+        "nonbinding"
+      ],
+      "summary": "Explains how practitioners read the rule and where enforcement risk has concentrated.",
+      "findings": [
+        {
+          "finding_id": "legal_src_002_f01",
+          "statement": "Recent enforcement attention has focused on incomplete disclosures rather than on technical implementation alone.",
+          "claim_kind": "trend",
+          "risk_level": "moderate",
+          "section_hint": "enforcement posture",
+          "decision_note": "Use this as context, not as a substitute for the text.",
+          "risk_tags": [
+            "enforcement",
+            "trend"
+          ],
+          "failure_modes": [
+            "equating commentary trend with binding enforcement rule"
+          ],
+          "misunderstandings": [
+            "assuming technical compliance is sufficient"
+          ],
+          "boundary_concepts": [
+            "enforcement posture",
+            "disclosure quality"
+          ],
+          "confidence": 0.74,
+          "support_status_hint": "partial"
+        },
+        {
+          "finding_id": "legal_src_002_f02",
+          "statement": "Counsel should confirm whether state-level overlays apply before finalizing the memo.",
+          "claim_kind": "recommendation",
+          "risk_level": "moderate",
+          "section_hint": "scope check",
+          "decision_note": "Flag state overlays as an unresolved boundary issue.",
+          "risk_tags": [
+            "jurisdiction",
+            "scope"
+          ],
+          "failure_modes": [
+            "treating federal analysis as complete"
+          ],
+          "misunderstandings": [
+            "ignoring state or sector-specific overlays"
+          ],
+          "boundary_concepts": [
+            "state overlay",
+            "sector-specific rule"
+          ],
+          "confidence": 0.71,
+          "support_status_hint": "open"
+        }
+      ]
+    }
+  ]
+}

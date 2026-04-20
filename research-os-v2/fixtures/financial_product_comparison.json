@@ -1,0 +1,162 @@
+{
+  "topic": "Consumer financial product comparison for a purchase decision",
+  "reader": "buyer comparing two products and asking which risks deserve attention",
+  "use_context": "A decision-support comparison that weighs fees, incentives, lock-in, and user fit without implying personalized financial advice.",
+  "output_type": "comparison brief",
+  "requested_mode": "financial_comparison",
+  "expected_domain_adapter_traits": [
+    "decision-axis comparison",
+    "fee and incentive transparency",
+    "caution around personalized advice",
+    "tradeoff-centric framing"
+  ],
+  "known_failure_modes": [
+    "focusing only on headline price",
+    "ignoring lock-in or renewal terms",
+    "treating a comparison as advice"
+  ],
+  "required_source_roles": [
+    "authoritative",
+    "primary",
+    "secondary"
+  ],
+  "required_claims": [
+    "key cost and feature differences",
+    "important contract or renewal terms",
+    "who each option appears to suit"
+  ],
+  "prohibited_overclaims": [
+    "does not claim the cheapest option is always best",
+    "does not recommend a product as a fiduciary adviser",
+    "does not ignore fees hidden outside the headline price"
+  ],
+  "expected_gate_behavior": "review",
+  "source_packets": [
+    {
+      "source_id": "fin_src_001",
+      "title": "Product terms sheet",
+      "source_role": "authoritative",
+      "published_on": "2025-05-06",
+      "jurisdiction": "US",
+      "quality_flags": [
+        "official",
+        "contract"
+      ],
+      "summary": "Lists pricing, renewal behavior, cancellation terms, and the most salient product features.",
+      "findings": [
+        {
+          "finding_id": "fin_src_001_f01",
+          "statement": "The lowest advertised price does not include recurring service fees.",
+          "claim_kind": "cost",
+          "risk_level": "high",
+          "section_hint": "price breakdown",
+          "decision_note": "This should drive the cautionary language in the comparison.",
+          "risk_tags": [
+            "pricing",
+            "headline-vs-total"
+          ],
+          "failure_modes": [
+            "presenting the headline price as the full cost"
+          ],
+          "misunderstandings": [
+            "assuming advertised price equals out-the-door cost"
+          ],
+          "boundary_concepts": [
+            "advertised price",
+            "recurring fee",
+            "total cost"
+          ],
+          "confidence": 0.92,
+          "support_status_hint": "supported"
+        },
+        {
+          "finding_id": "fin_src_001_f02",
+          "statement": "Cancellation terms include a notice window that can create lock-in.",
+          "claim_kind": "contract term",
+          "risk_level": "moderate",
+          "section_hint": "renewal and exit",
+          "decision_note": "Highlight lock-in separately from product quality.",
+          "risk_tags": [
+            "lock-in",
+            "renewal"
+          ],
+          "failure_modes": [
+            "ignoring exit friction when summarizing the product"
+          ],
+          "misunderstandings": [
+            "assuming the product is easy to exit at any time"
+          ],
+          "boundary_concepts": [
+            "notice window",
+            "renewal",
+            "exit friction"
+          ],
+          "confidence": 0.87,
+          "support_status_hint": "supported"
+        }
+      ]
+    },
+    {
+      "source_id": "fin_src_002",
+      "title": "Independent comparison note",
+      "source_role": "secondary",
+      "published_on": "2025-06-01",
+      "jurisdiction": "Global",
+      "quality_flags": [
+        "analysis",
+        "nonbinding"
+      ],
+      "summary": "Compares the same products across usage scenarios and calls out where the lower-cost option may be less suitable.",
+      "findings": [
+        {
+          "finding_id": "fin_src_002_f01",
+          "statement": "The cheaper option can become more expensive for users who exceed the included usage threshold.",
+          "claim_kind": "comparison",
+          "risk_level": "moderate",
+          "section_hint": "usage fit",
+          "decision_note": "This supports a scenario-based rather than price-only comparison.",
+          "risk_tags": [
+            "threshold",
+            "usage"
+          ],
+          "failure_modes": [
+            "flattening usage thresholds into a single average price"
+          ],
+          "misunderstandings": [
+            "assuming the cheapest plan stays cheapest for heavy users"
+          ],
+          "boundary_concepts": [
+            "usage threshold",
+            "heavy user"
+          ],
+          "confidence": 0.78,
+          "support_status_hint": "partial"
+        },
+        {
+          "finding_id": "fin_src_002_f02",
+          "statement": "Feature parity is incomplete, so the decision depends on which workflow matters most.",
+          "claim_kind": "fit",
+          "risk_level": "moderate",
+          "section_hint": "decision axes",
+          "decision_note": "This belongs in the final comparison table or recommendation section.",
+          "risk_tags": [
+            "feature-gap",
+            "workflow-fit"
+          ],
+          "failure_modes": [
+            "treating nominally similar products as interchangeable"
+          ],
+          "misunderstandings": [
+            "assuming all missing features are minor"
+          ],
+          "boundary_concepts": [
+            "feature parity",
+            "workflow"
+          ],
+          "confidence": 0.74,
+          "support_status_hint": "supported"
+        }
+      ]
+    }
+  ]
+}

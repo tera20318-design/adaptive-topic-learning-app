@@ -1,0 +1,163 @@
+{
+  "topic": "Internal API platform architecture and data flow",
+  "reader": "engineering manager evaluating whether the platform can absorb a new integration",
+  "use_context": "A concise technical brief that explains the current architecture, constraints, and integration implications.",
+  "output_type": "technical overview",
+  "requested_mode": "technical_brief",
+  "expected_domain_adapter_traits": [
+    "terminology-first framing",
+    "explicit boundary conditions",
+    "systems-level decomposition",
+    "implementation-aware caution"
+  ],
+  "known_failure_modes": [
+    "collapsing architecture into generic product language",
+    "treating interface examples as guarantees",
+    "skipping dependency and latency constraints"
+  ],
+  "required_source_roles": [
+    "primary",
+    "secondary"
+  ],
+  "required_claims": [
+    "core components and their responsibilities",
+    "integration boundaries and constraints",
+    "likely operational risks"
+  ],
+  "prohibited_overclaims": [
+    "does not claim verified performance beyond the documented scope",
+    "does not present roadmap assumptions as shipped behavior",
+    "does not overstate compatibility with unnamed systems"
+  ],
+  "expected_gate_behavior": "allow",
+  "source_packets": [
+    {
+      "source_id": "tech_src_001",
+      "title": "Platform architecture note",
+      "source_role": "primary",
+      "published_on": "2025-02-10",
+      "jurisdiction": "Global",
+      "quality_flags": [
+        "internal",
+        "current"
+      ],
+      "summary": "Describes service boundaries, request flow, and the main data stores used by the platform.",
+      "findings": [
+        {
+          "finding_id": "tech_src_001_f01",
+          "statement": "The platform routes integration traffic through a gateway layer before dispatching to domain services.",
+          "claim_kind": "architecture",
+          "risk_level": "low",
+          "section_hint": "request flow",
+          "decision_note": "Use this as the backbone of the overview and keep it precise.",
+          "risk_tags": [
+            "scope",
+            "terminology"
+          ],
+          "failure_modes": [
+            "flattening the gateway and service layers into one component"
+          ],
+          "misunderstandings": [
+            "assuming the gateway owns business logic"
+          ],
+          "boundary_concepts": [
+            "gateway",
+            "domain service",
+            "dispatch"
+          ],
+          "confidence": 0.91,
+          "support_status_hint": "supported"
+        },
+        {
+          "finding_id": "tech_src_001_f02",
+          "statement": "Batch jobs and event handlers are the main non-request path entry points into the system.",
+          "claim_kind": "workflow",
+          "risk_level": "low",
+          "section_hint": "async processing",
+          "decision_note": "Mention these separately so the reader sees the asynchronous surface area.",
+          "risk_tags": [
+            "completeness",
+            "operational-risk"
+          ],
+          "failure_modes": [
+            "omitting background processing from the overview"
+          ],
+          "misunderstandings": [
+            "equating request traffic with total system load"
+          ],
+          "boundary_concepts": [
+            "batch job",
+            "event handler",
+            "async path"
+          ],
+          "confidence": 0.84,
+          "support_status_hint": "supported"
+        }
+      ]
+    },
+    {
+      "source_id": "tech_src_002",
+      "title": "Integration runbook excerpt",
+      "source_role": "secondary",
+      "published_on": "2025-03-04",
+      "jurisdiction": "Global",
+      "quality_flags": [
+        "operational",
+        "limited-scope"
+      ],
+      "summary": "Summarizes integration prerequisites, retry behavior, and operational limits.",
+      "findings": [
+        {
+          "finding_id": "tech_src_002_f01",
+          "statement": "Clients must handle retries because transient downstream failures are expected.",
+          "claim_kind": "operational constraint",
+          "risk_level": "moderate",
+          "section_hint": "integration prerequisites",
+          "decision_note": "This is a key caution for any adoption recommendation.",
+          "risk_tags": [
+            "reliability",
+            "retry"
+          ],
+          "failure_modes": [
+            "presenting the integration as fire-and-forget"
+          ],
+          "misunderstandings": [
+            "interpreting retries as proof of durable delivery"
+          ],
+          "boundary_concepts": [
+            "transient failure",
+            "retry policy",
+            "delivery semantics"
+          ],
+          "confidence": 0.79,
+          "support_status_hint": "supported"
+        },
+        {
+          "finding_id": "tech_src_002_f02",
+          "statement": "The documented timeout budget is the main constraint on request chaining.",
+          "claim_kind": "constraint",
+          "risk_level": "moderate",
+          "section_hint": "timeouts",
+          "decision_note": "Use this to limit any implied end-to-end orchestration claims.",
+          "risk_tags": [
+            "latency",
+            "timeout"
+          ],
+          "failure_modes": [
+            "implying unlimited orchestration depth"
+          ],
+          "misunderstandings": [
+            "assuming chained calls can ignore timeout budgets"
+          ],
+          "boundary_concepts": [
+            "timeout budget",
+            "request chaining",
+            "orchestration"
+          ],
+          "confidence": 0.76,
+          "support_status_hint": "partial"
+        }
+      ]
+    }
+  ]
+}

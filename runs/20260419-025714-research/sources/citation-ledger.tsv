@@ -1,0 +1,18 @@
+source_url	domain	citation_instances	sections	is_primary	title	source_flags
+https://zentoren.or.jp/mekki/hyoumenshori.html	zentoren.or.jp	9	1. 要約 | 2. 主な発見 | 3. 根拠テーブル | 4. 詳細分析 | 6. ソース一覧	false	各種表面処理概要	primary;japan;industry
+https://zentoren.or.jp/mekki/shurui.html	zentoren.or.jp	8	1. 要約 | 2. 主な発見 | 4. 詳細分析 | 6. ソース一覧	false	めっきの種類と特色	primary;japan;industry
+https://env.go.jp/water/impure/haisui.html	env.go.jp	6	1. 要約 | 2. 主な発見 | 3. 根拠テーブル | 4. 詳細分析 | 6. ソース一覧	true	環境省: 一般排水基準	
+https://env.go.jp/water/pfas.html	env.go.jp	6	1. 要約 | 2. 主な発見 | 3. 根拠テーブル | 4. 詳細分析 | 6. ソース一覧	true	環境省: PFAS について	
+https://zentoren.or.jp/mekki/hyouka.html	zentoren.or.jp	6	1. 要約 | 2. 主な発見 | 3. 根拠テーブル | 4. 詳細分析 | 6. ソース一覧	false	めっきの評価	primary;japan;industry
+https://aen-mekki.or.jp/mekki/process	aen-mekki.or.jp	5	1. 要約 | 2. 主な発見 | 3. 根拠テーブル | 4. 詳細分析 | 6. ソース一覧	false	日本溶融亜鉛鍍金協会: 溶融亜鉛めっきの加工工程	
+https://epa.gov/eg/electroplating-effluent-guidelines	epa.gov	5	1. 要約 | 2. 主な発見 | 3. 根拠テーブル | 4. 詳細分析 | 6. ソース一覧	true	US EPA: Electroplating Effluent Guidelines	
+https://osha.gov/sites/default/files/publications/OSHA_FS-3648_Electroplating.pdf	osha.gov	5	1. 要約 | 3. 根拠テーブル | 4. 詳細分析 | 6. ソース一覧	true	OSHA: Controlling Hexavalent Chromium Exposures during Electroplating	
+https://anzeninfo.mhlw.go.jp/user/anzen/kag/pdf/taisaku/Plating.pdf	anzeninfo.mhlw.go.jp	4	1. 要約 | 3. 根拠テーブル | 4. 詳細分析 | 6. ソース一覧	true	めっき	primary;japan;worker-safety
+https://env.go.jp/press/110052-print.html	env.go.jp	4	2. 主な発見 | 3. 根拠テーブル | 4. 詳細分析 | 6. ソース一覧	true	環境省: 水質汚濁に係る環境基準の見直しについて	
+https://gesui.metro.tokyo.lg.jp/information/topics/2024/10/1001_6723	gesui.metro.tokyo.lg.jp	4	2. 主な発見 | 3. 根拠テーブル | 4. 詳細分析 | 6. ソース一覧	true	東京都下水道局: 六価クロムの下水排除基準について	
+https://sfj.or.jp/aboutus.html	sfj.or.jp	4	1. 要約 | 3. 根拠テーブル | 4. 詳細分析 | 6. ソース一覧	false	表面技術協会: 協会について	
+https://zentoren.or.jp/mekki/tokusei.html	zentoren.or.jp	4	1. 要約 | 2. 主な発見 | 4. 詳細分析 | 6. ソース一覧	false	めっきの代表的な特性	primary;japan;industry
+https://aen-mekki.or.jp/mekki/what-is	aen-mekki.or.jp	2	4. 詳細分析 | 6. ソース一覧	false	日本溶融亜鉛鍍金協会: 溶融亜鉛めっきとは	
+https://kizaikou.or.jp/basic.html	kizaikou.or.jp	2	4. 詳細分析 | 6. ソース一覧	false	日本表面処理機材工業会: 基本説明	
+https://mhlw.go.jp/stf/seisakunitsuite/bunya/0000099121_00005.html	mhlw.go.jp	2	4. 詳細分析 | 6. ソース一覧	true	厚生労働省: 化学物質による労働災害防止のための新たな規制について	
+https://meti.go.jp/policy/chemical_management/law/information/info8_2.html	meti.go.jp	1	6. ソース一覧	true	経済産業省: 化学物質排出量等管理マニュアル	

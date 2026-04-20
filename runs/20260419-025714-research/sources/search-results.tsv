@@ -1,0 +1,17 @@
+query	title	url	snippet	published_at
+めっき 日本 official guide	各種表面処理概要	https://zentoren.or.jp/mekki/hyoumenshori.html	全国鍍金工業組合連合会が電気めっき、無電解めっき、真空めっき、溶融めっきの概要と利点欠点を整理している。	
+めっき paper evaluation benchmark	めっきの評価	https://zentoren.or.jp/mekki/hyouka.html	耐食性試験、膜厚試験、密着性試験、硬さ試験など代表的な品質評価法を整理している。	
+めっき analysis review outlook	めっきの代表的な特性	https://zentoren.or.jp/mekki/tokusei.html	装飾、防錆、耐摩耗性の観点から代表材料の特性を比較している。	
+めっき 日本 国内 ガイドライン	めっきの種類と特色	https://zentoren.or.jp/mekki/shurui.html	クロム、金、銀、亜鉛系合金など代表的な電気めっきの用途と特色をまとめている。	
+めっき role difference positioning 類型	表面技術協会 協会について	https://www.sfj.or.jp/aboutus.html	表面技術協会が PVD、溶融めっき、電気めっき、無電解めっきなどを活動領域として列挙している。	
+めっき supplier customer upstream downstream	溶融亜鉛めっきの加工工程	https://www.aen-mekki.or.jp/mekki/process/	脱脂から冷却までの溶融亜鉛めっき工程を順番に説明している。	
+めっき timeline 2022 2025 2026 change	溶融亜鉛めっきとは	https://www.aen-mekki.or.jp/mekki/what-is/	溶融亜鉛めっきの防食メカニズムと環境適合性を解説している。	
+めっき regulation guideline standard	一般排水基準	https://www.env.go.jp/water/impure/haisui.html	シアン化合物 1 mg CN/L、六価クロム化合物 0.2 mg Cr(VI)/L などの一般排水基準を掲載している。	
+めっき chronology change standard 2022 2025	水質汚濁に係る環境基準の見直しについて	https://www.env.go.jp/press/110052-print.html	六価クロムの環境基準を 0.05 mg/L から 0.02 mg/L に改正し、施行日を 2022-04-01 としている。	
+めっき PFAS regulation guideline standard	PFAS について	https://www.env.go.jp/water/pfas.html	PFOS / PFOA の通知や 2025-06-30 の指針値改定など、国内の PFAS 情報を集約している。	
+めっき safety official site:go.jp	めっき	https://anzeninfo.mhlw.go.jp/user/anzen/kag/pdf/taisaku/Plating.pdf	めっき作業の危険有害物質、SDS、低有害代替、事故防止の考え方を整理している。	
+めっき risk assessment official regulation	化学物質による労働災害防止のための新たな規制について	https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000099121_00005.html	化学物質のリスクアセスメントとばく露防止を中心とした労働安全衛生の考え方を示している。	
+electroplating official pdf site:gov	Electroplating Effluent Guidelines	https://www.epa.gov/eg/electroplating-effluent-guidelines	EPA が電気めっき排水規制とクロム仕上げ施設由来の PFAS 排出論点を整理している。	
+electroplating hexavalent chromium standard exposure	Controlling Hexavalent Chromium Exposures during Electroplating	https://www.osha.gov/sites/default/files/publications/OSHA_FS-3648_Electroplating.pdf	電気めっき工程での六価クロムばく露と OSHA PEL 5 µg/m3 を示している。	
+めっき not found 未確認 反証 例外	六価クロムの下水排除基準について	https://www.gesui.metro.tokyo.lg.jp/information/topics/2024/10/1001_6723	東京都下水道局が下水排除基準 0.2 mg/L と電気めっき業の暫定基準 0.5 mg/L を案内している。	2025-04-01
+めっき vendor case study implementation manual	平成17年度 化学物質排出量等管理マニュアル	https://www.meti.go.jp/policy/chemical_management/law/information/info8_2.html	経済産業省が工程別の化学物質排出量等管理マニュアルを公開している。	

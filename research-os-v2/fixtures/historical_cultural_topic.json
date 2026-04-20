@@ -1,0 +1,159 @@
+{
+  "topic": "A historical event and its later cultural memory",
+  "reader": "general reader seeking a concise but careful explanation of what happened and why it matters",
+  "use_context": "A historical-cultural explainer that distinguishes event chronology from later interpretation and memory.",
+  "output_type": "historical explainer",
+  "requested_mode": "historical_overview",
+  "expected_domain_adapter_traits": [
+    "chronology first",
+    "distinguish event from memory",
+    "context-rich explanation",
+    "low-hype tone"
+  ],
+  "known_failure_modes": [
+    "blending modern interpretation into the historical record",
+    "flattening contested narratives",
+    "omitting why later memory changed the event's meaning"
+  ],
+  "required_source_roles": [
+    "primary",
+    "secondary"
+  ],
+  "required_claims": [
+    "basic chronology of the event",
+    "how later culture reframed the event",
+    "where interpretation remains contested"
+  ],
+  "prohibited_overclaims": [
+    "does not claim perfect consensus where there is none",
+    "does not erase primary-source limits",
+    "does not project modern values onto all participants"
+  ],
+  "expected_gate_behavior": "allow",
+  "source_packets": [
+    {
+      "source_id": "hist_src_001",
+      "title": "Primary source excerpt",
+      "source_role": "primary",
+      "published_on": "1891-09-14",
+      "jurisdiction": "N/A",
+      "quality_flags": [
+        "primary-source",
+        "archival"
+      ],
+      "summary": "Provides direct evidence about the event's immediate context and the language used at the time.",
+      "findings": [
+        {
+          "finding_id": "hist_src_001_f01",
+          "statement": "The immediate record is limited to a narrow local context rather than a universal one.",
+          "claim_kind": "context",
+          "risk_level": "moderate",
+          "section_hint": "event setting",
+          "decision_note": "Use this to keep chronology grounded in the actual source limits.",
+          "risk_tags": [
+            "context",
+            "scope"
+          ],
+          "failure_modes": [
+            "reading a local record as if it described the entire movement or era"
+          ],
+          "misunderstandings": [
+            "assuming one source captures the whole event"
+          ],
+          "boundary_concepts": [
+            "local context",
+            "primary record"
+          ],
+          "confidence": 0.8,
+          "support_status_hint": "supported"
+        },
+        {
+          "finding_id": "hist_src_001_f02",
+          "statement": "The wording in the source leaves room for more than one interpretation.",
+          "claim_kind": "ambiguity",
+          "risk_level": "moderate",
+          "section_hint": "interpretive limits",
+          "decision_note": "Call out ambiguity explicitly instead of smoothing it over.",
+          "risk_tags": [
+            "ambiguity",
+            "interpretation"
+          ],
+          "failure_modes": [
+            "presenting ambiguous phrasing as settled fact"
+          ],
+          "misunderstandings": [
+            "assuming the primary source is self-explanatory"
+          ],
+          "boundary_concepts": [
+            "ambiguity",
+            "interpretation"
+          ],
+          "confidence": 0.73,
+          "support_status_hint": "partial"
+        }
+      ]
+    },
+    {
+      "source_id": "hist_src_002",
+      "title": "Cultural history essay",
+      "source_role": "secondary",
+      "published_on": "2025-01-30",
+      "jurisdiction": "Global",
+      "quality_flags": [
+        "analysis",
+        "secondary"
+      ],
+      "summary": "Explains how the event was later remembered, reinterpreted, and used in public culture.",
+      "findings": [
+        {
+          "finding_id": "hist_src_002_f01",
+          "statement": "Later cultural memory emphasized symbolism more than the original local circumstances.",
+          "claim_kind": "interpretation",
+          "risk_level": "low",
+          "section_hint": "memory shift",
+          "decision_note": "This supports the distinction between what happened and what people later made of it.",
+          "risk_tags": [
+            "memory",
+            "symbolism"
+          ],
+          "failure_modes": [
+            "collapsing memory into chronology"
+          ],
+          "misunderstandings": [
+            "assuming later symbolic meaning was present from the start"
+          ],
+          "boundary_concepts": [
+            "collective memory",
+            "symbolic meaning"
+          ],
+          "confidence": 0.76,
+          "support_status_hint": "supported"
+        },
+        {
+          "finding_id": "hist_src_002_f02",
+          "statement": "Scholars disagree on which later reinterpretation became dominant first.",
+          "claim_kind": "contestation",
+          "risk_level": "low",
+          "section_hint": "debate",
+          "decision_note": "Mention the disagreement rather than pretending there is one clean line of influence.",
+          "risk_tags": [
+            "contestation",
+            "historiography"
+          ],
+          "failure_modes": [
+            "overstating consensus among historians"
+          ],
+          "misunderstandings": [
+            "assuming the literature converges on one timeline"
+          ],
+          "boundary_concepts": [
+            "historiography",
+            "dominant narrative"
+          ],
+          "confidence": 0.67,
+          "support_status_hint": "open"
+        }
+      ]
+    }
+  ]
+}

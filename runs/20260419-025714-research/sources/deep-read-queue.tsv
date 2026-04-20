@@ -1,0 +1,14 @@
+priority	status	reason	title	url	notes_file
+high	completed	方式比較の基礎	各種表面処理概要	https://zentoren.or.jp/mekki/hyoumenshori.html	notes/source-zentoren-overview.md
+high	completed	品質評価の基礎	めっきの評価	https://zentoren.or.jp/mekki/hyouka.html	notes/source-zentoren-evaluation.md
+high	completed	代表材料の整理	めっきの種類と特色	https://zentoren.or.jp/mekki/shurui.html	notes/source-zentoren-types.md
+high	completed	広義の表面技術の定義	表面技術協会 協会について	https://www.sfj.or.jp/aboutus.html	notes/source-sfj-scope.md
+high	completed	溶融亜鉛めっき工程	溶融亜鉛めっきの加工工程	https://www.aen-mekki.or.jp/mekki/process/	notes/source-aen-process.md
+high	completed	溶融亜鉛めっきの防食	溶融亜鉛めっきとは	https://www.aen-mekki.or.jp/mekki/what-is/	notes/source-aen-whatis.md
+high	completed	排水基準	一般排水基準	https://www.env.go.jp/water/impure/haisui.html	notes/source-moe-effluent.md
+high	completed	六価クロム基準改正	水質汚濁に係る環境基準の見直しについて	https://www.env.go.jp/press/110052-print.html	notes/source-moe-hex.md
+high	completed	PFAS 通知	PFAS について	https://www.env.go.jp/water/pfas.html	notes/source-moe-pfas.md
+high	completed	作業安全	めっき	https://anzeninfo.mhlw.go.jp/user/anzen/kag/pdf/taisaku/Plating.pdf	notes/source-mhlw-plating.md
+medium	completed	環境排出論点	Electroplating Effluent Guidelines	https://www.epa.gov/eg/electroplating-effluent-guidelines	notes/source-epa-effluent.md
+medium	completed	六価クロムばく露	Controlling Hexavalent Chromium Exposures during Electroplating	https://www.osha.gov/sites/default/files/publications/OSHA_FS-3648_Electroplating.pdf	notes/source-osha-hex.md
+medium	completed	東京都の暫定基準	六価クロムの下水排除基準について	https://www.gesui.metro.tokyo.lg.jp/information/topics/2024/10/1001_6723	notes/source-tokyo-sewer.md

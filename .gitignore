@@ -18,17 +18,26 @@ page1.png
 sample_page.png
 gh-auth.*.txt
 main.py
+runs-v2/
+research-os-v2/generated/
+research-os-v2/**/__pycache__/
 
 # app/ 以下のファイルは追跡する (*.json の除外ルールより優先)
 !app/
 !app/**
 !app/questions.json
 !app/manifest.json
+!research-os-v2/examples/
+!research-os-v2/examples/*.json
+!research-os-v2/fixtures/
+!research-os-v2/fixtures/*.json
 
 # パーサースクリプトも追跡
 !parse_questions.py
 ocr_result.txt
-.claude/
+.claude/*
+!.claude/commands/
+!.claude/commands/**
 cool_brown_report_pages/
 README-calendar.md
 requirements-calendar.txt

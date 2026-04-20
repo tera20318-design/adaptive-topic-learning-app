@@ -1,0 +1,88 @@
+run_id = "20260419-100938-research"
+topic = "めっき"
+mode = "gpt-like"
+preset = "dr_output"
+output_language = "Japanese"
+as_of_date = "2026-04-19"
+generated_at = "2026-04-19 10:09:38"
+
+[budgets]
+query_budget = 112
+raw_hit_budget = 1280
+open_budget = 340
+deep_read_budget = 104
+
+[citations]
+unique_cited_source_target = 64
+citation_instance_target = 220
+min_citations_per_major_section = 6
+primary_source_ratio_min = 0.78
+
+[stopping]
+novelty_stop_threshold = 0.035
+max_same_domain_ratio = 0.16
+recency_bias_days = 1825
+
+[source_scope]
+web_mode = "full_web"
+allowed_domains = []
+file_inputs = []
+
+[topic_scope]
+breadth_class = "standard"
+breadth_label = "標準"
+breadth_score = 50
+classification_source = "inferred"
+note_required = true
+budget_scale = 1.00
+signals = []
+minimum_query_floor = 40
+minimum_candidate_floor = 359
+minimum_deep_read_floor = 37
+novelty_stop_multiplier = 1.0
+max_same_domain_ratio_multiplier = 1.0
+effective_novelty_stop_threshold = 0.035
+effective_max_same_domain_ratio = 0.16
+stop_summary = "standard / 標準 / score 50; floors q=40, candidates=359, deep=37; stop novelty=0.0350, same-domain=0.1600"
+
+[entity_scope]
+mode = "auto"
+required = false
+score = 32
+kind = "company"
+kind_source = "inferred"
+kind_score = 32
+bundle_id = "company-roster"
+bundle_label = "企業・事業所ロスター"
+family_id = "entity_discovery"
+surface_label = "must-find entities"
+classification_source = "inferred"
+minimum_surface_floor = 0
+minimum_entity_floor = 0
+minimum_tail_query_floor = 0
+signals = ["+4:breadth=standard", "kind=company"]
+summary = "auto / optional / kind company / bundle 企業・事業所ロスター; score 32; surface_floor=0, tail_queries=0"
+
+[coverage]
+logic_milestone = "OUTPUT"
+required_query_families = ["official_primary", "regulation_standards", "research_validation", "vendor_implementation", "independent_context", "japan_specific", "contradiction_negative", "upstream_downstream", "role_structure", "chronology_change"]
+required_report_sections = ["## 1. 要約", "## 2. 主要な発見", "## 3. 根拠テーブル", "## 4. 詳細分析", "## 5. 実務で確認すべきことと追加調査", "## 6. 主要ソース一覧", "### 4.1 定義・範囲・前提", "### 4.2 歴史・変遷・現在地", "### 4.3 主要方式・方法・類型", "### 4.4 構成要素・材料・入力条件", "### 4.5 評価軸・性能・品質", "### 4.6 規格・制度・標準", "### 4.7 工程・設備・供給構造", "### 4.8 環境・安全・制約", "### 4.9 用途・適用領域・導入先", "### 4.10 コスト・経済性・導入条件", "### 4.11 ドメインリスクマップ"]
+
+[evidence_audit]
+enabled = true
+min_fact_evidence_count = 2
+min_fact_primary_count = 1
+min_inference_evidence_count = 2
+min_inference_primary_count = 1
+
+[advanced_logic]
+required_note_artifacts = ["notes/topic-profile.md", "notes/contradiction-log.md", "notes/upstream-downstream-map.md", "notes/role-structure-matrix.md", "notes/domain-risk-map.md"]
+requires_gap_followup_when_claims_fail = true
+followup_query_family_targets = ["contradiction_negative", "upstream_downstream", "role_structure"]
+
+[quality_gate]
+strict = true
+require_domain_risk_section = true
+require_checklist_section = true
+require_uncertainty_section = true
+require_decision_section = true

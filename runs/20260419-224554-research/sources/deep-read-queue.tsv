@@ -1,0 +1,24 @@
+priority	status	reason	title	url	notes_file
+1	read	regulatory date and limit	環境省 2022-04-01 告示	https://www.env.go.jp/press/110052.html	notes/subagent-regulatory-ehs.md
+1	read	regulatory current limit	環境省 一般排水基準	https://www.env.go.jp/water/impure/haisui.html	notes/subagent-regulatory-ehs.md
+1	read	regulatory method revision	環境省 2024-02-05 公布	https://www.env.go.jp/press/press_02720.html	notes/subagent-regulatory-ehs.md
+1	read	regulatory temporary standard	環境省 2024-12-11 暫定基準延長	https://www.env.go.jp/press/press_03960.html	notes/subagent-regulatory-ehs.md
+1	read	sewer distinction	国交省 除害施設	https://www.mlit.go.jp/mizukokudo/sewerage/mizukokudo_sewerage_tk_000637.html	notes/subagent-regulatory-ehs.md
+1	read	occupational exposure	OSHA 29 CFR 1910.1026	https://www.osha.gov/laws-regs/regulations/standardnumber/1910/1910.1026	notes/subagent-regulatory-ehs.md
+1	read	us wastewater rule	EPA Electroplating Effluent Guidelines	https://www.epa.gov/eg/electroplating-effluent-guidelines	notes/subagent-regulatory-ehs.md
+2	read	pfas relation	EPA Chromium Finishing Questionnaire	https://www.epa.gov/eg/chromium-finishing-questionnaire	notes/subagent-regulatory-ehs.md
+2	read	rohs overview	European Commission RoHS Directive	https://environment.ec.europa.eu/topics/waste-and-recycling/rohs-directive_en	notes/subagent-regulatory-ehs.md
+2	read	reach nickel release	ECHA Annex XVII conditions	https://echa.europa.eu/documents/10162/3bbe9024-52a6-8e63-5581-e686331eb459	notes/subagent-regulatory-ehs.md
+1	read	japanese basics	めっき部会｜表面技術協会	https://mekki.sfj.or.jp/	notes/subagent-tech-foundations.md
+1	read	corrosion basics	防錆・防食のための めっきの基礎知識	https://www2.orist.jp/dl/izumi/archive/Gijutsu_shiryo/Corr.pdf	notes/subagent-tech-foundations.md
+2	read	technical scope	ASTM Committee B08 Scope	https://www.astm.org/membership-participation/technical-committees/committee-b08/scope-b08	notes/subagent-tech-foundations.md
+2	read	electroless nickel	Properties and Applications of Electroless Nickel	https://nickelinstitute.org/en/resources/technical-guides/properties-and-applications-of-electroless-nickel-10081/	notes/subagent-tech-foundations.md
+2	read	pcb finish spec	IPC-4552	https://www.ipc.org/TOC/IPC-4552wAm-1-2.pdf	notes/subagent-tech-foundations.md
+2	read	microvia warning	IPC issues electronics industry warning on microvia reliability	https://www.ipc.org/news-release/ipc-issues-electronics-industry-warning-printed-board-microvia-reliability-high	notes/subagent-tech-foundations.md
+2	read	industry use cases	JCU 表面処理技術資料	https://www.jcu-i.com/wp/wp-content/uploads/2022/10/irks1_20220511.pdf	notes/subagent-applications.md
+2	read	automotive corrosion use	日本鉄鋼連盟 亜鉛めっき鋼板	https://www.jisf.or.jp/business/tech/aen/index.html	notes/subagent-applications.md
+2	read	automotive spec	JFS	https://www.jisf.or.jp/business/standard/jfs/	notes/subagent-applications.md
+2	read	component reliability	JEITA 信頼性評価ガイド	https://home.jeita.or.jp/page_file/20200526181633_4fCp1lxIJG.pdf	notes/subagent-applications.md
+2	read	rigid board qualification	IPC-6012F release	https://www.electronics.org/news-release/ipc-releases-ipc-6012f-qualification-and-performance-specification-rigid-printed	notes/subagent-applications.md
+2	read	process classification	METI	https://www.meti.go.jp/policy/chemical_management/kasinhou/files/information/ra/use_category_002.pdf	notes/subagent-applications.md
+

@@ -1,0 +1,138 @@
+run_id = "20260419-224554-research"
+topic = "めっき"
+mode = "gpt-like"
+preset = "dr_ultra"
+output_language = "Japanese"
+as_of_date = "2026-04-19"
+generated_at = "2026-04-19 22:45:54"
+
+[preset_baseline]
+query_budget = 88
+raw_hit_budget = 1040
+open_budget = 280
+deep_read_budget = 84
+candidate_target = 1040
+deep_read_target = 84
+unique_cited_source_target = 52
+citation_instance_target = 170
+
+[override]
+original_budget = "candidates 1040, deep reads 84, queries 88, raw hits 1040, opens 280, deep-read budget 84, cited sources 52, citations 170"
+effective_budget = "candidates 20, deep reads 10, queries 24, raw hits 80, opens 30, deep-read budget 14, cited sources 14, citations 36"
+override_reason = "Manual budget overrides reduced the preset baseline for: candidate_target, deep_read_target, query_budget, raw_hit_budget, open_budget, deep_read_budget, unique_cited_source_target, citation_instance_target."
+override_authority = "user"
+full_dr_equivalent = false
+report_status_implication = "A complete status only means the scoped override is satisfied; keep the report labeled as non-full-DR-equivalent."
+
+[metadata_override]
+override_reason = "Manual budget overrides reduced the preset baseline for: candidate_target, deep_read_target, query_budget, raw_hit_budget, open_budget, deep_read_budget, unique_cited_source_target, citation_instance_target."
+override_authority = "user"
+full_dr_equivalent = false
+report_status_implication = "A complete status only means the scoped override is satisfied; keep the report labeled as non-full-DR-equivalent."
+
+[metadata_override.original_budget]
+query_budget = 88
+raw_hit_budget = 1040
+open_budget = 280
+deep_read_budget = 84
+candidate_target = 1040
+deep_read_target = 84
+unique_cited_source_target = 52
+citation_instance_target = 170
+
+[metadata_override.effective_budget]
+query_budget = 24
+raw_hit_budget = 80
+open_budget = 30
+deep_read_budget = 14
+candidate_target = 20
+deep_read_target = 10
+unique_cited_source_target = 14
+citation_instance_target = 36
+
+[budgets]
+query_budget = 24
+raw_hit_budget = 80
+open_budget = 30
+deep_read_budget = 14
+
+[citations]
+unique_cited_source_target = 14
+citation_instance_target = 36
+min_citations_per_major_section = 3
+primary_source_ratio_min = 0.70
+
+[stopping]
+novelty_stop_threshold = 0.04
+max_same_domain_ratio = 0.18
+recency_bias_days = 1460
+
+[source_scope]
+web_mode = "full_web"
+allowed_domains = []
+file_inputs = []
+
+[topic_scope]
+breadth_class = "standard"
+breadth_label = "標準"
+breadth_score = 50
+classification_source = "manual_override"
+note_required = true
+budget_scale = 0.45
+signals = ["manual_override:focused_overview_report", "manual_override:no_prior_run_reuse"]
+minimum_query_floor = 12
+minimum_candidate_floor = 20
+minimum_deep_read_floor = 10
+novelty_stop_multiplier = 1.0
+max_same_domain_ratio_multiplier = 1.0
+effective_novelty_stop_threshold = 0.04
+effective_max_same_domain_ratio = 0.18
+stop_summary = "standard / focused overview override / floors q=12, candidates=20, deep=10; stop novelty=0.0400, same-domain=0.1800"
+
+[entity_scope]
+mode = "off"
+required = false
+score = 0
+kind = "technology"
+kind_source = "manual_override"
+kind_score = 0
+bundle_id = "general-overview"
+bundle_label = "一般トピック概説"
+family_id = "independent_context"
+surface_label = "must-find concepts"
+classification_source = "manual_override"
+minimum_surface_floor = 0
+minimum_entity_floor = 0
+minimum_tail_query_floor = 0
+signals = ["manual_override:technology_overview"]
+summary = "off / optional / kind technology / bundle 一般トピック概説; score 0; surface_floor=0, tail_queries=0"
+
+[coverage]
+logic_milestone = "M4"
+required_query_families = ["official_primary", "regulation_standards", "research_validation", "vendor_implementation", "independent_context", "japan_specific", "contradiction_negative", "upstream_downstream", "role_structure", "chronology_change"]
+required_report_sections = ["## 1. 要約", "## 2. 主要な発見", "## 3. 主要な根拠と出典", "## 4. 論点別の分析", "## 5. 判断のために確認すべきことと追加調査", "## 6. 主要ソース一覧", "### 4.1 方式ごとの比較ポイント", "### 4.2 用途別・産業別に何が違うか", "### 4.3 工程・設備・外注先を見るポイント", "### 4.4 誤解しやすい点と例外", "### 4.5 いま変わっている制度・市場・技術", "### 4.6 実務判断に効くコストと品質の勘所", "### 4.7 見落とすと危険なドメイン固有リスク"]
+
+[evidence_audit]
+enabled = true
+min_fact_evidence_count = 2
+min_fact_primary_count = 1
+min_inference_evidence_count = 2
+min_inference_primary_count = 1
+
+[advanced_logic]
+required_note_artifacts = ["notes/topic-profile.md", "notes/contradiction-log.md", "notes/upstream-downstream-map.md", "notes/role-structure-matrix.md", "notes/domain-risk-map.md"]
+requires_gap_followup_when_claims_fail = true
+followup_query_family_targets = ["contradiction_negative", "upstream_downstream", "role_structure"]
+
+[quality_gate]
+strict = true
+require_domain_risk_section = true
+require_checklist_section = true
+require_uncertainty_section = true
+require_decision_section = true
+decision_layer_minimum = [
+  "At least one reader-facing checklist row before delivery.",
+  "Checklist columns: 判断場面 / 確認すること / なぜ重要か / 失敗した場合のリスク / 根拠または確認先.",
+  "Keep a separate uncertainty and follow-up subsection.",
+]
+non_full_dr_requires_explicit_label = true

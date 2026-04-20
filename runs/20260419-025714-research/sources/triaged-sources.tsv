@@ -1,0 +1,17 @@
+rank_hint	score_hint	source_flags	dup_count	query_count	domain	title	canonical_url	queries	original_urls	sample_snippet	published_at
+100	0.99	primary;japan;industry	0	1	zentoren.or.jp	各種表面処理概要	https://zentoren.or.jp/mekki/hyoumenshori.html	zentoren_overview	https://zentoren.or.jp/mekki/hyoumenshori.html	日本の業界団体による方式比較の基礎資料。	
+99	0.98	primary;japan;industry	0	1	zentoren.or.jp	めっきの評価	https://zentoren.or.jp/mekki/hyouka.html	zentoren_evaluation	https://zentoren.or.jp/mekki/hyouka.html	品質評価項目を簡潔に整理した資料。	
+98	0.97	primary;japan;industry	0	1	zentoren.or.jp	めっきの代表的な特性	https://zentoren.or.jp/mekki/tokusei.html	zentoren_features	https://zentoren.or.jp/mekki/tokusei.html	代表材料の性質比較に使える。	
+97	0.96	primary;japan;industry	0	1	zentoren.or.jp	めっきの種類と特色	https://zentoren.or.jp/mekki/shurui.html	zentoren_types	https://zentoren.or.jp/mekki/shurui.html	代表材料と用途の具体例が多い。	
+96	0.95	primary;japan;academic-society	0	1	sfj.or.jp	表面技術協会 協会について	https://www.sfj.or.jp/aboutus.html	sfj_scope	https://www.sfj.or.jp/aboutus.html	表面技術の活動領域の整理に適する。	
+95	0.94	primary;japan;industry	0	1	aen-mekki.or.jp	溶融亜鉛めっきの加工工程	https://www.aen-mekki.or.jp/mekki/process/	aen_process	https://www.aen-mekki.or.jp/mekki/process/	溶融亜鉛めっきの工程説明が具体的。	
+94	0.93	primary;japan;industry	0	1	aen-mekki.or.jp	溶融亜鉛めっきとは	https://www.aen-mekki.or.jp/mekki/what-is/	aen_whatis	https://www.aen-mekki.or.jp/mekki/what-is/	防食メカニズムと犠牲防食の説明に使える。	
+93	0.92	primary;japan;regulation	0	1	env.go.jp	一般排水基準	https://www.env.go.jp/water/impure/haisui.html	moe_effluent	https://www.env.go.jp/water/impure/haisui.html	六価クロムとシアンの排水基準を確認できる。	
+92	0.91	primary;japan;regulation	0	1	env.go.jp	水質汚濁に係る環境基準の見直しについて	https://www.env.go.jp/press/110052-print.html	moe_hex_revision	https://www.env.go.jp/press/110052-print.html	六価クロムの環境基準改正日と数値を確認できる。	
+91	0.90	primary;japan;regulation	0	1	env.go.jp	PFAS について	https://www.env.go.jp/water/pfas.html	moe_pfas	https://www.env.go.jp/water/pfas.html	PFAS 関連通知の総合入口。	
+90	0.89	primary;japan;worker-safety	0	1	anzeninfo.mhlw.go.jp	めっき	https://anzeninfo.mhlw.go.jp/user/anzen/kag/pdf/taisaku/Plating.pdf	mhlw_plating_safety	https://anzeninfo.mhlw.go.jp/user/anzen/kag/pdf/taisaku/Plating.pdf	めっき作業の危険有害物質と対策。	
+89	0.88	primary;japan;worker-safety	0	1	mhlw.go.jp	化学物質による労働災害防止のための新たな規制について	https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000099121_00005.html	mhlw_chem_rule	https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000099121_00005.html	リスクアセスメント中心の規制整理。	
+88	0.87	primary;us;regulation	0	1	epa.gov	Electroplating Effluent Guidelines	https://www.epa.gov/eg/electroplating-effluent-guidelines	epa_effluent	https://www.epa.gov/eg/electroplating-effluent-guidelines	PFAS とクロム仕上げ施設の関係確認に重要。	
+87	0.86	primary;us;worker-safety	0	1	osha.gov	Controlling Hexavalent Chromium Exposures during Electroplating	https://www.osha.gov/sites/default/files/publications/OSHA_FS-3648_Electroplating.pdf	osha_hex_electroplating	https://www.osha.gov/sites/default/files/publications/OSHA_FS-3648_Electroplating.pdf	六価クロムばく露と OSHA PEL を確認できる。	
+86	0.85	primary;japan;local-regulation	0	1	gesui.metro.tokyo.lg.jp	六価クロムの下水排除基準について	https://www.gesui.metro.tokyo.lg.jp/information/topics/2024/10/1001_6723	tokyo_sewer_hex	https://www.gesui.metro.tokyo.lg.jp/information/topics/2024/10/1001_6723	東京都の下水排除基準と電気めっき業の暫定基準。	2025-04-01
+85	0.84	primary;japan;policy	0	1	meti.go.jp	平成17年度 化学物質排出量等管理マニュアル	https://www.meti.go.jp/policy/chemical_management/law/information/info8_2.html	meti_manual	https://www.meti.go.jp/policy/chemical_management/law/information/info8_2.html	工程別の化学物質管理の参照入口。	
